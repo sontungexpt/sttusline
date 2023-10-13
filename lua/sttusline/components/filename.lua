@@ -18,7 +18,13 @@ Filename.update = function()
 		icon, color_icon = devicons.get_icon_color(filename, fn.expand("%:e"))
 	end
 	if not icon then
-		icon, color_icon = "", colors.blue
+		local buftype = vim.api.nvim_buf_get_option(0, "buftype")
+		if buftype == "terminal" then
+			icon, color_icon = "", colors.blue
+			filename = "Terminal"
+		else
+			icon, color_icon = "", colors.blue
+		end
 	end
 
 	hl(0, ICON_HIGHLIGHT, { fg = color_icon })

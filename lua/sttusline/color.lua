@@ -11,7 +11,6 @@ return {
 	blue = "#51afef",
 	weight_blue = "#2f86eb",
 	red = "#ee2c4a",
-	light_red = "#ff6c6b",
 	gray = "#5c6370",
 	purple = "#c688eb",
 	pink = "#eb7fdc",

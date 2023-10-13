@@ -10,6 +10,7 @@ local Component = {
 	is_loaded = false,
 	on_load = function() end, -- the function will call on the first time component load
 }
+
 function Component:new()
 	local instance = setmetatable({}, self)
 	self.__index = self
@@ -17,7 +18,11 @@ function Component:new()
 	self.__newindex = function(owner, k, v)
 		if k == "event" or k == "user_event" then
 			if type(v) == "table" then
-				rawset(owner, k, vim.tbl_filter(function(e) return type(e) == "string" and #e > 0 end, v))
+				rawset(
+					owner,
+					k,
+					vim.tbl_filter(function(e_name) return type(e_name) == "string" and #e_name > 0 end, v)
+				)
 			elseif type(v) == "string" and #v > 0 then
 				rawset(owner, k, { v })
 			end
@@ -30,7 +35,7 @@ function Component:new()
 				fg = type(v.fg) == "string" and v.fg or nil,
 				bg = type(v.bg) == "string" and v.bg or nil,
 			})
-		elseif k == "update" or k == "condition" or k == "on_load" then
+		elseif k == "update" or k == "on_load" or k == "condition" then
 			if type(v) == "function" then rawset(owner, k, v) end
 		elseif k == "padding" then
 			if type(v) == "number" then

@@ -1,24 +1,28 @@
 local M = {}
 
+local api = vim.api
+local tbl_concat = table.concat
+local tbl_insert = table.insert
+
+-- module
 local utils = require("sttusline.utils")
 local constants = require("sttusline.constant")
-local api = vim.api
 
 local timer = nil
 local event_components = {}
 local timer_components = {}
-local component_values = {
+local statusline = {
 	left = {},
 	center = {},
 	right = {},
 }
 
 M.update_statusline = function()
-	vim.opt.statusline = table.concat(component_values.left, "")
+	vim.opt.statusline = tbl_concat(statusline.left, "")
 		.. "%="
-		.. table.concat(component_values.center, "")
+		.. tbl_concat(statusline.center, "")
 		.. "%="
-		.. table.concat(component_values.right, "")
+		.. tbl_concat(statusline.right, "")
 end
 
 M.setup = function(opts)
@@ -37,7 +41,7 @@ M.create_autocmds = function(component, zone, index_in_zone)
 					callback = function(e) M.run(e.event) end,
 				})
 			end
-			table.insert(event_components[event], { component, zone, index_in_zone })
+			tbl_insert(event_components[event], { component, zone, index_in_zone })
 		end
 	end
 
@@ -51,14 +55,14 @@ M.create_autocmds = function(component, zone, index_in_zone)
 					callback = function(e) M.run(e.match) end,
 				})
 			end
-			table.insert(event_components[event], { component, zone, index_in_zone })
+			tbl_insert(event_components[event], { component, zone, index_in_zone })
 		end
 	end
 end
 
 M.init_timer = function(component, zone, index_in_zone)
 	if component.timing then
-		table.insert(timer_components, { component, zone, index_in_zone })
+		tbl_insert(timer_components, { component, zone, index_in_zone })
 		if timer == nil then
 			timer = vim.loop.new_timer()
 			timer:start(1000, 1000, vim.schedule_wrap(function() M.run() end))
@@ -95,7 +99,7 @@ M.update_component_value = function(component, zone, index_in_zone)
 		value = utils.add_padding(value, component.padding)
 		value =
 			utils.add_highlight_name(value, constants.HIGHLIGHT_COMPONENT_PREFIX .. zone .. index_in_zone)
-		component_values[zone][index_in_zone] = value
+		statusline[zone][index_in_zone] = value
 	else
 		require("sttusline.notify").error(
 			"Value return in update function of opts.component["

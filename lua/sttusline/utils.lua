@@ -73,6 +73,6 @@ M.format_opts = function(opts)
 	return opts
 end
 
-M.is_color = function(color) return string.match(color, "^#%x%x%x%x%x%x$") end
+M.is_color = function(color) return color:match("^#%x%x%x%x%x%x$") end
 
 return M

@@ -13,10 +13,10 @@ Diagnostics.config = {
 		INFO = " ",
 	},
 	diagnostics_color = {
-		ERROR = colors.red,
-		WARN = colors.yellow,
-		HINT = colors.blue,
-		INFO = colors.cyan,
+		ERROR = "DiagnosticSignError",
+		WARN = "DiagnosticSignWarn",
+		HINT = "DiagnosticSignHint",
+		INFO = "DiagnosticSignInfo",
 	},
 }
 
