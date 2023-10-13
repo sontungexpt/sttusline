@@ -1,6 +1,6 @@
 local Component = {
 	event = {},
-	user_event = {},
+	user_event = { "VeryLazy" },
 	timing = false,
 	config = {},
 	padding = 1, -- { left = 1, right = 1 }

@@ -1,5 +1,5 @@
-local constants = require("sttusline.constant")
 local notify = require("sttusline.notify")
+local COMPONENT_PARENT_MODULE = "sttusline.components"
 
 local M = {}
 
@@ -19,58 +19,39 @@ end
 M.add_highlight_name = function(str, highlight_name) return "%#" .. highlight_name .. "#" .. str .. "%*" end
 
 M.foreach_component = function(opts, callback)
-	for zone, zone_values in pairs(opts.components) do
-		for index_in_zone, component in ipairs(zone_values) do
-			callback(component, zone, index_in_zone)
-		end
-	end
-end
-
-M.foreach_component_require = function(opts, callback)
-	for zone, zone_values in pairs(opts.components) do
-		for index_in_zone, component in ipairs(zone_values) do
-			local component_type = type(component)
-			if component_type == "string" then
-				local status_ok, real_component =
-					pcall(require, constants.COMPONENT_MODULE_PREFIX .. "." .. component)
-				if status_ok then
-					callback(real_component, zone, index_in_zone)
-				else
-					notify.error(component .. " not found")
-				end
-			elseif component_type == "table" then
-				callback(component, zone, index_in_zone)
+	for index, component in ipairs(opts.components) do
+		if type(component) == "string" then
+			if component == "%=" then
+				callback(component, index, true)
 			else
-				notify.error(
-					'component must be string(name of component) or create by call require("sttusline.component"):new()'
-				)
+				local status_ok, real_comp = pcall(require, COMPONENT_PARENT_MODULE .. "." .. component)
+				if status_ok then
+					opts.components[index] = real_comp
+					callback(real_comp, index)
+				else
+					notify.error("Failed to load component: " .. component)
+				end
 			end
+		else
+			callback(component, index)
 		end
 	end
 end
 
 M.format_opts = function(opts)
-	for zone, zone_values in pairs(opts.components) do
-		for index_in_zone, component in ipairs(zone_values) do
-			local component_type = type(component)
-			if component_type == "string" then
-				local status_ok, real_component =
-					pcall(require, constants.COMPONENT_MODULE_PREFIX .. "." .. component)
-				if status_ok then
-					opts.components[zone][index_in_zone] = real_component
-				else
-					table.remove(opts.components[zone], index_in_zone)
-					notify.error(component .. " not found")
-				end
-			elseif component_type ~= "table" then
-				table.remove(opts.components[zone], index_in_zone)
-				notify.error(
-					'component must be string(name of component) or create by call require("sttusline.component"):new()'
-				)
+	local formatted_opts = {}
+	for k, v in pairs(opts.components) do
+		if type(v) == "string" then
+			if k == 1 or k == #opts.components then
+				if v ~= "%=" then table.insert(formatted_opts, v) end
+			else
+				table.insert(formatted_opts, v)
 			end
+		elseif type(v) == "table" then
+			table.insert(formatted_opts, v)
 		end
 	end
-	return opts
+	opts.components = formatted_opts
 end
 
 M.is_color = function(color) return color:match("^#%x%x%x%x%x%x$") end

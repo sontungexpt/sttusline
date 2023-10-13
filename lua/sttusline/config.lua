@@ -2,21 +2,11 @@ local M = {}
 
 local configs = {
 	components = {
-		left = {
-			-- "mode",
-			"filename",
-			-- "git-branch",
-			-- "git-signs",
-			"diagnostics",
-		},
-		center = {},
-		right = {
-			"lsps-formatters",
-			-- 	"indentation",
-			"encoding",
-			-- 	"position",
-			-- 	"position-progess",
-		},
+		"filename",
+		"diagnostics",
+		"%=",
+		"lsps-formatters",
+		"encoding",
 	},
 }
 
