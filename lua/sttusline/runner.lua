@@ -23,7 +23,10 @@ local timer_components = {
 
 M.update_statusline = function() vim.opt.statusline = table.concat(statusline, "") end
 
-M.setup = function(opts) M.init(opts) end
+M.setup = function(opts)
+	M.init(opts)
+	M.update_statusline()
+end
 
 --- Init timer, autocmds, and highlight for statusline
 M.init = function(opts)

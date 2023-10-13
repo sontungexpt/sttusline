@@ -3,7 +3,7 @@ local colors = require("sttusline.color")
 local Lsps_Formatters = require("sttusline.component"):new()
 
 Lsps_Formatters.colors = { fg = colors.magenta }
-Lsps_Formatters.event = { "BufWritePost" }
+-- Lsps_Formatters.event = { "BufWritePost" }
 Lsps_Formatters.user_event = "LspRequest"
 
 Lsps_Formatters.update = function()
