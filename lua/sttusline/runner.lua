@@ -70,7 +70,9 @@ M.init_timer = function(component, index)
 end
 
 M.set_component_highlight = function(component, index)
-	api.nvim_set_hl(0, HIGHLIGHT_COMPONENT_PREFIX .. index, component.colors)
+	if next(component.colors) then
+		api.nvim_set_hl(0, HIGHLIGHT_COMPONENT_PREFIX .. index, component.colors)
+	end
 end
 
 M.set_highlight = function(opts)

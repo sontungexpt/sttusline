@@ -40,4 +40,8 @@ end
 
 M.is_color = function(color) return color:match("^#%x%x%x%x%x%x$") end
 
+M.is_component = function(obj)
+	return type(obj) == "table" and getmetatable(obj) == require("sttusline.component")
+end
+
 return M

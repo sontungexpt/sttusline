@@ -1,7 +1,14 @@
+local is_component = require("sttusline.utils").is_component
+
 local M = {}
 
 local configs = {
 	laststatus = 3,
+	disabled = {
+		filetypes = {},
+		buftypes = {},
+	},
+	extensions = {},
 	components = {
 		"filename",
 		"diagnostics",
@@ -25,7 +32,7 @@ M.format_opts_components = function(opts)
 			else
 				table.insert(formatted_opts, v)
 			end
-		elseif type(v) == "table" and #v > 0 then
+		elseif is_component(v) then
 			table.insert(formatted_opts, v)
 		end
 	end
