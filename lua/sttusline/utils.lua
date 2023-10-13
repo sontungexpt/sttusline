@@ -18,11 +18,11 @@ end
 
 M.add_highlight_name = function(str, highlight_name) return "%#" .. highlight_name .. "#" .. str .. "%*" end
 
-M.foreach_component = function(opts, callback)
+M.foreach_component = function(opts, callback, empty_zone_component_callback)
 	for index, component in ipairs(opts.components) do
 		if type(component) == "string" then
 			if component == "%=" then
-				callback(component, index, true)
+				empty_zone_component_callback(component, index)
 			else
 				local status_ok, real_comp = pcall(require, COMPONENT_PARENT_MODULE .. "." .. component)
 				if status_ok then
@@ -36,22 +36,6 @@ M.foreach_component = function(opts, callback)
 			callback(component, index)
 		end
 	end
-end
-
-M.format_opts = function(opts)
-	local formatted_opts = {}
-	for k, v in pairs(opts.components) do
-		if type(v) == "string" then
-			if k == 1 or k == #opts.components then
-				if v ~= "%=" then table.insert(formatted_opts, v) end
-			else
-				table.insert(formatted_opts, v)
-			end
-		elseif type(v) == "table" then
-			table.insert(formatted_opts, v)
-		end
-	end
-	opts.components = formatted_opts
 end
 
 M.is_color = function(color) return color:match("^#%x%x%x%x%x%x$") end

@@ -5,10 +5,10 @@ local autocmd = api.nvim_create_autocmd
 local augroup = api.nvim_create_augroup
 local tbl_insert = table.insert
 local AUTOCMD_GROUP_PREFIX = "STTUSLINE_AUGROUP_"
+local HIGHLIGHT_COMPONENT_PREFIX = "STTUSLINE_COMPONENT_"
 
 -- module
 local utils = require("sttusline.utils")
-local constants = require("sttusline.constant")
 
 local timer = nil
 local statusline = {}
@@ -27,17 +27,14 @@ M.setup = function(opts) M.init(opts) end
 
 --- Init timer, autocmds, and highlight for statusline
 M.init = function(opts)
-	utils.foreach_component(opts, function(component, index, is_empty_zone)
-		if is_empty_zone then -- component == "%="
-			statusline[index] = component
-		else
-			statusline[index] = ""
-			component:load()
-			M.init_component_autocmds(component, index)
-			M.init_timer(component, index)
-			M.set_component_highlight(component, index)
-		end
-	end)
+	utils.foreach_component(opts, function(component, index)
+		statusline[index] = ""
+		component:load()
+		M.init_component_autocmds(component, index)
+		M.init_timer(component, index)
+		M.set_component_highlight(component, index)
+		if not component.lazy then M.update_component_value(component, index) end
+	end, function(empty_zone_comp, index) statusline[index] = empty_zone_comp end)
 end
 
 M.init_component_autocmds = function(component, index)
@@ -70,7 +67,7 @@ M.init_timer = function(component, index)
 end
 
 M.set_component_highlight = function(component, index)
-	api.nvim_set_hl(0, constants.HIGHLIGHT_COMPONENT_PREFIX .. index, component.colors)
+	api.nvim_set_hl(0, HIGHLIGHT_COMPONENT_PREFIX .. index, component.colors)
 end
 
 M.set_highlight = function(opts)
@@ -81,11 +78,18 @@ M.set_highlight = function(opts)
 end
 
 M.update_component_value = function(component, index)
+	local should_display = component.condition()
+	if type(should_display) == "boolean" and not should_display then
+		statusline[index] = ""
+		return
+	end
+
 	local value = component.update()
 	if type(value) == "string" then
 		value = utils.add_padding(value, component.padding)
-		statusline[index] = utils.add_highlight_name(value, constants.HIGHLIGHT_COMPONENT_PREFIX .. index)
+		statusline[index] = utils.add_highlight_name(value, HIGHLIGHT_COMPONENT_PREFIX .. index)
 	else
+		statusline[index] = ""
 		require("sttusline.notify").error(
 			"Value return in update function of opts.component[" .. index .. "] must be string"
 		)
