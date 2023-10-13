@@ -28,17 +28,31 @@ M.setup = function(opts)
 end
 
 M.create_autocmds = function(component, zone, index_in_zone)
-	if component.event == nil then return end
-
-	for _, event in ipairs(component.event) do
-		if event_components[event] == nil then
-			event_components[event] = { { component, zone, index_in_zone } }
-			api.nvim_create_autocmd(event, {
-				group = api.nvim_create_augroup(constants.AUTOCMD_GROUP_NAME_PREFIX .. event, {}),
-				callback = function(e) M.run(e) end,
-			})
+	if component.event then
+		for _, event in ipairs(component.event) do
+			if event_components[event] == nil then
+				event_components[event] = { { component, zone, index_in_zone } }
+				api.nvim_create_autocmd(event, {
+					group = api.nvim_create_augroup(constants.AUTOCMD_GROUP_NAME_PREFIX .. event, {}),
+					callback = function(e) M.run(e.event) end,
+				})
+			end
+			table.insert(event_components[event], { component, zone, index_in_zone })
 		end
-		table.insert(event_components[event], { component, zone, index_in_zone })
+	end
+
+	if component.user_event then
+		for _, event in ipairs(component.user_event) do
+			if event_components[event] == nil then
+				event_components[event] = { { component, zone, index_in_zone } }
+				api.nvim_create_autocmd("User", {
+					pattern = event,
+					group = api.nvim_create_augroup(constants.AUTOCMD_GROUP_NAME_PREFIX .. event, {}),
+					callback = function(e) M.run(e.match) end,
+				})
+			end
+			table.insert(event_components[event], { component, zone, index_in_zone })
+		end
 	end
 end
 
@@ -84,12 +98,12 @@ M.update_component_value = function(component, zone, index_in_zone)
 		component_values[zone][index_in_zone] = value
 	else
 		require("sttusline.notify").error(
-			"Error when update for opts.component["
+			"Value return in update function of opts.component["
 				.. zone
 				.. "]["
 				.. index_in_zone
 				.. "]"
-				.. " value return in update function must be string"
+				.. " must be string"
 		)
 	end
 end
@@ -107,9 +121,9 @@ M.update_on_trigger = function(table)
 	end
 end
 
-M.run = function(event)
-	if event ~= nil then
-		M.update_on_trigger(event_components[event.event])
+M.run = function(event_name)
+	if event_name ~= nil then
+		M.update_on_trigger(event_components[event_name])
 	else
 		M.update_on_trigger(timer_components)
 	end

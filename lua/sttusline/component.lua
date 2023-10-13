@@ -1,5 +1,6 @@
 local Component = {
 	event = {},
+	user_event = {},
 	timing = false,
 	config = {},
 	padding = 1, -- { left = 1, right = 1 }
@@ -14,7 +15,7 @@ function Component:new()
 	self.__index = self
 
 	self.__newindex = function(owner, k, v)
-		if k == "event" then
+		if k == "event" or k == "user_event" then
 			if type(v) == "table" then
 				rawset(owner, k, vim.tbl_filter(function(e) return type(e) == "string" and #e > 0 end, v))
 			elseif type(v) == "string" and #v > 0 then
@@ -29,7 +30,7 @@ function Component:new()
 				fg = type(v.fg) == "string" and v.fg or nil,
 				bg = type(v.bg) == "string" and v.bg or nil,
 			})
-		elseif k == "update" or k == "condition" or "on_load" then
+		elseif k == "update" or k == "condition" or k == "on_load" then
 			if type(v) == "function" then rawset(owner, k, v) end
 		elseif k == "padding" then
 			if type(v) == "number" then

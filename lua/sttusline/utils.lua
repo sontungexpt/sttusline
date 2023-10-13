@@ -26,6 +26,29 @@ M.foreach_component = function(opts, callback)
 	end
 end
 
+M.foreach_component_require = function(opts, callback)
+	for zone, zone_values in pairs(opts.components) do
+		for index_in_zone, component in ipairs(zone_values) do
+			local component_type = type(component)
+			if component_type == "string" then
+				local status_ok, real_component =
+					pcall(require, constants.COMPONENT_MODULE_PREFIX .. "." .. component)
+				if status_ok then
+					callback(real_component, zone, index_in_zone)
+				else
+					notify.error(component .. " not found")
+				end
+			elseif component_type == "table" then
+				callback(component, zone, index_in_zone)
+			else
+				notify.error(
+					'component must be string(name of component) or create by call require("sttusline.component"):new()'
+				)
+			end
+		end
+	end
+end
+
 M.format_opts = function(opts)
 	for zone, zone_values in pairs(opts.components) do
 		for index_in_zone, component in ipairs(zone_values) do
@@ -48,11 +71,6 @@ M.format_opts = function(opts)
 		end
 	end
 	return opts
-end
-
-M.copy_highlight = function(old, new)
-	local opts = vim.api.nvim_get_hl_by_name(old, true)
-	vim.api.nvim_set_hl(0, new, { fg = opts.foreground, bg = opts.background })
 end
 
 M.is_color = function(color) return string.match(color, "^#%x%x%x%x%x%x$") end

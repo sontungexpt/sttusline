@@ -4,18 +4,16 @@ local configs = {
 	components = {
 		left = {
 			-- "mode",
-			-- "filename",
+			"filename",
 			-- "git-branch",
 			-- "git-signs",
-			-- Component
-		},
-		center = {
 			"diagnostics",
 		},
+		center = {},
 		right = {
-			-- 	"lsps-formatters",
+			"lsps-formatters",
 			-- 	"indentation",
-			-- 	"encoding",
+			"encoding",
 			-- 	"position",
 			-- 	"position-progess",
 		},

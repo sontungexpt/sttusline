@@ -1,45 +1,44 @@
-local HIGHLIGHT_PREFIX = require("sttusline.constant").DIAGNOSTICS_HIGHLIGHT_PREFIX
+local HIGHLIGHT_PREFIX = "STTUSLINE_DIAGNOSTICS_"
 local utils = require("sttusline.utils")
 local colors = require("sttusline.color")
 local diag = vim.diagnostic
 
-local diagnostics = require("sttusline.component"):new()
+local Diagnostics = require("sttusline.component"):new()
 
-diagnostics.config = {
+Diagnostics.config = {
 	icons = {
-		error = " ",
-		warn = " ",
-		hint = "󰌵 ",
-		info = " ",
+		ERROR = " ",
+		WARN = " ",
+		HINT = "󰌵 ",
+		INFO = " ",
 	},
 	diagnostics_color = {
-		error = colors.red,
-		warn = colors.yellow,
-		info = colors.blue,
-		hint = colors.cyan,
+		ERROR = colors.red,
+		WARN = colors.yellow,
+		HINT = colors.blue,
+		INFO = colors.cyan,
 	},
 }
 
-diagnostics.event = {
-	"CursorHold",
-	"CursorHoldI",
-	"BufWritePost",
+Diagnostics.colors = {
+	bg = colors.lualine_bg,
 }
 
-diagnostics.update = function()
-	local result = {}
-	local icons = diagnostics.config.icons
-	local diagnostics_color = diagnostics.config.diagnostics_color
+Diagnostics.user_event = "LspRequest"
 
-	local order = { "error", "warn", "info", "hint" }
+Diagnostics.update = function()
+	local result = {}
+	local icons = Diagnostics.config.icons
+	local diagnostics_color = Diagnostics.config.diagnostics_color
+
+	local order = { "ERROR", "WARN", "INFO", "HINT" }
 	for _, key in ipairs(order) do
-		local ukey = string.upper(key)
-		local count = #diag.get(0, { severity = diag.severity[ukey] })
+		local count = #diag.get(0, { severity = diag.severity[key] })
 
 		if count > 0 then
 			local color = diagnostics_color[key]
 			if color then
-				local highlight_color = utils.is_color(color) and HIGHLIGHT_PREFIX .. ukey or color
+				local highlight_color = utils.is_color(color) and HIGHLIGHT_PREFIX .. key or color
 				table.insert(result, utils.add_highlight_name(icons[key] .. count, highlight_color))
 			end
 		end
@@ -48,12 +47,11 @@ diagnostics.update = function()
 	return table.concat(result, " ")
 end
 
-diagnostics.on_load = function()
-	local diagnostics_color = diagnostics.config.diagnostics_color
+Diagnostics.on_load = function()
+	local diagnostics_color = Diagnostics.config.diagnostics_color
 	for key, color in pairs(diagnostics_color) do
-		local ukey = string.upper(key)
-		if utils.is_color(color) then vim.api.nvim_set_hl(0, HIGHLIGHT_PREFIX .. ukey, { fg = color }) end
+		if utils.is_color(color) then vim.api.nvim_set_hl(0, HIGHLIGHT_PREFIX .. key, { fg = color }) end
 	end
 end
 
-return diagnostics
+return Diagnostics
