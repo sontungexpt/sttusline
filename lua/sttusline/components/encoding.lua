@@ -1,8 +1,9 @@
-local colors = require("sttusline.color")
-
+local colors = require("sttusline.utils.color")
 local Encoding = require("sttusline.component"):new()
 
-local icons = {
+Encoding.colors = { bg = colors.yellow, fg = colors.black }
+
+Encoding.config = {
 	["utf-8"] = "󰉿",
 	["utf-16"] = "",
 	["utf-32"] = "",
@@ -11,11 +12,9 @@ local icons = {
 	["utf-16be"] = "",
 }
 
-Encoding.colors = { bg = colors.yellow, fg = colors.black }
-
 Encoding.update = function()
 	local enc = vim.bo.fenc ~= "" and vim.bo.fenc or vim.o.enc
-	return icons[enc] or enc
+	return Encoding.config[enc] or enc
 end
 
 return Encoding

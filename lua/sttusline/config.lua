@@ -10,11 +10,15 @@ local configs = {
 	},
 	extensions = {},
 	components = {
-		"filename",
+		"mode",
+		-- "filename",
 		"diagnostics",
 		"%=",
 		"lsps-formatters",
+		"indent",
 		"encoding",
+		"pos-cursor",
+		"pos-cursor-progress",
 	},
 }
 

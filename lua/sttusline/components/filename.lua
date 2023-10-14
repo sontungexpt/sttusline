@@ -2,7 +2,7 @@ local FILENAME_HIGHLIGHT = "STTUSLINE_FILE_NAME"
 local ICON_HIGHLIGHT = "STTUSLINE_FILE_ICON"
 local fn = vim.fn
 local hl = vim.api.nvim_set_hl
-local colors = require("sttusline.color")
+local colors = require("sttusline.utils.color")
 local utils = require("sttusline.utils")
 
 local Filename = require("sttusline.component"):new()

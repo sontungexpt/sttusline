@@ -1,4 +1,5 @@
-local notify = require("sttusline.notify")
+local Component = require("sttusline.component")
+
 local COMPONENT_PARENT_MODULE = "sttusline.components"
 
 local M = {}
@@ -29,7 +30,7 @@ M.foreach_component = function(opts, callback, empty_zone_component_callback)
 					opts.components[index] = real_comp
 					callback(real_comp, index)
 				else
-					notify.error("Failed to load component: " .. component)
+					require("sttusline.utils.notify").error("Failed to load component: " .. component)
 				end
 			end
 		else
@@ -40,8 +41,6 @@ end
 
 M.is_color = function(color) return color:match("^#%x%x%x%x%x%x$") end
 
-M.is_component = function(obj)
-	return type(obj) == "table" and getmetatable(obj) == require("sttusline.component")
-end
+M.is_component = function(obj) return type(obj) == "table" and getmetatable(obj) == Component end
 
 return M

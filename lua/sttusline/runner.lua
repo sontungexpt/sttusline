@@ -9,7 +9,9 @@ local HIGHLIGHT_COMPONENT_PREFIX = "STTUSLINE_COMPONENT_"
 
 -- module
 local utils = require("sttusline.utils")
+local notify = require("sttusline.utils.notify")
 
+-- local variables
 local timer = nil
 local statusline = {}
 local event_components = {
@@ -22,6 +24,16 @@ local timer_components = {
 }
 
 M.update_statusline = function() vim.opt.statusline = table.concat(statusline, "") end
+
+M.hide_statusline = function()
+	vim.opt.statusline = ""
+	if timer then timer:stop() end
+end
+
+M.restore_statusline = function()
+	M.update_statusline()
+	if timer then timer:start() end
+end
 
 M.setup = function(opts)
 	M.init(opts)
@@ -95,9 +107,7 @@ M.update_component_value = function(component, index)
 		statusline[index] = utils.add_highlight_name(value, HIGHLIGHT_COMPONENT_PREFIX .. index)
 	else
 		statusline[index] = ""
-		require("sttusline.notify").error(
-			"Value return in update function of opts.component[" .. index .. "] must be string"
-		)
+		notify.error("opts.component[" .. index .. "].update() must return string")
 	end
 end
 

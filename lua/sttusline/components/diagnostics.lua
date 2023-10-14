@@ -1,27 +1,23 @@
 local HIGHLIGHT_PREFIX = "STTUSLINE_DIAGNOSTICS_"
+
 local utils = require("sttusline.utils")
-local colors = require("sttusline.color")
 local diag = vim.diagnostic
 
 local Diagnostics = require("sttusline.component"):new()
 
 Diagnostics.config = {
 	icons = {
-		ERROR = " ",
-		WARN = " ",
-		HINT = "󰌵 ",
-		INFO = " ",
+		ERROR = "",
+		INFO = "",
+		HINT = "󰌵",
+		WARN = "",
 	},
 	diagnostics_color = {
-		ERROR = "DiagnosticSignError",
-		WARN = "DiagnosticSignWarn",
-		HINT = "DiagnosticSignHint",
-		INFO = "DiagnosticSignInfo",
+		ERROR = "DiagnosticError",
+		WARN = "DiagnosticWarn",
+		HINT = "DiagnosticHint",
+		INFO = "DiagnosticInfo",
 	},
-}
-
-Diagnostics.colors = {
-	bg = colors.lualine_bg,
 }
 
 Diagnostics.user_event = "LspRequest"
@@ -39,7 +35,7 @@ Diagnostics.update = function()
 			local color = diagnostics_color[key]
 			if color then
 				local highlight_color = utils.is_color(color) and HIGHLIGHT_PREFIX .. key or color
-				table.insert(result, utils.add_highlight_name(icons[key] .. count, highlight_color))
+				table.insert(result, utils.add_highlight_name(icons[key] .. " " .. count, highlight_color))
 			end
 		end
 	end
