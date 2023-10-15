@@ -40,6 +40,7 @@ NewComponent.set_update(function() return "" end)
 NewComponent.set_condition(function() return true end)
 
 -- The function will call on the first time component load
+-- Example: You can use this function to add highlight with vim.api.nvim_set_hl()
 NewComponent.set_onload(function() end)
 
 return NewComponent

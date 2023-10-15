@@ -1,8 +1,5 @@
 local is_component = require("sttusline.utils").is_component
-
 local M = {}
-
-vim.g.sttusline_winid = 0
 
 local configs = {
 	laststatus = 3,
