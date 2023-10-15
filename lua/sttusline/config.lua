@@ -14,7 +14,8 @@ local configs = {
 	components = {
 		"mode",
 		"filename",
-		"git-branch",
+		-- "git-branch",
+		"git-diff",
 		"diagnostics",
 		"%=",
 		"lsps-formatters",

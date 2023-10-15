@@ -122,12 +122,14 @@ M.update_on_trigger = function(table)
 end
 
 M.run = function(event_name)
-	if event_name ~= nil then
-		M.update_on_trigger(event_components[event_name])
-	else
-		M.update_on_trigger(timer_components)
-	end
-	M.update_statusline()
+	vim.defer_fn(function()
+		if event_name ~= nil then
+			M.update_on_trigger(event_components[event_name])
+		else
+			M.update_on_trigger(timer_components)
+		end
+		M.update_statusline()
+	end, 0)
 end
 
 return M

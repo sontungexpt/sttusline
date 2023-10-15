@@ -2,6 +2,7 @@ local FILENAME_HIGHLIGHT = "STTUSLINE_FILE_NAME"
 local ICON_HIGHLIGHT = "STTUSLINE_FILE_ICON"
 
 local fn = vim.fn
+local get_option = vim.api.nvim_buf_get_option
 local hl = vim.api.nvim_set_hl
 
 local colors = require("sttusline.utils.color")
@@ -26,11 +27,13 @@ Filename.set_update(function()
 	end
 
 	if not icon then
-		local buftype = vim.api.nvim_buf_get_option(0, "buftype")
+		local buftype = get_option(0, "buftype")
+		local filetype = get_option(0, "filetype")
 		if buftype == "terminal" then
 			icon, color_icon = "", colors.blue
 			filename = "Terminal"
 		end
+		if filetype == "NvimTree" then filename = "NvimTree" end
 	end
 
 	hl(0, ICON_HIGHLIGHT, { fg = color_icon })
