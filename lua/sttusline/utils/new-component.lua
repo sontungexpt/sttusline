@@ -3,41 +3,44 @@ local fn = vim.fn
 
 local NEW_COMPONENT_TEMPLATE = [[
 -- Change NewComponent to your component name
-local NewComponent = require("sttusline.component"):new()
+local NewComponent = require("sttusline.set_component").new()
 
 -- The component will be update when the event is triggered
--- To disable default event, set NewComponent.event = {}
-NewComponent.event = {}
+-- To disable default event, set NewComponent.set_event = {}
+NewComponent.set_event {}
 
 -- The component will be update when the user event is triggered
--- To disable default user_event, set NewComponent.user_event = {}
-NewComponent.user_event = { "VeryLazy" }
+-- To disable default user_event, set NewComponent.set_user_event = {}
+NewComponent.set_user_event { "VeryLazy" }
 
 -- The component will be update every time interval
-NewComponent.timing = false
+NewComponent.set_timing(false)
 
--- The component will be update when the require("sttusline").setup() is called
-NewComponent.lazy = true
+-- The component will be update when the require("sttusline").set_setup() is called
+NewComponent.set_lazy(true)
 
 -- The config of the component
-NewComponent.config = {}
+-- After set_config, the config will be available in the component
+-- You can access the config by NewComponent.get_config()
+NewComponent.set_config {}
 
 -- The number of spaces to add before and after the component
-NewComponent.padding = 1 -- { left = 1, right = 1 }
+NewComponent.set_padding(1)
+-- or NewComponent.set_padding{ left = 1, right = 1 }
 
 -- The colors of the component
-NewComponent.colors = {} -- { fg = colors.black, bg = colors.white }
+NewComponent.set_colors {} -- { fg = colors.set_black, bg = colors.set_white }
 
 -- The function will return the value of the component to display on the statusline
 -- Must return a string
-NewComponent.update = function() return "" end
+NewComponent.set_update(function() return "" end)
 
 -- The function will return the condition to display the component when the component is update
 -- Must return a boolean
-NewComponent.condition = function() return true end
+NewComponent.set_condition(function() return true end)
 
 -- The function will call on the first time component load
-NewComponent.on_load = function() end
+NewComponent.set_onload(function() end)
 
 return NewComponent
 ]]

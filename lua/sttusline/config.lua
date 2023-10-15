@@ -29,13 +29,9 @@ M.init_config = function(opts) vim.opt.laststatus = opts.laststatus end
 --- @treturn table opts : formatted user opts
 M.format_opts_components = function(opts)
 	local formatted_opts = {}
-	for k, v in pairs(opts.components) do
+	for _, v in pairs(opts.components) do
 		if type(v) == "string" and #v > 0 then
-			if k == 1 or k == #opts.components then
-				if v ~= "%=" then table.insert(formatted_opts, v) end
-			else
-				table.insert(formatted_opts, v)
-			end
+			table.insert(formatted_opts, v)
 		elseif is_component(v) then
 			table.insert(formatted_opts, v)
 		end

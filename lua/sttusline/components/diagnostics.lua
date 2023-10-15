@@ -3,9 +3,9 @@ local HIGHLIGHT_PREFIX = "STTUSLINE_DIAGNOSTICS_"
 local utils = require("sttusline.utils")
 local diag = vim.diagnostic
 
-local Diagnostics = require("sttusline.component"):new()
+local Diagnostics = require("sttusline.component").new()
 
-Diagnostics.config = {
+Diagnostics.set_config {
 	icons = {
 		ERROR = "",
 		INFO = "",
@@ -20,12 +20,12 @@ Diagnostics.config = {
 	},
 }
 
-Diagnostics.user_event = "LspRequest"
+Diagnostics.set_user_event("LspRequest")
 
-Diagnostics.update = function()
+Diagnostics.set_update(function()
 	local result = {}
-	local icons = Diagnostics.config.icons
-	local diagnostics_color = Diagnostics.config.diagnostics_color
+	local icons = Diagnostics.get_config().icons
+	local diagnostics_color = Diagnostics.get_config().diagnostics_color
 
 	local order = { "ERROR", "WARN", "INFO", "HINT" }
 	for _, key in ipairs(order) do
@@ -41,13 +41,13 @@ Diagnostics.update = function()
 	end
 
 	return table.concat(result, " ")
-end
+end)
 
-Diagnostics.on_load = function()
-	local diagnostics_color = Diagnostics.config.diagnostics_color
+Diagnostics.set_onload(function()
+	local diagnostics_color = Diagnostics.get_config().diagnostics_color
 	for key, color in pairs(diagnostics_color) do
 		if utils.is_color(color) then vim.api.nvim_set_hl(0, HIGHLIGHT_PREFIX .. key, { fg = color }) end
 	end
-end
+end)
 
 return Diagnostics

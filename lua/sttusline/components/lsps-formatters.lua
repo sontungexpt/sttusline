@@ -2,11 +2,11 @@ local colors = require("sttusline.utils.color")
 
 local Lsps_Formatters = require("sttusline.component"):new()
 
-Lsps_Formatters.colors = { fg = colors.magenta }
-Lsps_Formatters.event = { "LspAttach", "LspDetach", "BufWritePost", "BufEnter" } -- for null-ls and conform
-Lsps_Formatters.user_event = {} -- disable user events
+Lsps_Formatters.set_colors { fg = colors.magenta }
+Lsps_Formatters.set_event { "LspAttach", "LspDetach", "BufWritePost", "BufEnter" } -- for null-ls and conform
+Lsps_Formatters.set_user_event {} -- disable user events
 
-Lsps_Formatters.update = function()
+Lsps_Formatters.set_update(function()
 	local buf_clients = vim.lsp.buf_get_clients()
 	if not buf_clients or #buf_clients == 0 then return "NO LSP  " end
 
@@ -79,6 +79,6 @@ Lsps_Formatters.update = function()
 	end
 
 	return table.concat(vim.fn.uniq(server_names), ", ")
-end
+end)
 
 return Lsps_Formatters

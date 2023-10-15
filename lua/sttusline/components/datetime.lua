@@ -1,16 +1,16 @@
-local Datetime = require("sttusline.component"):new()
+local Datetime = require("sttusline.component").new()
 
-Datetime.config = {
+Datetime.set_config {
 	style = "default",
 }
 
-Datetime.timing = true
+Datetime.set_timing(true)
 
-Datetime.update = function()
-	local style = Datetime.config.style
+Datetime.set_update(function()
+	local style = Datetime.get_config().style
 	local fmt = style
 	if style == "default" then
-		fmt = "%A, %B %d | %H:%M"
+		fmt = "%A, %B %d | %H.%M"
 	elseif style == "us" then
 		fmt = "%m/%d/%Y"
 	elseif style == "uk" then
@@ -19,6 +19,6 @@ Datetime.update = function()
 		fmt = "%Y-%m-%d"
 	end
 	return os.date(fmt)
-end
+end)
 
 return Datetime

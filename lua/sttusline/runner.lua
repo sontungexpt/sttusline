@@ -44,17 +44,17 @@ end
 M.init = function(opts)
 	utils.foreach_component(opts, function(component, index)
 		statusline[index] = ""
-		component:load()
+		component.load()
 		M.init_component_autocmds(component, index)
 		M.init_timer(component, index)
 		M.set_component_highlight(component, index)
-		if not component.lazy then M.update_component_value(component, index) end
+		if not component.get_lazy() then M.update_component_value(component, index) end
 	end, function(empty_zone_comp, index) statusline[index] = empty_zone_comp end)
 end
 
 M.init_component_autocmds = function(component, index)
-	M.create_autocmd(component.event, component, index, function(e) M.run(e.event) end)
-	M.create_autocmd(component.user_event, component, index, function(e) M.run(e.match) end, true)
+	M.create_autocmd(component.get_event(), component, index, function(e) M.run(e.event) end)
+	M.create_autocmd(component.get_user_event(), component, index, function(e) M.run(e.match) end, true)
 end
 
 M.create_autocmd = function(events, component, index, callback, is_user_event)
@@ -72,7 +72,7 @@ M.create_autocmd = function(events, component, index, callback, is_user_event)
 end
 
 M.init_timer = function(component, index)
-	if component.timing then
+	if component.get_timing() then
 		tbl_insert(timer_components, { component, index })
 		if timer == nil then
 			timer = vim.loop.new_timer()
@@ -82,8 +82,8 @@ M.init_timer = function(component, index)
 end
 
 M.set_component_highlight = function(component, index)
-	if next(component.colors) then
-		api.nvim_set_hl(0, HIGHLIGHT_COMPONENT_PREFIX .. index, component.colors)
+	if next(component.get_colors()) then
+		api.nvim_set_hl(0, HIGHLIGHT_COMPONENT_PREFIX .. index, component.get_colors())
 	end
 end
 
@@ -95,15 +95,15 @@ M.set_highlight = function(opts)
 end
 
 M.update_component_value = function(component, index)
-	local should_display = component.condition()
+	local should_display = component.get_condition()()
 	if type(should_display) == "boolean" and not should_display then
 		statusline[index] = ""
 		return
 	end
 
-	local value = component.update()
+	local value = component.get_update()()
 	if type(value) == "string" then
-		value = utils.add_padding(value, component.padding)
+		value = utils.add_padding(value, component.get_padding())
 		statusline[index] = utils.add_highlight_name(value, HIGHLIGHT_COMPONENT_PREFIX .. index)
 	else
 		statusline[index] = ""
