@@ -4,10 +4,14 @@ local M = {}
 local configs = {
 	laststatus = 3,
 	disabled = {
-		filetypes = {},
-		buftypes = {},
+		filetypes = {
+			"NvimTree",
+			"lazy",
+		},
+		buftypes = {
+			"terminal",
+		},
 	},
-	extensions = {},
 	components = {
 		"mode",
 		"filename",

@@ -46,4 +46,16 @@ M.is_color = function(color) return color:match("^#%x%x%x%x%x%x$") end
 
 M.is_component = function(obj) return type(obj) == "table" and getmetatable(obj) == Component end
 
+M.is_disabled = function(opts)
+	local filetype = vim.api.nvim_buf_get_option(0, "filetype")
+	local buftype = vim.api.nvim_buf_get_option(0, "buftype")
+	if
+		vim.tbl_contains(opts.disabled.filetypes, filetype)
+		or vim.tbl_contains(opts.disabled.buftypes, buftype)
+	then
+		return true
+	end
+	return false
+end
+
 return M

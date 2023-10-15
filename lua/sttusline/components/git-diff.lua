@@ -17,15 +17,17 @@ GitDiff.set_config {
 		changed = "DiagnosticWarn",
 		removed = "DiagnosticError",
 	},
+	order = { "added", "changed", "removed" },
 }
 
 GitDiff.set_update(function()
 	if not vim.b.gitsigns_head or vim.b.gitsigns_git_status or vim.o.columns < 120 then return "" end
 	local git_status = vim.b.gitsigns_status_dict
 
-	local icons = GitDiff.get_config().icons
-	local diff_colors = GitDiff.get_config().colors
-	local order = { "added", "changed", "removed" }
+	local config = GitDiff.get_config()
+	local order = config.order
+	local icons = config.icons
+	local diff_colors = config.colors
 
 	local result = {}
 	for _, v in ipairs(order) do

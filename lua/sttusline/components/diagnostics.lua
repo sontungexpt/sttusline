@@ -18,16 +18,19 @@ Diagnostics.set_config {
 		HINT = "DiagnosticHint",
 		INFO = "DiagnosticInfo",
 	},
+	order = { "ERROR", "WARN", "INFO", "HINT" },
 }
 
 Diagnostics.set_user_event("LspRequest")
 
 Diagnostics.set_update(function()
 	local result = {}
-	local icons = Diagnostics.get_config().icons
-	local diagnostics_color = Diagnostics.get_config().diagnostics_color
 
-	local order = { "ERROR", "WARN", "INFO", "HINT" }
+	local config = Diagnostics.get_config()
+	local icons = config.icons
+	local diagnostics_color = config.diagnostics_color
+	local order = config.order
+
 	for _, key in ipairs(order) do
 		local count = #diag.get(0, { severity = diag.severity[key] })
 

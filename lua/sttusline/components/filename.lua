@@ -14,7 +14,7 @@ Filename.set_config {
 	color = { fg = colors.orange, bg = colors.bg },
 }
 
-Filename.set_event { "BufEnter", "BufNewFile" }
+Filename.set_event { "BufEnter", "BufNewFile", "WinEnter" }
 
 Filename.set_update(function()
 	local has_devicons, devicons = pcall(require, "nvim-web-devicons")
@@ -30,10 +30,21 @@ Filename.set_update(function()
 		local buftype = get_option(0, "buftype")
 		local filetype = get_option(0, "filetype")
 		if buftype == "terminal" then
-			icon, color_icon = "", colors.blue
+			icon, color_icon = " ", colors.blue
 			filename = "Terminal"
+		elseif filetype == "NvimTree" then
+			icon, color_icon = "󱏒 ", colors.blue
+			filename = "NvimTree"
+		elseif filetype == "lazy" then
+			icon, color_icon = "󰏔 ", colors.blue
+			filename = "Lazy"
+		elseif filetype == "TelescopePrompt" then
+			icon, color_icon = " ", colors.blue
+			filename = "Telescope"
+		elseif filetype == "mason" then
+			icon, color_icon = "󰏔 ", colors.blue
+			filename = "Mason"
 		end
-		if filetype == "NvimTree" then filename = "NvimTree" end
 	end
 
 	hl(0, ICON_HIGHLIGHT, { fg = color_icon })
