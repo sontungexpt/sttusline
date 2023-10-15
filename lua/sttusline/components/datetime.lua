@@ -18,7 +18,7 @@ Datetime.set_update(function()
 	elseif style == "iso" then
 		fmt = "%Y-%m-%d"
 	end
-	return os.date(fmt)
+	return os.date(fmt) .. ""
 end)
 
 return Datetime

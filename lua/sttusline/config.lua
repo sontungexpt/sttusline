@@ -2,14 +2,16 @@ local is_component = require("sttusline.utils").is_component
 local M = {}
 
 local configs = {
+	-- 0 | 1 | 2 | 3
+	-- recommended: 3
 	laststatus = 3,
 	disabled = {
 		filetypes = {
-			"NvimTree",
-			"lazy",
+			-- "NvimTree",
+			-- "lazy",
 		},
 		buftypes = {
-			"terminal",
+			-- "terminal",
 		},
 	},
 	components = {
@@ -26,6 +28,13 @@ local configs = {
 		"pos-cursor-progress",
 	},
 }
+
+M.setup = function(user_opts)
+	user_opts = M.apply_user_config(user_opts)
+	M.format_opts_components(user_opts)
+	M.init_config(user_opts)
+	return user_opts
+end
 
 M.init_config = function(opts) vim.opt.laststatus = opts.laststatus end
 
@@ -46,8 +55,10 @@ M.format_opts_components = function(opts)
 end
 
 M.apply_user_config = function(opts)
-	for k, v in pairs(opts) do
-		configs[k] = v
+	if type(opts) == "table" then
+		for k, v in pairs(opts) do
+			configs[k] = v
+		end
 	end
 	return configs
 end

@@ -30,20 +30,20 @@ Filename.set_update(function()
 		local buftype = get_option(0, "buftype")
 		local filetype = get_option(0, "filetype")
 		if buftype == "terminal" then
-			icon, color_icon = " ", colors.blue
+			icon, color_icon = "", colors.red
 			filename = "Terminal"
 		elseif filetype == "NvimTree" then
-			icon, color_icon = "󱏒 ", colors.blue
+			icon, color_icon = "󱏒", colors.red
 			filename = "NvimTree"
-		elseif filetype == "lazy" then
-			icon, color_icon = "󰏔 ", colors.blue
-			filename = "Lazy"
 		elseif filetype == "TelescopePrompt" then
-			icon, color_icon = " ", colors.blue
+			icon, color_icon = "", colors.red
 			filename = "Telescope"
 		elseif filetype == "mason" then
-			icon, color_icon = "󰏔 ", colors.blue
+			icon, color_icon = "󰏔", colors.red
 			filename = "Mason"
+		elseif filetype == "lazy" then
+			icon, color_icon = "󰏔", colors.red
+			filename = "Lazy"
 		end
 	end
 

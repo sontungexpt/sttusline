@@ -45,18 +45,26 @@ end
 M.update_statusline = function() opt.statusline = table.concat(statusline, "") end
 
 M.disable_for_filetype = function(opts)
+	local event_trigger = false
 	autocmd({ "BufEnter", "WinEnter" }, {
 		pattern = "*",
-		group = augroup(AUTOCMD_GROUP_PREFIX .. "DISABLED", { clear = true }),
+		group = augroup(AUTOCMD_GROUP_PREFIX .. "DISABLED_ENTER", { clear = true }),
 		callback = function()
+			if event_trigger then return end
+			event_trigger = true
 			vim.defer_fn(function()
-				if not statusline_hidden and utils.is_disabled(opts) then
+				if utils.is_disabled(opts) then
 					M.hide_statusline()
 				else
-					M.restore_statusline()
+					M.restore_statusline(opts)
 				end
 			end, 5)
 		end,
+	})
+	autocmd({ "BufLeave", "WinLeave" }, {
+		pattern = "*",
+		group = augroup(AUTOCMD_GROUP_PREFIX .. "DISABLED_LEAVE", { clear = true }),
+		callback = function() event_trigger = false end,
 	})
 end
 
@@ -69,11 +77,12 @@ M.hide_statusline = function()
 	end
 end
 
-M.restore_statusline = function()
+M.restore_statusline = function(opts)
 	if statusline_hidden then
 		statusline_hidden = false
 		M.reinit_event()
 		M.start_timer()
+		M.update_all_components(opts)
 		M.update_statusline()
 	end
 end
@@ -193,6 +202,13 @@ M.update_component_value = function(component, index)
 		statusline[index] = ""
 		notify.error("opts.component[" .. index .. "].update() must return string")
 	end
+end
+
+M.update_all_components = function(opts)
+	utils.foreach_component(
+		opts,
+		function(component, index) M.update_component_value(component, index) end
+	)
 end
 
 M.update_on_trigger = function(table)

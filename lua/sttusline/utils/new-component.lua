@@ -65,6 +65,10 @@ M.create_component_template = function()
 		return
 	end
 
+	-- Create parent directory if not exists
+	local parent_dir = fn.fnamemodify(new_file_path, ":h")
+	if fn.isdirectory(parent_dir) ~= 1 then fn.mkdir(parent_dir, "p") end
+
 	local file = io.open(new_file_path, "w")
 	if file then
 		file:write(NEW_COMPONENT_TEMPLATE)

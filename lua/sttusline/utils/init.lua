@@ -26,7 +26,9 @@ M.foreach_component = function(opts, callback, empty_zone_component_callback)
 	for index, component in ipairs(opts.components) do
 		if type(component) == "string" then
 			if component == "%=" then
-				empty_zone_component_callback(component, index)
+				if type(empty_zone_component_callback) == "function" then
+					empty_zone_component_callback(component, index)
+				end
 			else
 				local status_ok, real_comp = pcall(require, COMPONENT_PARENT_MODULE .. "." .. component)
 				if status_ok then
@@ -42,7 +44,7 @@ M.foreach_component = function(opts, callback, empty_zone_component_callback)
 	end
 end
 
-M.is_color = function(color) return color:match("^#%x%x%x%x%x%x$") end
+M.is_color = function(color) return type(color) == "string" and color:match("^#%x%x%x%x%x%x$") end
 
 M.is_component = function(obj) return type(obj) == "table" and getmetatable(obj) == Component end
 
