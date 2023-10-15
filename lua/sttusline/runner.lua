@@ -104,7 +104,11 @@ M.update_component_value = function(component, index)
 	local value = component.get_update()()
 	if type(value) == "string" then
 		value = utils.add_padding(value, component.get_padding())
-		statusline[index] = utils.add_highlight_name(value, HIGHLIGHT_COMPONENT_PREFIX .. index)
+		if next(component.get_colors()) then
+			statusline[index] = utils.add_highlight_name(value, HIGHLIGHT_COMPONENT_PREFIX .. index)
+		else
+			statusline[index] = value
+		end
 	else
 		statusline[index] = ""
 		notify.error("opts.component[" .. index .. "].update() must return string")

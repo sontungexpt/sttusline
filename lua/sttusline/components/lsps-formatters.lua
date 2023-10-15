@@ -2,7 +2,7 @@ local colors = require("sttusline.utils.color")
 
 local Lsps_Formatters = require("sttusline.component"):new()
 
-Lsps_Formatters.set_colors { fg = colors.magenta }
+Lsps_Formatters.set_colors { fg = colors.magenta, bg = colors.bg }
 Lsps_Formatters.set_event { "LspAttach", "LspDetach", "BufWritePost", "BufEnter" } -- for null-ls and conform
 Lsps_Formatters.set_user_event {} -- disable user events
 

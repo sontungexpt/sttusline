@@ -1,7 +1,7 @@
 local colors = require("sttusline.utils.color")
 local Encoding = require("sttusline.component").new()
 
-Encoding.set_colors { bg = colors.yellow, fg = colors.black }
+Encoding.set_colors { fg = colors.yellow, bg = colors.bg }
 
 Encoding.set_config {
 	["utf-8"] = "󰉿",

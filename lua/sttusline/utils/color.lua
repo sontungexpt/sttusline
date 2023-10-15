@@ -1,4 +1,5 @@
 return {
+	bg = "#1e2030",
 	yellow = "#ffc021",
 	cyan = "#56b6c2",
 	darkblue = "#081633",
@@ -14,6 +15,5 @@ return {
 	gray = "#5c6370",
 	purple = "#c688eb",
 	pink = "#eb7fdc",
-	lualine_bg = "#1e2030",
 	trans = "#00000000",
 }

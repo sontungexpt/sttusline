@@ -17,7 +17,10 @@ M.add_padding = function(str, value)
 	end
 end
 
-M.add_highlight_name = function(str, highlight_name) return "%#" .. highlight_name .. "#" .. str .. "%*" end
+M.add_highlight_name = function(str, highlight_name)
+	vim.validate { str = { str, "string" }, highlight_name = { highlight_name, "string" } }
+	return "%#" .. highlight_name .. "#" .. str .. "%*"
+end
 
 M.foreach_component = function(opts, callback, empty_zone_component_callback)
 	for index, component in ipairs(opts.components) do

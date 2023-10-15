@@ -2,6 +2,8 @@ local is_component = require("sttusline.utils").is_component
 
 local M = {}
 
+vim.g.sttusline_winid = 0
+
 local configs = {
 	laststatus = 3,
 	disabled = {
@@ -11,7 +13,8 @@ local configs = {
 	extensions = {},
 	components = {
 		"mode",
-		-- "filename",
+		"filename",
+		"git-branch",
 		"diagnostics",
 		"%=",
 		"lsps-formatters",
