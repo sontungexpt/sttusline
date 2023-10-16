@@ -6,12 +6,15 @@ local autocmd = api.nvim_create_autocmd
 local augroup = api.nvim_create_augroup
 local tbl_insert = table.insert
 
-local AUTOCMD_GROUP_PREFIX = "STTUSLINE_AUGROUP_"
 local HIGHLIGHT_COMPONENT_PREFIX = "STTUSLINE_COMPONENT_"
+local AUTOCMD_GROUP_COMPONENT = "STTUSLINE_COMPONENT_EVENTS"
+local AUTOCMD_GROUP_CORE = "STTUSLINE_DISABLE"
 
 -- module
 local utils = require("sttusline.utils")
 local notify = require("sttusline.utils.notify")
+local component_autocmd_group = nil
+local core_autocmd_group = nil
 
 -- local variables
 local statusline_hidden = false
@@ -39,16 +42,39 @@ local timer_components = {
 M.setup = function(opts)
 	M.init(opts)
 	M.update_statusline()
+	M.refresh_highlight_on_colorscheme(opts)
 	M.disable_for_filetype(opts)
 end
 
 M.update_statusline = function() opt.statusline = table.concat(statusline, "") end
 
+M.get_component_autocmd_group = function()
+	if component_autocmd_group == nil then
+		component_autocmd_group = augroup(AUTOCMD_GROUP_COMPONENT, { clear = true })
+	end
+	return component_autocmd_group
+end
+
+M.get_core_autocmd_group = function()
+	if core_autocmd_group == nil then
+		core_autocmd_group = augroup(AUTOCMD_GROUP_CORE, { clear = true })
+	end
+	return core_autocmd_group
+end
+
+M.refresh_highlight_on_colorscheme = function(opts)
+	autocmd("ColorScheme", {
+		pattern = "*",
+		group = M.get_core_autocmd_group(),
+		callback = function() M.set_all_component_highlight(opts) end,
+	})
+end
+
 M.disable_for_filetype = function(opts)
 	local event_trigger = false
 	autocmd({ "BufEnter", "WinEnter" }, {
 		pattern = "*",
-		group = augroup(AUTOCMD_GROUP_PREFIX .. "DISABLED_ENTER", { clear = true }),
+		group = M.get_core_autocmd_group(),
 		callback = function()
 			if event_trigger then return end
 			event_trigger = true
@@ -63,7 +89,7 @@ M.disable_for_filetype = function(opts)
 	})
 	autocmd({ "BufLeave", "WinLeave" }, {
 		pattern = "*",
-		group = augroup(AUTOCMD_GROUP_PREFIX .. "DISABLED_LEAVE", { clear = true }),
+		group = M.get_core_autocmd_group(),
 		callback = function() event_trigger = false end,
 	})
 end
@@ -88,11 +114,8 @@ M.restore_statusline = function(opts)
 end
 
 M.remove_event = function()
-	for _, events in pairs(event_components) do
-		for event, _ in pairs(events) do
-			api.nvim_del_augroup_by_name(AUTOCMD_GROUP_PREFIX .. event)
-		end
-	end
+	api.nvim_del_augroup_by_name(AUTOCMD_GROUP_COMPONENT)
+	component_autocmd_group = nil
 end
 
 M.reinit_event = function()
@@ -124,7 +147,7 @@ end
 M.create_default_autocmd = function(event)
 	autocmd(event, {
 		pattern = "*",
-		group = augroup(AUTOCMD_GROUP_PREFIX .. event, { clear = true }),
+		group = M.get_component_autocmd_group(),
 		callback = function(e) M.run(e.event) end,
 	})
 end
@@ -132,7 +155,7 @@ end
 M.create_user_autocmd = function(event)
 	autocmd("User", {
 		pattern = event,
-		group = augroup(AUTOCMD_GROUP_PREFIX .. event, { clear = true }),
+		group = M.get_component_autocmd_group(),
 		callback = function(e) M.run(e.match, true) end,
 	})
 end
@@ -176,12 +199,7 @@ M.set_component_highlight = function(component, index)
 	end
 end
 
-M.set_highlight = function(opts)
-	utils.foreach_component(
-		opts,
-		function(component, index) M.set_component_highlight(component, index) end
-	)
-end
+M.set_all_component_highlight = function(opts) utils.foreach_component(opts, M.set_component_highlight) end
 
 M.update_component_value = function(component, index)
 	local should_display = component.get_condition()()
@@ -204,12 +222,7 @@ M.update_component_value = function(component, index)
 	end
 end
 
-M.update_all_components = function(opts)
-	utils.foreach_component(
-		opts,
-		function(component, index) M.update_component_value(component, index) end
-	)
-end
+M.update_all_components = function(opts) utils.foreach_component(opts, M.update_component_value) end
 
 M.update_on_trigger = function(table)
 	for _, values in ipairs(table) do
