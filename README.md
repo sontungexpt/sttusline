@@ -95,6 +95,8 @@ any idea to create a new component, please open an issue or pull request.
 or copy the template to your component module
 
 ```lua
+-- Change NewComponent to your component name
+local utils = require("sttusline.utils")
 local NewComponent = require("sttusline.set_component").new()
 
 -- The component will be update when the event is triggered
@@ -126,14 +128,29 @@ NewComponent.set_colors {} -- { fg = colors.set_black, bg = colors.set_white }
 -- The function will return the value of the component to display on the statusline
 -- Must return a string
 NewComponent.set_update(function() return "" end)
+-- NOTE:
+-- If you don't use NewComponent.set_colors{} and you want to customize the highlight of your component
+-- You should use utils.add_highlight_name(value, highlight_name) to add the highlight name to the value
+-- After that you can set the highlight of your component by using vim.api.nvim_set_hl(0, highlight_name, opts) (You should add this to NewComponent.set_onhighlight)
+-- The function utils.add_highlight_name(value,highlight_name) will return the value
+-- So you can use it like this:
+-- NewComponent.set_update(function() return utils.add_highlight_name("Hello", "HelloHighlight") end)
+-- NewComponent.set_onhighlight(function() vim.api.nvim_set_hl(0, "HelloHighlight", { fg = "#ffffff", bg = "#000000" }) end)
+
+
+-- The function will call when the component is highlight
+-- You should use it to set the highlight of the component
+-- Example:
+-- NewComponent.set_onhighlight(function() vim.api.nvim_set_hl(0, "ComponentHighlight", { fg = colors.set_black, bg = colors.set_white }) end)
+NewComponent.set_onhighlight(function() end)
 
 -- The function will return the condition to display the component when the component is update
 -- Must return a boolean
 NewComponent.set_condition(function() return true end)
 
 -- The function will call on the first time component load
--- Example: You can use this function to add highlight with vim.api.nvim_set_hl()
 NewComponent.set_onload(function() end)
+
 
 return NewComponent
 ```
