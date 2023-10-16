@@ -203,6 +203,7 @@ We provide you some default component:
 
 | **Component**         | **Description**                       |
 | --------------------- | ------------------------------------- |
+| `datetime`            | Show datetime                         |
 | `mode`                | Show current mode                     |
 | `filename`            | Show current filename                 |
 | `git-diff`            | Show git diff                         |
@@ -231,9 +232,10 @@ We provide you some default component:
         components = {
             -- "mode",
             -- "filename",
+            -- "datetime",
             -- "git-diff",
-            -- "diagnostics",
             -- "%=",
+            -- "diagnostics",
             -- "lsps-formatters",
             -- "indent",
             -- "encoding",
@@ -299,6 +301,16 @@ require("sttusline").setup {
 ```
 
 Some config I provide to override default component
+
+- datetime
+
+```lua
+    local datetime = require("sttusline.components.datetime")
+
+    datetime.set_config {
+      style = "default",
+    }
+```
 
 - mode
 
