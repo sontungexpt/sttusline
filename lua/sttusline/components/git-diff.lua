@@ -13,8 +13,8 @@ GitDiff.set_config {
 		removed = "",
 	},
 	colors = {
-		added = "DiagnosticInfo",
-		changed = "DiagnosticWarn",
+		added = "DiagnosticHint",
+		changed = "DiagnosticInfo",
 		removed = "DiagnosticError",
 	},
 	order = { "added", "changed", "removed" },
@@ -40,7 +40,7 @@ GitDiff.set_update(function()
 		end
 	end
 
-	return table.concat(result, " ")
+	return #result > 0 and table.concat(result, " ") or ""
 end)
 
 GitDiff.set_onhighlight(function()

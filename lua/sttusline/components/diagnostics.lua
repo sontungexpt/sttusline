@@ -43,7 +43,7 @@ Diagnostics.set_update(function()
 		end
 	end
 
-	return table.concat(result, " ")
+	return #result > 0 and table.concat(result, " ") or ""
 end)
 
 Diagnostics.set_onhighlight(function()
