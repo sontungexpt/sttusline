@@ -52,8 +52,8 @@ M.is_disabled = function(opts)
 	local filetype = vim.api.nvim_buf_get_option(0, "filetype")
 	local buftype = vim.api.nvim_buf_get_option(0, "buftype")
 	if
-		vim.tbl_contains(opts.disabled.filetypes, filetype)
-		or vim.tbl_contains(opts.disabled.buftypes, buftype)
+		vim.tbl_contains(opts.disabled.filetypes or {}, filetype)
+		or vim.tbl_contains(opts.disabled.buftypes or {}, buftype)
 	then
 		return true
 	end
