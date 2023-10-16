@@ -1,4 +1,3 @@
-local colors = require("sttusline.utils.color")
 local utils = require("sttusline.utils")
 
 local ADD_HIGHLIGHT_PREFIX = "STTUSLINE_GIT_DIFF_"
