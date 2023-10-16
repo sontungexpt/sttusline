@@ -2,7 +2,7 @@
 
 A very lightweight statusline plugin for neovim written in lua.
 
-This plugin lazy load all components and only update when needed
+This plugin lazy load all components and only update each component when needed.
 
 Because this plugin aim to be fast and small as possible. I don't focus on
 overriding default component. I focus on creating your custom component. So
@@ -17,17 +17,21 @@ maybe you need to know a little bit of lua to create your own component.
 
 ## A few words to say
 
-As you can see, this plugin is very small and fast. But maybe it't not perfect
+🎉 As you can see, this plugin is very small and fast. But maybe it't not perfect
 because I'm not a lua expert. So if you have any idea to improve this plugin,
 please open an issue or pull request. I'm very happy to hear from you.
 
-The default component is written for my personal use. So maybe you need to
+🍕 The default component is written for my personal use. So maybe you need to
 create your own component. I'm very happy to see your component. So if you have
-any idea to create a new component, please open an issue or pull request. I'm
+any idea to create a new component, please open an issue or pull request.
 
-The highlight feature of this plugin is very simple. So I hope you can contribute to this plugin to make it better.
+🛠️ At present, the highlight feature of this plugin is very simple. So I hope you can contribute to this plugin to make it better.
 
-I am trying to create git-branch and copilot component. But I don't have much time to do it. So I'm very happy to hear from you.
+🔥 I am trying to create git-branch and copilot component. But I don't have much time to do it. So I'm very happy to hear from you.
+
+## Preview
+
+![preview1](./docs/readme/preview1.png)
 
 ## Features
 
@@ -35,7 +39,7 @@ I am trying to create git-branch and copilot component. But I don't have much ti
 
 🛠️ Lazy load all components
 
-🍕 Only update component when needed, not update all statusline
+🍕 Only update each component when needed, not update all statusline
 
 🔥 Easy to create your component with lua
 
