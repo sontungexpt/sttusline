@@ -263,18 +263,19 @@ Although this plugin is not focus on overriding default component. But you can
 do it by override the default component by some functions I provide to you. But
 I recommend you to create your own component to reach the best performance.
 
-| **Function**     | Type of args                  | **Description**                                                                                         |
-| ---------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `set_event`      | table or string               | The component will be update when the event is triggered. If you call set_event{} no event will trigger |
-| `set_user_event` | tableor string                | Same as set_event buf for `User` autocmd                                                                |
-| `set_timing`     | boolean                       | If set_timing(true), component will update after 1 second                                               |
-| `set_lazy`       | boolean                       | Load component on startup(not recommended)                                                              |
-| `set_config`     | table                         | Set config to update component                                                                          |
-| `set_padding`    | number or table               | The number of spaces to add before and after the component                                              |
-| `set_colors`     | table                         | Colors highlight                                                                                        |
-| `set_update`     | function(must return string)  | The function will return the value of the component to display on the statusline                        |
-| `set_condition`  | function(must return boolean) | The function will return the condition to display the component when the component is update            |
-| `set_onload`     | function                      | The function will call on the first time component load                                                 |
+| **Function**      | Type of args                  | **Description**                                                                                         |
+| ----------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `set_event`       | table or string               | The component will be update when the event is triggered. If you call set_event{} no event will trigger |
+| `set_user_event`  | tableor string                | Same as set_event buf for `User` autocmd                                                                |
+| `set_timing`      | boolean                       | If set_timing(true), component will update after 1 second                                               |
+| `set_lazy`        | boolean                       | Load component on startup(not recommended)                                                              |
+| `set_config`      | table                         | Set config to update component                                                                          |
+| `set_padding`     | number or table               | The number of spaces to add before and after the component                                              |
+| `set_colors`      | table                         | Colors highlight                                                                                        |
+| `set_update`      | function(must return string)  | The function will return the value of the component to display on the statusline                        |
+| `set_condition`   | function(must return boolean) | The function will return the condition to display the component when the component is update            |
+| `set_onhighlight` | function                      | The function will call when the component is set highlight                                              |
+| `set_onload`      | function                      | The function will call on the first time component load                                                 |
 
 So to override default component you can do
 
