@@ -30,8 +30,12 @@ function Component.new()
 
 		-- Show the load status of the component
 		is_loaded = false,
+
 		-- The function will call on the first time component load
 		onload = function() end,
+
+		-- The function will call when the component is highlight
+		onhighlight = function() end,
 	}
 
 	local instance = {
@@ -95,6 +99,11 @@ function Component.new()
 		get_onload = function() return component_data.onload end,
 		set_onload = function(onload)
 			if type(onload) == "function" then component_data.onload = onload end
+		end,
+
+		get_onhighlight = function() return component_data.onhighlight end,
+		set_onhighlight = function(onhighlight)
+			if type(onhighlight) == "function" then component_data.onhighlight = onhighlight end
 		end,
 
 		load = function()

@@ -58,6 +58,6 @@ Filename.set_update(function()
 	end
 end)
 
-Filename.set_onload(function() hl(0, FILENAME_HIGHLIGHT, Filename.get_config().color) end)
+Filename.set_onhighlight(function() hl(0, FILENAME_HIGHLIGHT, Filename.get_config().color) end)
 
 return Filename

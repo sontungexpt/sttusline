@@ -46,7 +46,7 @@ Diagnostics.set_update(function()
 	return table.concat(result, " ")
 end)
 
-Diagnostics.set_onload(function()
+Diagnostics.set_onhighlight(function()
 	local diagnostics_color = Diagnostics.get_config().diagnostics_color
 	for key, color in pairs(diagnostics_color) do
 		if utils.is_color(color) then vim.api.nvim_set_hl(0, HIGHLIGHT_PREFIX .. key, { fg = color }) end

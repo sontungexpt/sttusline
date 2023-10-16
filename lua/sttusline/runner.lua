@@ -197,6 +197,8 @@ M.set_component_highlight = function(component, index)
 	if next(component.get_colors()) then
 		api.nvim_set_hl(0, HIGHLIGHT_COMPONENT_PREFIX .. index, component.get_colors())
 	end
+
+	component.get_onhighlight()()
 end
 
 M.set_all_component_highlight = function(opts) utils.foreach_component(opts, M.set_component_highlight) end

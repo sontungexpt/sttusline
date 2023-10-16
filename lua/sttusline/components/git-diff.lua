@@ -42,7 +42,8 @@ GitDiff.set_update(function()
 
 	return table.concat(result, " ")
 end)
-GitDiff.set_onload(function()
+
+GitDiff.set_onhighlight(function()
 	local conf_colors = GitDiff.get_config().colors
 	for key, color in pairs(conf_colors) do
 		if utils.is_color(color) then vim.api.nvim_set_hl(0, ADD_HIGHLIGHT_PREFIX .. key, { fg = color }) end
