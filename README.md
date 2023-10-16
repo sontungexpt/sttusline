@@ -49,12 +49,12 @@ any idea to create a new component, please open an issue or pull request.
     -- lazy
     {
         "sontungexpt/sttusline",
-		dependencies = {
-			"nvim-tree/nvim-web-devicons",
-		},
-		event = { "BufEnter" },
-		config = function(_, opts)
-		    require("sttusline").setup {
+        dependencies = {
+            "nvim-tree/nvim-web-devicons",
+        },
+        event = { "BufEnter" },
+        config = function(_, opts)
+            require("sttusline").setup {
                 -- 0 | 1 | 2 | 3
                 -- recommended: 3
                 laststatus = 3,
