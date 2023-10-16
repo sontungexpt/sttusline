@@ -61,10 +61,22 @@ Mode.set_config {
 		["STTUSLINE_COMMAND_MODE"] = { fg = colors.yellow, bg = colors.bg },
 		["STTUSLINE_CONFIRM_MODE"] = { fg = colors.yellow, bg = colors.bg },
 	},
+	auto_hide_on_vim_resized = true,
 }
 
-Mode.set_event { "ModeChanged" }
+Mode.set_event { "ModeChanged", "VimResized" }
 Mode.set_padding(0)
+Mode.set_condition(function()
+	if Mode.get_config().auto_hide_on_vim_resized then
+		if vim.o.columns > 70 then
+			vim.opt.showmode = false
+			return true
+		else
+			vim.opt.showmode = true
+			return false
+		end
+	end
+end)
 
 Mode.set_update(function()
 	local mode_code = vim.api.nvim_get_mode().mode

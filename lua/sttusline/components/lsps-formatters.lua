@@ -3,8 +3,9 @@ local colors = require("sttusline.utils.color")
 local Lsps_Formatters = require("sttusline.component"):new()
 
 Lsps_Formatters.set_colors { fg = colors.magenta, bg = colors.bg }
-Lsps_Formatters.set_event { "LspAttach", "LspDetach", "BufWritePost", "BufEnter" } -- for null-ls and conform
+Lsps_Formatters.set_event { "LspAttach", "LspDetach", "BufWritePost", "BufEnter", "VimResized" } -- for null-ls and conform
 Lsps_Formatters.set_user_event {} -- disable user events
+Lsps_Formatters.set_condition(function() return vim.o.columns > 70 end)
 
 Lsps_Formatters.set_update(function()
 	local buf_clients = vim.lsp.buf_get_clients()

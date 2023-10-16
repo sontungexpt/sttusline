@@ -68,16 +68,16 @@ any idea to create a new component, please open an issue or pull request.
                     },
                 },
                 components = {
-                    -- "mode",
-                    -- "filename",
-                    -- "git-diff",
-                    -- "diagnostics",
-                    -- "%=",
-                    -- "lsps-formatters",
-                    -- "indent",
-                    -- "encoding",
-                    -- "pos-cursor",
-                    -- "pos-cursor-progress",
+                    "mode",
+                    "filename",
+                    "git-diff",
+                    "diagnostics",
+                    "%=",
+                    "lsps-formatters",
+                    "indent",
+                    "encoding",
+                    "pos-cursor",
+                    "pos-cursor-progress",
                 },
             }
         end,
@@ -345,7 +345,8 @@ Some config I provide to override default component
         ["STTUSLINE_COMMAND_MODE"] = { fg = colors.yellow, bg = colors.bg },
         ["STTUSLINE_CONFIRM_MODE"] = { fg = colors.yellow, bg = colors.bg },
         },
-    }
+    },
+    auto_hide_on_vim_resized = true,
 ```
 
 - diagnostics
