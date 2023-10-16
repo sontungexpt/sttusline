@@ -72,9 +72,10 @@ M.create_component_template = function()
 		return
 	end
 
-	if not new_file_path:match("%.lua$") then
-		new_file_path = fn.fnamemodify(new_file_path, ":r") .. ".lua"
-	end
+	local is_lua = new_file_path:match("%.lua$")
+	local is_vim = new_file_path:match("%.vim$")
+
+	if not is_lua and not is_vim then new_file_path = fn.fnamemodify(new_file_path, ":r") .. ".lua" end
 
 	if fn.filereadable(new_file_path) == 1 then
 		notify.warn("File already exists: " .. new_file_path)
@@ -87,6 +88,8 @@ M.create_component_template = function()
 
 	local file = io.open(new_file_path, "w")
 	if file then
+		if is_vim then NEW_COMPONENT_TEMPLATE = "lua << EOF\n" .. NEW_COMPONENT_TEMPLATE .. "\nEOF" end
+
 		file:write(NEW_COMPONENT_TEMPLATE)
 		file:close()
 		notify.info("Created new component: " .. new_file_path)
