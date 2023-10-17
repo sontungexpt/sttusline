@@ -71,9 +71,10 @@ any idea to create a new component, please open an issue or pull request.
                     "mode",
                     "filename",
                     "git-diff",
-                    "diagnostics",
                     "%=",
+                    "diagnostics",
                     "lsps-formatters",
+                    "copilot",
                     "indent",
                     "encoding",
                     "pos-cursor",
@@ -201,21 +202,21 @@ Note: the default component must be a string
 
 We provide you some default component:
 
-| **Component**         | **Description**                       |
-| --------------------- | ------------------------------------- |
-| `datetime`            | Show datetime                         |
-| `mode`                | Show current mode                     |
-| `filename`            | Show current filename                 |
-| `git-diff`            | Show git diff                         |
-| `diagnostics`         | Show diagnostics                      |
-| `lsps-formatters`     | Show lsps, formatters                 |
-| `indent`              | Show indent                           |
-| `encoding`            | Show encoding                         |
-| `pos-cursor`          | Show position of cursor               |
-| `pos-cursor-progress` | Show position of cursor with progress |
+| **Component**         | **Description**                                        |
+| --------------------- | ------------------------------------------------------ |
+| `datetime`            | Show datetime                                          |
+| `mode`                | Show current mode                                      |
+| `filename`            | Show current filename                                  |
+| `git-diff`            | Show git diff                                          |
+| `diagnostics`         | Show diagnostics                                       |
+| `lsps-formatters`     | Show lsps, formatters(support for null-ls and conform) |
+| `copilot`             | Show copilot status                                    |
+| `indent`              | Show indent                                            |
+| `encoding`            | Show encoding                                          |
+| `pos-cursor`          | Show position of cursor                                |
+| `pos-cursor-progress` | Show position of cursor with progress                  |
 
 ```lua
-
     require("sttusline").setup {
         -- 0 | 1 | 2 | 3
         -- recommended: 3
@@ -232,11 +233,11 @@ We provide you some default component:
         components = {
             -- "mode",
             -- "filename",
-            -- "datetime",
             -- "git-diff",
             -- "%=",
             -- "diagnostics",
             -- "lsps-formatters",
+            -- "copilot",
             -- "indent",
             -- "encoding",
             -- "pos-cursor",
@@ -457,6 +458,23 @@ indent.set_colors { fg = colors.cyan, bg = colors.bg }
 local lsps_formatters = require("sttusline.components.lsps-formatters")
 
 lsps_formatters.set_colors { fg = colors.magenta, bg = colors.bg }
+```
+
+- copilot
+
+```lua
+local copilot = require("sttusline.components.copilot")
+
+copilot.set_colors { fg = colors.yellow, bg = colors.bg }
+copilot.set_config {
+    icons = {
+        normal = "",
+        error = "",
+        warning = "",
+        inprogress = "",
+    },
+}
+
 ```
 
 - pos-cursor
