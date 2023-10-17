@@ -66,6 +66,7 @@ Mode.set_config {
 
 Mode.set_event { "ModeChanged", "VimResized" }
 Mode.set_padding(0)
+
 Mode.set_condition(function()
 	if Mode.get_config().auto_hide_on_vim_resized then
 		if vim.o.columns > 70 then

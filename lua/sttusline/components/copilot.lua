@@ -19,8 +19,7 @@ Copilot.set_event {
 	"InsertLeave",
 	"CursorHoldI",
 }
-
-local status_to_icon = function(status) return Copilot.get_config().icons[status] or "" end
+Copilot.set_user_event {}
 
 local check_status = function()
 	local cp_client_ok, cp_client = pcall(require, "copilot.client")
@@ -86,7 +85,8 @@ Copilot.set_update(function()
 		if not copilot_handler_registered then register_status_notification_handler() end
 		check_status()
 	end
-	return status_to_icon(copilot_status)
+
+	return Copilot.get_config().icons[copilot_status] or ""
 end)
 
 return Copilot
