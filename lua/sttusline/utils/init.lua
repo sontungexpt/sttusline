@@ -5,6 +5,8 @@ local COMPONENT_PARENT_MODULE = "sttusline.components"
 local M = {}
 
 M.add_padding = function(str, value)
+	if #str == 0 then return str end
+
 	if type(value) == "number" then
 		local padding = (" "):rep(value)
 		return padding .. str .. padding

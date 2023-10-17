@@ -7,6 +7,7 @@ local format_event = function(event)
 	elseif type(event) == "string" and #event > 0 then
 		return { event }
 	end
+	return {}
 end
 
 function Component.new()
