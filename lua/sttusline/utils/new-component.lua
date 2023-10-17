@@ -17,7 +17,7 @@ NewComponent.set_user_event { "VeryLazy" }
 -- The component will be update every time interval
 NewComponent.set_timing(false)
 
--- The component will be update when the require("sttusline").set_setup() is called
+-- The component will be update when the require("sttusline").setup() is called
 NewComponent.set_lazy(true)
 
 -- The config of the component
