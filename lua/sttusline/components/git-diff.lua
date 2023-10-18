@@ -5,6 +5,8 @@ local ADD_HIGHLIGHT_PREFIX = "STTUSLINE_GIT_DIFF_"
 local GitDiff = require("sttusline.component").new()
 
 GitDiff.set_event { "BufWritePost", "VimResized" }
+GitDiff.set_user_event {}
+
 GitDiff.set_config {
 	icons = {
 		added = "",
@@ -20,7 +22,6 @@ GitDiff.set_config {
 }
 
 GitDiff.set_update(function()
-	if not vim.b.gitsigns_head or vim.b.gitsigns_git_status or vim.o.columns < 120 then return "" end
 	local git_status = vim.b.gitsigns_status_dict
 
 	local config = GitDiff.get_config()
@@ -41,6 +42,8 @@ GitDiff.set_update(function()
 
 	return #result > 0 and table.concat(result, " ") or ""
 end)
+
+GitDiff.set_condition(function() return vim.b.gitsigns_status_dict ~= nil and vim.o.columns > 70 end)
 
 GitDiff.set_onhighlight(function()
 	local conf_colors = GitDiff.get_config().colors
