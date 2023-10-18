@@ -4,7 +4,7 @@ local ADD_HIGHLIGHT_PREFIX = "STTUSLINE_GIT_DIFF_"
 
 local GitDiff = require("sttusline.component").new()
 
-GitDiff.set_event { "BufWritePost", "VimResized" }
+GitDiff.set_event { "BufWritePost", "VimResized", "BufEnter" }
 GitDiff.set_user_event {}
 
 GitDiff.set_config {
