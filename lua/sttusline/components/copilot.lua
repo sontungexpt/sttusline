@@ -15,6 +15,7 @@ Copilot.set_config {
 }
 
 Copilot.set_event {
+	"BufEnter",
 	"InsertEnter",
 	"InsertLeave",
 	"CursorHoldI",
