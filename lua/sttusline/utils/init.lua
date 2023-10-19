@@ -9,13 +9,29 @@ M.add_padding = function(str, value)
 
 	if type(value) == "number" then
 		local padding = (" "):rep(value)
-		return padding .. str .. padding
+
+		local startpos = str:find([[#([^#%%]+)%%%*]])
+		if not startpos or not vim.endswith(str, "%*") then
+			return padding .. str .. padding
+		else
+			return str:sub(1, startpos) .. padding .. str:sub(startpos + 1, #str - 2) .. padding .. "%*"
+		end
 	elseif type(value) == "table" then
 		local left_padding = type(value.left) == "number" and value.left >= 0 and (" "):rep(value.left)
 			or " "
 		local right_padding = type(value.right) == "number" and value.left >= 0 and (" "):rep(value.right)
 			or " "
-		return left_padding .. str .. right_padding
+
+		local startpos = str:find([[#([^#%%]+)%%%*]])
+		if not startpos or not vim.endswith(str, "%*") then
+			return left_padding .. str .. right_padding
+		else
+			return str:sub(1, startpos)
+				.. left_padding
+				.. str:sub(startpos + 1, #str - 2)
+				.. right_padding
+				.. "%*"
+		end
 	end
 end
 
