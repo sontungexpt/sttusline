@@ -21,7 +21,6 @@ Diagnostics.set_config {
 	order = { "ERROR", "WARN", "INFO", "HINT" },
 }
 
-Diagnostics.set_event("BufEnter")
 Diagnostics.set_user_event("LspRequest")
 
 Diagnostics.set_update(function()
