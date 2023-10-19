@@ -8,6 +8,8 @@ M.add_padding = function(str, value)
 	if #str == 0 then return str end
 
 	if type(value) == "number" then
+		if value <= 0 then return str end
+
 		local padding = (" "):rep(value)
 
 		local startpos = str:find([[#([^#%%]+)%%%*]])
