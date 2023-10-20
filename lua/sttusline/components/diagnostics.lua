@@ -22,7 +22,7 @@ Diagnostics.set_config {
 	order = { "ERROR", "WARN", "INFO", "HINT" },
 }
 
-Diagnostics.set_event("DiagnosticChanged")
+Diagnostics.set_event { "DiagnosticChanged", "BufEnter" }
 Diagnostics.set_user_event {}
 
 Diagnostics.set_update(function()
