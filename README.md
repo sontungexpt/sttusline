@@ -27,8 +27,6 @@ any idea to create a new component, please open an issue or pull request.
 
 🛠️ At present, the highlight feature of this plugin is very simple. So I hope you can contribute to this plugin to make it better.
 
-🔥 I am trying to create git-branch and copilot component. But I don't have much time to do it. So I'm very happy to hear from you.
-
 ## Preview
 
 ![preview1](./docs/readme/preview1.png)
@@ -474,7 +472,6 @@ copilot.set_config {
         inprogress = "",
     },
 }
-
 ```
 
 - pos-cursor
