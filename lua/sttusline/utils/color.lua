@@ -16,4 +16,8 @@ return {
 	purple = "#c688eb",
 	pink = "#eb7fdc",
 	trans = "#00000000",
+	tokyo_diagnostics_error = "#db4b4b",
+	tokyo_diagnostics_warn = "#e0af68",
+	tokyo_diagnostics_hint = "#1abc9c",
+	tokyo_diagnostics_info = "#0db9d7",
 }

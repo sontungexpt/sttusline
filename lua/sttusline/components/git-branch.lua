@@ -22,6 +22,15 @@ local get_branch = function()
 	return ""
 end
 
+GitBranch.set_condition(function()
+	local buffers = vim.fn.getbufinfo { buflisted = 1 }
+	local bufnr = vim.api.nvim_get_current_buf()
+	for _, buf in ipairs(buffers) do
+		if buf.bufnr == bufnr then return true end
+	end
+	return false
+end)
+
 GitBranch.set_update(function()
 	local branch = get_branch()
 	return branch ~= "" and GitBranch.get_config().icon .. " " .. branch or ""

@@ -14,7 +14,7 @@ Filename.set_config {
 	color = { fg = colors.orange, bg = colors.bg },
 }
 
-Filename.set_event { "BufEnter", "BufNewFile", "WinEnter" }
+Filename.set_event { "BufEnter", "WinEnter" }
 
 Filename.set_update(function()
 	local has_devicons, devicons = pcall(require, "nvim-web-devicons")
@@ -47,7 +47,7 @@ Filename.set_update(function()
 		end
 	end
 
-	hl(0, ICON_HIGHLIGHT, { fg = color_icon })
+	hl(0, ICON_HIGHLIGHT, { fg = color_icon, bg = colors.bg })
 
 	if icon then
 		return utils.add_highlight_name(icon, ICON_HIGHLIGHT)
