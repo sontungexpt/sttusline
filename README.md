@@ -68,6 +68,7 @@ any idea to create a new component, please open an issue or pull request.
                 components = {
                     "mode",
                     "filename",
+                    "git-branch",
                     "git-diff",
                     "%=",
                     "diagnostics",
@@ -205,6 +206,7 @@ We provide you some default component:
 | `datetime`            | Show datetime                                          |
 | `mode`                | Show current mode                                      |
 | `filename`            | Show current filename                                  |
+| `git-branch`          | Show git branch                                        |
 | `git-diff`            | Show git diff                                          |
 | `diagnostics`         | Show diagnostics                                       |
 | `lsps-formatters`     | Show lsps, formatters(support for null-ls and conform) |
@@ -231,6 +233,7 @@ We provide you some default component:
         components = {
             -- "mode",
             -- "filename",
+            -- "git-branch",
             -- "git-diff",
             -- "%=",
             -- "diagnostics",
@@ -417,8 +420,19 @@ encoding.set_config {
 - filename
 
 ```lua
-    Filename.set_config {
+    local filename = require("sttusline.components.filename")
+    filename.set_config {
         color = { fg = colors.orange, bg = colors.bg },
+    }
+```
+
+- git-branch
+
+```lua
+    local git_branch = require("sttusline.components.git-branch")
+
+    git_branch.set_config {
+        icons =  ""
     }
 ```
 
