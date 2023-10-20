@@ -21,7 +21,8 @@ Diagnostics.set_config {
 	order = { "ERROR", "WARN", "INFO", "HINT" },
 }
 
-Diagnostics.set_user_event("LspRequest")
+Diagnostics.set_event("DiagnosticChanged")
+Diagnostics.set_user_event {}
 
 Diagnostics.set_update(function()
 	local result = {}
