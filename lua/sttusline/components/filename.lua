@@ -33,7 +33,7 @@ Filename.set_update(function()
 			icon, color_icon = "", colors.red
 			filename = "Terminal"
 		elseif filetype == "NvimTree" then
-			icon, color_icon = "󱏒", colors.red
+			icon, color_icon = "󰙅", colors.red
 			filename = "NvimTree"
 		elseif filetype == "TelescopePrompt" then
 			icon, color_icon = "", colors.red
@@ -44,6 +44,8 @@ Filename.set_update(function()
 		elseif filetype == "lazy" then
 			icon, color_icon = "󰏔", colors.red
 			filename = "Lazy"
+		elseif filetype == "dashboard" then
+			icon, color_icon = "", colors.red
 		end
 	end
 
