@@ -11,13 +11,13 @@ local configs = {
 			-- "lazy",
 		},
 		buftypes = {
-			-- "terminal",
+			"terminal",
 		},
 	},
 	components = {
 		"mode",
 		"filename",
-		-- "git-branch",
+		"git-branch",
 		"git-diff",
 		"%=",
 		"diagnostics",
