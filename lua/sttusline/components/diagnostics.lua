@@ -22,8 +22,16 @@ Diagnostics.set_config {
 	order = { "ERROR", "WARN", "INFO", "HINT" },
 }
 
-Diagnostics.set_event { "DiagnosticChanged", "BufEnter" }
+Diagnostics.set_event {
+	"DiagnosticChanged",
+}
+
 Diagnostics.set_user_event {}
+
+Diagnostics.set_condition(function()
+	local filetype = vim.api.nvim_buf_get_option(0, "filetype")
+	return filetype ~= "lazy"
+end)
 
 Diagnostics.set_update(function()
 	local result = {}
