@@ -4,7 +4,6 @@ local api = vim.api
 local opt = vim.opt
 local autocmd = api.nvim_create_autocmd
 local augroup = api.nvim_create_augroup
-local tbl_insert = table.insert
 
 local HIGHLIGHT_COMPONENT_PREFIX = "STTUSLINE_COMPONENT_"
 local AUTOCMD_GROUP_COMPONENT = "STTUSLINE_COMPONENT_EVENTS"
@@ -130,12 +129,12 @@ end
 --- Init timer, autocmds, and highlight for statusline
 M.init = function(opts)
 	utils.foreach_component(opts, function(component, index)
-		statusline[index] = ""
+		statusline[index] = component.get_lazy() == false and M.update_component_value(component, index)
+			or ""
 		component.load()
 		M.init_component_autocmds(component, index)
 		M.init_timer(component, index)
 		M.set_component_highlight(component, index)
-		if not component.get_lazy() then M.update_component_value(component, index) end
 	end, function(empty_zone_comp, index) statusline[index] = empty_zone_comp end)
 end
 
@@ -172,7 +171,8 @@ M.create_autocmd = function(events, component, index, is_user_event)
 				M.create_default_autocmd(event)
 			end
 		else
-			tbl_insert(event_components[key][event], { component, index })
+			local next_index = #event_components[key][event] + 1
+			event_components[key][event][next_index] = { component, index }
 		end
 	end
 end
@@ -188,7 +188,7 @@ end
 
 M.init_timer = function(component, index)
 	if component.get_timing() then
-		tbl_insert(timer_components, { component, index })
+		timer_components[#timer_components + 1] = { component, index }
 		if timer == nil then M.start_timer() end
 	end
 end

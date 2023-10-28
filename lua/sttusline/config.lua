@@ -46,9 +46,9 @@ M.format_opts_components = function(opts)
 	local formatted_opts = {}
 	for _, v in pairs(opts.components) do
 		if type(v) == "string" and #v > 0 then
-			table.insert(formatted_opts, v)
+			formatted_opts[#formatted_opts + 1] = v
 		elseif is_component(v) then
-			table.insert(formatted_opts, v)
+			formatted_opts[#formatted_opts + 1] = v
 		end
 	end
 	opts.components = formatted_opts
