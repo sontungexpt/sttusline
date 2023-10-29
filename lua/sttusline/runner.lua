@@ -77,7 +77,7 @@ M.disable_for_filetype = function(opts)
 		callback = function()
 			if event_trigger then return end
 			event_trigger = true
-			vim.defer_fn(function()
+			vim.schedule(function()
 				if utils.is_disabled(opts) then
 					M.hide_statusline()
 				else
@@ -98,7 +98,7 @@ M.hide_statusline = function()
 		statusline_hidden = true
 		M.remove_event()
 		M.stop_timer()
-		vim.defer_fn(function() opt.statusline = " " end, 3)
+		vim.schedule(function() opt.statusline = " " end, 3)
 	end
 end
 
@@ -129,8 +129,11 @@ end
 --- Init timer, autocmds, and highlight for statusline
 M.init = function(opts)
 	utils.foreach_component(opts, function(component, index)
-		statusline[index] = component.get_lazy() == false and M.update_component_value(component, index)
-			or ""
+		if component.get_lazy() then
+			statusline[index] = M.update_component_value(component, index)
+		else
+			statusline[index] = ""
+		end
 		component.load()
 		M.init_component_autocmds(component, index)
 		M.init_timer(component, index)
@@ -233,16 +236,12 @@ M.update_on_trigger = function(table)
 end
 
 M.run = function(event_name, is_user_event)
-	vim.defer_fn(function()
-		if event_name ~= nil then
-			if is_user_event then
-				M.update_on_trigger(event_components.user[event_name])
-			else
-				M.update_on_trigger(event_components.default[event_name])
-			end
-		else
-			M.update_on_trigger(timer_components)
-		end
+	local event_table = is_user_event and event_components.user or event_components.default
+	vim.schedule(function()
+		vim.schedule(function()
+			M.update_on_trigger(event_name and event_table[event_name] or timer_components)
+			if not statusline_hidden then M.update_statusline() end
+		end, 0)
 		M.update_statusline()
 	end, 0)
 end
