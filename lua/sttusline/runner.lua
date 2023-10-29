@@ -207,18 +207,12 @@ end
 
 M.cache_event_component_index = function(event, index, cache_key)
 	if type(event) == "string" then
-		if event_component_index_cache[cache_key][event] then
-			table.insert(event_component_index_cache[cache_key][event], index)
-		else
-			event_component_index_cache[cache_key][event] = { index }
-		end
+		event_component_index_cache[cache_key][event] = event_component_index_cache[cache_key][event] or {}
+		table.insert(event_component_index_cache[cache_key][event], index)
 	elseif type(event) == "table" then
 		for _, e in ipairs(event) do
-			if event_component_index_cache[cache_key][e] then
-				table.insert(event_component_index_cache[cache_key][e], index)
-			else
-				event_component_index_cache[cache_key][e] = { index }
-			end
+			event_component_index_cache[cache_key][e] = event_component_index_cache[cache_key][e] or {}
+			table.insert(event_component_index_cache[cache_key][e], index)
 		end
 	end
 end

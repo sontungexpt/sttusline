@@ -16,6 +16,7 @@ end
 
 M.add_padding = function(str, value)
 	if #str == 0 then return str end
+	value = value or 1
 
 	if type(value) == "number" then
 		if value <= 0 then return str end
