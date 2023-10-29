@@ -7,6 +7,7 @@ GitBranch.set_config {
 	icon = "",
 }
 GitBranch.set_event { "BufEnter" }
+GitBranch.set_user_event { "VeryLazy", "GitSignsUpdate" }
 
 local get_branch = function()
 	local git_dir = vim.fn.finddir(".git", ".;")
