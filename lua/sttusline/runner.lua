@@ -39,9 +39,9 @@ M.update_statusline = function() opt.statusline = table.concat(statusline, "") e
 
 M.setup = function(opts)
 	M.init(opts)
+	M.update_statusline()
 	M.refresh_highlight_on_colorscheme(opts)
 	M.disable_for_filetype(opts)
-	M.update_statusline()
 end
 
 M.foreach_component = function(opts, comp_cb, empty_comp_cb)

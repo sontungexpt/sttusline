@@ -1,3 +1,4 @@
+local color_utils = require("sttusline.utils.color")
 local M = {}
 
 M.eval_func = function(func, ...)
@@ -5,11 +6,21 @@ M.eval_func = function(func, ...)
 end
 
 M.eval_component_func = function(component, func_name, ...)
+	local configs = type(component.configs) == "table" and component.configs or {}
+	local override_colors = component.override_glob_colors or {}
+	local space = nil
+
+	if type(component.space) == "function" then
+		space = component.space(configs, vim.tbl_deep_extend("force", color_utils, override_colors))
+	elseif type(component.space) == "table" then
+		space = component.space
+	end
+
 	return M.eval_func(
 		component[func_name],
-		type(component.configs) == "table" and component.configs or {},
-		vim.tbl_deep_extend("force", require("sttusline.utils.color"), component.override_glob_colors or {}),
-		type(component.utils) == "table" and component.utils or {},
+		configs,
+		vim.tbl_deep_extend("force", color_utils, override_colors),
+		space,
 		...
 	)
 end
