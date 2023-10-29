@@ -9,19 +9,24 @@ local configs = {
 	},
 	components = {
 		"mode",
-		"filename",
-		"git-branch",
-		"git-diff",
+		-- "filename",
+		-- "git-branch",
+		-- "git-diff",
 		"%=",
-		"diagnostics",
-		"lsps-formatters",
-		"copilot",
-		"indent",
-		"encoding",
-		"pos-cursor",
-		"pos-cursor-progress",
+		-- "diagnostics",
+		-- "lsps-formatters",
+		-- "copilot",
+		-- "indent",
+		-- "encoding",
+		-- "pos-cursor",
+		-- "pos-cursor-progress",
 	},
 }
+
+M.setup = function(user_opts)
+	user_opts = M.apply_user_config(user_opts)
+	return user_opts
+end
 
 M.apply_user_config = function(opts)
 	if type(opts) == "table" then
