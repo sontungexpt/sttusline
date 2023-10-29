@@ -8,6 +8,7 @@ M.eval_component_func = function(component, func_name, ...)
 	return M.eval_func(
 		component[func_name],
 		type(component.configs) == "table" and component.configs or {},
+		vim.tbl_deep_extend("force", require("sttusline.utils.color"), component.override_glob_colors or {}),
 		type(component.utils) == "table" and component.utils or {},
 		...
 	)

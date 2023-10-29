@@ -18,8 +18,8 @@ local configs = {
 		-- "copilot",
 		-- "indent",
 		-- "encoding",
-		-- "pos-cursor",
-		-- "pos-cursor-progress",
+		"pos-cursor",
+		"pos-cursor-progress",
 	},
 }
 
