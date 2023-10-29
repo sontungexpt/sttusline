@@ -64,6 +64,8 @@ M.apply_user_config = function(opts)
 						for k2, v2 in pairs(v) do
 							if type(v2) == type(configs[k][k2]) then configs[k][k2] = v2 end
 						end
+					else
+						configs[k] = v
 					end
 				else
 					configs[k] = v
