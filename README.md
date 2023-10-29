@@ -86,118 +86,7 @@ any idea to create a new component, please open an issue or pull request.
 
 ## Usage
 
-### Create your own component
-
-| **Command**              | **Description**                           |
-| ------------------------ | ----------------------------------------- |
-| `:SttuslineNewComponent` | Create the template to make new component |
-
-or copy the template to your component module
-
-```lua
--- Change NewComponent to your component name
-local utils = require("sttusline.utils")
-local NewComponent = require("sttusline.set_component").new()
-
--- The component will be update when the event is triggered
--- To disable default event, set NewComponent.set_event = {}
-NewComponent.set_event {}
-
--- The component will be update when the user event is triggered
--- To disable default user_event, set NewComponent.set_user_event = {}
-NewComponent.set_user_event { "VeryLazy" }
-
--- The component will be update every time interval
-NewComponent.set_timing(false)
-
--- The component will be update when the require("sttusline").setup() is called
-NewComponent.set_lazy(true)
-
--- The config of the component
--- After set_config, the config will be available in the component
--- You can access the config by NewComponent.get_config()
-NewComponent.set_config {}
-
--- The number of spaces to add before and after the component
-NewComponent.set_padding(1)
--- or NewComponent.set_padding{ left = 1, right = 1 }
-
--- The colors of the component
-NewComponent.set_colors {} -- { fg = colors.set_black, bg = colors.set_white }
-
--- The function will return the value of the component to display on the statusline
--- Must return a string
-NewComponent.set_update(function() return "" end)
--- NOTE:
--- If you don't use NewComponent.set_colors{} and you want to customize the highlight of your component
--- You should use utils.add_highlight_name(value, highlight_name) to add the highlight name to the value
--- After that you can set the highlight of your component by using vim.api.nvim_set_hl(0, highlight_name, opts) (You should add this to NewComponent.set_onhighlight)
--- The function utils.add_highlight_name(value,highlight_name) will return the value
--- So you can use it like this:
--- NewComponent.set_update(function() return utils.add_highlight_name("Hello", "HelloHighlight") end)
--- NewComponent.set_onhighlight(function() vim.api.nvim_set_hl(0, "HelloHighlight", { fg = "#ffffff", bg = "#000000" }) end)
-
-
--- The function will call when the component is highlight
--- You should use it to set the highlight of the component
--- Example:
--- NewComponent.set_onhighlight(function() vim.api.nvim_set_hl(0, "ComponentHighlight", { fg = colors.set_black, bg = colors.set_white }) end)
-NewComponent.set_onhighlight(function() end)
-
--- The function will return the condition to display the component when the component is update
--- Must return a boolean
-NewComponent.set_condition(function() return true end)
-
--- The function will call on the first time component load
-NewComponent.set_onload(function() end)
-
-
-return NewComponent
-```
-
-After you create your component, you need to add it to `components` option in
-`setup` function
-such as:
-
-```lua
-    -- Create new component with name Datetime
-    local Datetime = require("sttusline.component").new()
-
-    Datetime.set_config {
-        style = "default",
-    }
-
-    Datetime.set_timing(true)
-
-    Datetime.set_update(function()
-        local style = Datetime.get_config().style
-        local fmt = style
-        if style == "default" then
-            fmt = "%A, %B %d | %H.%M"
-        elseif style == "us" then
-            fmt = "%m/%d/%Y"
-        elseif style == "uk" then
-            fmt = "%d/%m/%Y"
-        elseif style == "iso" then
-            fmt = "%Y-%m-%d"
-        end
-        return os.date(fmt) .. ""
-    end)
-
-    require("sttusline").setup {
-        components = {
-            -- ...
-            -- Add your component
-            Datetime,
-        }
-    }
-```
-
-### Use default component
-
-To use default component, you need to add it to `components` option in `setup` function
-
-Note: the default component must be a string
+### Components
 
 We provide you some default component:
 
@@ -216,6 +105,11 @@ We provide you some default component:
 | `pos-cursor`          | Show position of cursor                                |
 | `pos-cursor-progress` | Show position of cursor with progress                  |
 
+
+To use default component use should add name of component to components options
+or you can add a table with the first value is the name of component and second
+value is the table that you want to override default component
+
 ```lua
     require("sttusline").setup {
         -- 0 | 1 | 2 | 3
@@ -231,18 +125,27 @@ We provide you some default component:
             },
         },
         components = {
-            -- "mode",
-            -- "filename",
-            -- "git-branch",
-            -- "git-diff",
-            -- "%=",
-            -- "diagnostics",
-            -- "lsps-formatters",
-            -- "copilot",
-            -- "indent",
-            -- "encoding",
-            -- "pos-cursor",
-            -- "pos-cursor-progress",
+            "mode",
+            -- or
+            {
+                "mode",
+                -- override default component
+                {
+                    name = "form",
+                    event = {}, -- The component will be update when the event is triggered
+                    user_event = { "VeryLazy" },
+                    timing = false, -- The component will be update every time interval
+                    lazy = true,
+                    space ={}
+                    configs = {},
+                    padding = 1, -- { left = 1, right = 1 }
+                    colors = {}, -- { fg = colors.black, bg = colors.white }
+                    init = function(configs,colors,space) end,
+                    update = function(configs,colors,space)return "" end,
+                    condition = function(configs,colors,space)return true end,
+                    on_highlight= function(configs,colors,space) end,
+                }
+            },
         },
     }
 ```
@@ -261,246 +164,47 @@ To add the empty space between components, you need to add `%=` to `components` 
     }
 ```
 
-### Override default component
+#### Create new component
 
-Although this plugin is not focus on overriding default component. But you can
-do it by override the default component by some functions I provide to you. But
-I recommend you to create your own component to reach the best performance.
+All key is same with set_key in `main branch`
 
-| **Function**      | Type of args                  | **Description**                                                                                         |
-| ----------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `set_event`       | table or string               | The component will be update when the event is triggered. If you call set_event{} no event will trigger |
-| `set_user_event`  | tableor string                | Same as set_event buf for `User` autocmd                                                                |
-| `set_timing`      | boolean                       | If set_timing(true), component will update after 1 second                                               |
-| `set_lazy`        | boolean                       | Load component on startup(not recommended)                                                              |
-| `set_config`      | table                         | Set config to update component                                                                          |
-| `set_padding`     | number or table               | The number of spaces to add before and after the component                                              |
-| `set_colors`      | table                         | Colors highlight                                                                                        |
-| `set_update`      | function(must return string)  | The function will return the value of the component to display on the statusline                        |
-| `set_condition`   | function(must return boolean) | The function will return the condition to display the component when the component is update            |
-| `set_onhighlight` | function                      | The function will call when the component is set highlight                                              |
-| `set_onload`      | function                      | The function will call on the first time component load                                                 |
-
-So to override default component you can do
+**NEW**:
+- onload --> init
+- onhighlight -- > on_highlight
+- space : space is table or function(configs,colors) and pass to on key with
+type function
+- if key must be a function it will get three parameters `configs, colors,space`
+  - configs: same with Component.get_config()
+  - colors: is the table colors in sttsuline.utils.color
+  - space is the returning value of space key function or space
 
 ```lua
-local mode = require("sttusline.components.mode")
+    require("sttusline").setup {
+        components = {
+            "%=", -- add the empty space
 
-mode.set_config{
-    mode_colors = {
-        ["STTUSLINE_NORMAL_MODE"] = { fg = "#000000", bg = "#ffffff" },
-    },
-}
-
--- after override default component, you need to add it to components option in setup function
-require("sttusline").setup {
-    components = {
-        -- ... your components
-        mode,
-        -- ... your components
-    },
-}
-```
-
-Some config I provide to override default component
-
-- datetime
-
-```lua
-    local datetime = require("sttusline.components.datetime")
-
-    datetime.set_config {
-      style = "default",
+            -- ... your components
+            {
+                name = "form",
+                event = {}, -- The component will be update when the event is triggered
+                user_event = { "VeryLazy" },
+                timing = false, -- The component will be update every time interval
+                lazy = true,
+                --space is table or function(configs,colors)
+                space ={}
+                configs = {},
+                padding = 1, -- { left = 1, right = 1 }
+                colors = {}, -- { fg = colors.black, bg = colors.white }
+                init = function(configs,colors,space) end,
+                update = function(configs,colors,space)return "" end,
+                condition = function(configs,colors,space)return true end,
+                on_highlight= function(configs,colors,space) end,
+            }
+        },
     }
 ```
 
-- mode
 
-```lua
-    local mode = require("sttusline.components.mode")
-
-    mode.set_config {
-    modes = {
-        ["n"] = { "NORMAL", "STTUSLINE_NORMAL_MODE" },
-        ["no"] = { "NORMAL (no)", "STTUSLINE_NORMAL_MODE" },
-        ["nov"] = { "NORMAL (nov)", "STTUSLINE_NORMAL_MODE" },
-        ["noV"] = { "NORMAL (noV)", "STTUSLINE_NORMAL_MODE" },
-        ["noCTRL-V"] = { "NORMAL", "STTUSLINE_NORMAL_MODE" },
-        ["niI"] = { "NORMAL i", "STTUSLINE_NORMAL_MODE" },
-        ["niR"] = { "NORMAL r", "STTUSLINE_NORMAL_MODE" },
-        ["niV"] = { "NORMAL v", "STTUSLINE_NORMAL_MODE" },
-
-        ["nt"] = { "TERMINAL", "STTUSLINE_NTERMINAL_MODE" },
-        ["ntT"] = { "TERMINAL (ntT)", "STTUSLINE_NTERMINAL_MODE" },
-
-        ["v"] = { "VISUAL", "STTUSLINE_VISUAL_MODE" },
-        ["vs"] = { "V-CHAR (Ctrl O)", "STTUSLINE_VISUAL_MODE" },
-        ["V"] = { "V-LINE", "STTUSLINE_VISUAL_MODE" },
-        ["Vs"] = { "V-LINE", "STTUSLINE_VISUAL_MODE" },
-        [""] = { "V-BLOCK", "STTUSLINE_VISUAL_MODE" },
-
-        ["i"] = { "INSERT", "STTUSLINE_INSERT_MODE" },
-        ["ic"] = { "INSERT (completion)", "STTUSLINE_INSERT_MODE" },
-        ["ix"] = { "INSERT completion", "STTUSLINE_INSERT_MODE" },
-
-        ["t"] = { "TERMINAL", "STTUSLINE_TERMINAL_MODE" },
-        ["!"] = { "SHELL", "STTUSLINE_TERMINAL_MODE" },
-
-        ["R"] = { "REPLACE", "STTUSLINE_REPLACE_MODE" },
-        ["Rc"] = { "REPLACE (Rc)", "STTUSLINE_REPLACE_MODE" },
-        ["Rx"] = { "REPLACEa (Rx)", "STTUSLINE_REPLACE_MODE" },
-        ["Rv"] = { "V-REPLACE", "STTUSLINE_REPLACE_MODE" },
-        ["Rvc"] = { "V-REPLACE (Rvc)", "STTUSLINE_REPLACE_MODE" },
-        ["Rvx"] = { "V-REPLACE (Rvx)", "STTUSLINE_REPLACE_MODE" },
-
-        ["s"] = { "SELECT", "STTUSLINE_SELECT_MODE" },
-        ["S"] = { "S-LINE", "STTUSLINE_SELECT_MODE" },
-        [""] = { "S-BLOCK", "STTUSLINE_SELECT_MODE" },
-
-        ["c"] = { "COMMAND", "STTUSLINE_COMMAND_MODE" },
-        ["cv"] = { "COMMAND", "STTUSLINE_COMMAND_MODE" },
-        ["ce"] = { "COMMAND", "STTUSLINE_COMMAND_MODE" },
-
-        ["r"] = { "PROMPT", "STTUSLINE_CONFIRM_MODE" },
-        ["rm"] = { "MORE", "STTUSLINE_CONFIRM_MODE" },
-        ["r?"] = { "CONFIRM", "STTUSLINE_CONFIRM_MODE" },
-        ["x"] = { "CONFIRM", "STTUSLINE_CONFIRM_MODE" },
-    },
-    mode_colors = {
-        ["STTUSLINE_NORMAL_MODE"] = { fg = colors.blue, bg = colors.bg },
-        ["STTUSLINE_INSERT_MODE"] = { fg = colors.green, bg = colors.bg },
-        ["STTUSLINE_VISUAL_MODE"] = { fg = colors.purple, bg = colors.bg },
-        ["STTUSLINE_NTERMINAL_MODE"] = { fg = colors.gray, bg = colors.bg },
-        ["STTUSLINE_TERMINAL_MODE"] = { fg = colors.cyan, bg = colors.bg },
-        ["STTUSLINE_REPLACE_MODE"] = { fg = colors.red, bg = colors.bg },
-        ["STTUSLINE_SELECT_MODE"] = { fg = colors.magenta, bg = colors.bg },
-        ["STTUSLINE_COMMAND_MODE"] = { fg = colors.yellow, bg = colors.bg },
-        ["STTUSLINE_CONFIRM_MODE"] = { fg = colors.yellow, bg = colors.bg },
-        },
-    },
-    auto_hide_on_vim_resized = true,
-```
-
-- diagnostics
-
-```lua
-    local diagnostics = require("sttusline.components.diagnostics")
-    diagnostics.set_config {
-        icons = {
-            ERROR = "",
-            INFO = "",
-            HINT = "󰌵",
-            WARN = "",
-        },
-        diagnostics_color = {
-            ERROR = "DiagnosticError",
-            WARN = "DiagnosticWarn",
-            HINT = "DiagnosticHint",
-            INFO = "DiagnosticInfo",
-        },
-        order = { "ERROR", "WARN", "INFO", "HINT" },
-    }
-```
-
-- encoding
-
-```lua
-local encoding = require("sttusline.components.encoding")
-
-encoding.set_config {
-	["utf-8"] = "󰉿",
-	["utf-16"] = "",
-	["utf-32"] = "",
-	["utf-8mb4"] = "",
-	["utf-16le"] = "",
-	["utf-16be"] = "",
-}
-```
-
-- filename
-
-```lua
-    local filename = require("sttusline.components.filename")
-    filename.set_config {
-        color = { fg = colors.orange, bg = colors.bg },
-    }
-```
-
-- git-branch
-
-```lua
-    local git_branch = require("sttusline.components.git-branch")
-
-    git_branch.set_config {
-        icons =  ""
-    }
-```
-
-- git-diff
-
-```lua
-    local git_diff = require("sttusline.components.git-diff")
-
-    git_diff.set_config {
-        icons = {
-            added = "",
-            changed = "",
-            removed = "",
-        },
-        colors = {
-            added = "DiagnosticInfo",
-            changed = "DiagnosticWarn",
-            removed = "DiagnosticError",
-        },
-        order = { "added", "changed", "removed" },
-    }
-```
-
-- indent
-
-```lua
-local indent = require("sttusline.components.indent")
-
-indent.set_colors { fg = colors.cyan, bg = colors.bg }
-```
-
-- lsps-formatters
-
-```lua
-local lsps_formatters = require("sttusline.components.lsps-formatters")
-
-lsps_formatters.set_colors { fg = colors.magenta, bg = colors.bg }
-```
-
-- copilot
-
-```lua
-local copilot = require("sttusline.components.copilot")
-
-copilot.set_colors { fg = colors.yellow, bg = colors.bg }
-copilot.set_config {
-    icons = {
-        normal = "",
-        error = "",
-        warning = "",
-        inprogress = "",
-    },
-}
-```
-
-- pos-cursor
-
-```lua
-local pos_cursor = require("sttusline.components.pos-cursor")
-pos_cursor.set_colors { fg = colors.fg }
-```
-
-- pos-cursor-progress
-
-```lua
-local pos_cursor_progress = require("sttusline.components.pos-cursor-progress")
-pos_cursor_rogress.set_colors { fg = colors.orange, bg = colors.bg }
-```
 
 ## Contributing
 
