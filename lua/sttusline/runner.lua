@@ -133,7 +133,7 @@ end
 --- Init timer, autocmds, and highlight for statusline
 M.init = function(opts)
 	utils.foreach_component(opts, function(component, index)
-		if component.get_lazy() then
+		if component.get_lazy() == false then
 			statusline[index] = M.update_component_value(component, index)
 		else
 			statusline[index] = ""
