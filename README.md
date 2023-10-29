@@ -87,7 +87,7 @@ any idea to create a new component, please open an issue or pull request.
 ## Usage
 
 **NOTE**: If you want create new component by adding a table to components
-please use branch `table_version` instead of this branch
+please use branch `[table_version](https://github.com/sontungexpt/sttusline/tree/table_version)` instead of this branch
 
 ### Create your own component
 
