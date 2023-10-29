@@ -57,13 +57,21 @@ end
 
 M.apply_user_config = function(opts)
 	if type(opts) == "table" then
-		if type(opts.laststatus) == "number" then configs.laststatus = opts.laststatus end
-		if opts.disabled then
-			for k, v in pairs(opts.disabled) do
-				if type(v) == type(configs.disabled[k]) then configs.disabled[k] = v end
+		for k, v in pairs(opts) do
+			if type(v) == type(configs[k]) then
+				if type(v) == "table" then
+					if v[1] == nil then
+						for k2, v2 in pairs(v) do
+							if type(v2) == type(configs[k][k2]) then configs[k][k2] = v2 end
+						end
+					else
+						configs[k] = v
+					end
+				else
+					configs[k] = v
+				end
 			end
 		end
-		if type(opts.components) == "table" then configs.components = opts.components end
 	end
 	return configs
 end

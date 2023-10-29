@@ -45,7 +45,11 @@ M.setup = function(opts)
 	M.disable_for_filetype(opts)
 end
 
-M.update_statusline = function() opt.statusline = table.concat(statusline, "") end
+M.update_statusline = function()
+	local str_statusline = table.concat(statusline, "")
+	if str_statusline == "" then str_statusline = " " end
+	opt.statusline = str_statusline
+end
 
 M.get_component_autocmd_group = function()
 	if component_autocmd_group == nil then
