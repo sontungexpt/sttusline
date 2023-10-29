@@ -165,7 +165,7 @@ local configs = {
 		{
 			name = "git-branch",
 			event = { "BufEnter" }, -- The component will be update when the event is triggered
-			user_event = { "VeryLazy" },
+			user_event = { "VeryLazy", "GitSignsUpdate" },
 			configs = {
 				icon = "",
 			},
