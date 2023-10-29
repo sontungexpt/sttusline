@@ -15,20 +15,33 @@ local eval_component_func = utils.eval_component_func
 
 local core_autocmd_group = nil
 local component_autocmd_group = nil
-
-local component_cache = {}
-local event_component_id_cache = {
-	default = {},
-	user = {},
-}
-local timming_component_id_cache = {}
+local timer = nil
 
 local statusline = {}
+local component_cache = {}
+local event_component_id_cache = {
+	default = {
+		-- ...
+		-- [event_name] = { component_index, ... }
+	},
+	user = {
+		-- ...
+		-- [event_name] = { component_index, ... }
+	},
+}
+local timming_component_id_cache = {
+	-- ...
+	-- component_index
+}
 
 M.foreach_component = function(opts, comp_cb, empty_comp_cb)
 	if #component_cache > 0 then
 		for index, component in ipairs(component_cache) do
-			comp_cb(component, index)
+			if type(component) == "string" then
+				utils.eval_func(empty_comp_cb, component, index)
+			else
+				comp_cb(component, index)
+			end
 		end
 	else
 		for _, component in ipairs(opts.components) do
@@ -86,6 +99,17 @@ M.get_core_autocmd_group = function()
 	return core_autocmd_group
 end
 
+M.init = function(opts)
+	M.foreach_component(opts, function(component, index)
+		statusline[index] = component.lazy == false and M.update_component_value(index) or ""
+		eval_component_func(component, "init")
+
+		-- M.init_component_autocmds(component, index)
+		-- M.init_timer(component, index)
+		-- M.set_component_highlight(component, index)
+	end, function(empty_comp, index) statusline[index] = empty_comp end)
+end
+
 M.update_component_value = function(index)
 	local should_display = eval_component_func(component_cache[index], "condition")
 	if type(should_display) == "boolean" and not should_display then
@@ -110,6 +134,10 @@ M.update_component_value = function(index)
 	end
 end
 
+M.update_all_components = function(opts)
+	M.foreach_component(opts, function(_, index) M.update_component_value(index) end)
+end
+
 M.update_on_trigger = function(ids)
 	for _, id in ipairs(ids) do
 		M.update_component_value(id)
@@ -117,16 +145,9 @@ M.update_on_trigger = function(ids)
 end
 
 M.run = function(event_name, is_user_event)
-	vim.defer_fn(function()
-		if event_name ~= nil then
-			if is_user_event then
-				M.update_on_trigger(event_component_id_cache.user[event_name])
-			else
-				M.update_on_trigger(event_component_id_cache.default[event_name])
-			end
-		else
-			M.update_on_trigger(timming_component_id_cache)
-		end
+	local event_table = is_user_event and event_component_id_cache.user or event_component_id_cache.default
+	vim.schedule(function()
+		M.update_on_trigger(event_name and event_table[event_name] or timming_component_id_cache)
 		M.update_statusline()
 	end, 0)
 end
