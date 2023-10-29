@@ -34,9 +34,10 @@ local configs = {
 				},
 				order = { "ERROR", "WARN", "INFO", "HINT" },
 			},
-
-			update = function(configs)
-				local HIGHLIGHT_PREFIX = "STTUSLINE_DIAGNOSTICS_"
+			space = {
+				HIGHLIGHT_PREFIX = "STTUSLINE_DIAGNOSTICS_",
+			},
+			update = function(configs, _, space)
 				local result = {}
 
 				local icons = configs.icons
@@ -52,7 +53,7 @@ local configs = {
 							if utils.is_color(color) or type(color) == "table" then
 								table.insert(
 									result,
-									utils.add_highlight_name(icons[key] .. " " .. count, HIGHLIGHT_PREFIX .. key)
+									utils.add_highlight_name(icons[key] .. " " .. count, space.HIGHLIGHT_PREFIX .. key)
 								)
 							else
 								table.insert(result, utils.add_highlight_name(icons[key] .. " " .. count, color))
@@ -68,13 +69,13 @@ local configs = {
 				return filetype ~= "lazy"
 			end,
 
-			on_highlight = function(configs)
+			on_highlight = function(configs, _, space)
 				local diagnostics_color = configs.diagnostics_color
 				for key, color in pairs(diagnostics_color) do
 					if utils.is_color(color) then
-						vim.api.nvim_set_hl(0, HIGHLIGHT_PREFIX .. key, { fg = color, bg = colors.bg })
+						vim.api.nvim_set_hl(0, space.HIGHLIGHT_PREFIX .. key, { fg = color, bg = colors.bg })
 					elseif type(color) == "table" then
-						vim.api.nvim_set_hl(0, HIGHLIGHT_PREFIX .. key, color)
+						vim.api.nvim_set_hl(0, space.HIGHLIGHT_PREFIX .. key, color)
 					end
 				end
 			end,
