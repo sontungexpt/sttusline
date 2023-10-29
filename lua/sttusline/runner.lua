@@ -35,7 +35,11 @@ local timming_component_index_cache = {
 	-- component_index
 }
 
-M.update_statusline = function() opt.statusline = table.concat(statusline, "") end
+M.update_statusline = function()
+	local str_statusline = table.concat(statusline, "")
+	if str_statusline == "" then str_statusline = " " end
+	opt.statusline = str_statusline
+end
 
 M.setup = function(opts)
 	M.init(opts)
