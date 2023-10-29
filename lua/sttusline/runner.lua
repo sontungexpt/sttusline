@@ -110,13 +110,13 @@ M.disable_for_filetype = function(opts)
 		callback = function()
 			if not event_trigger then
 				event_trigger = true
-				vim.defer_fn(function()
+				vim.schedule(function()
 					if utils.is_disabled(opts) then
 						M.hide_statusline()
 					else
 						M.restore_statusline(opts)
 					end
-				end, 5)
+				end, 0)
 			end
 		end,
 	})
@@ -130,7 +130,7 @@ end
 M.hide_statusline = function()
 	if not statusline_hidden then
 		statusline_hidden = true
-		vim.defer_fn(function() opt.statusline = " " end, 3)
+		vim.schedule(function() opt.statusline = " " end)
 	end
 end
 
@@ -228,7 +228,11 @@ end
 
 M.init = function(opts)
 	M.foreach_component(opts, function(component, index)
-		statusline[index] = component.lazy == false and M.update_component_value(component, index) or ""
+		if component.lazy == false then
+			M.update_component_value(component, index)
+		else
+			statusline[index] = ""
+		end
 		eval_component_func(component, "init")
 
 		M.cache_event_component_index(component.event, index, "default")
@@ -261,7 +265,6 @@ M.update_component_value = function(component, index)
 			"component " .. component.name and component.name .. " " or "" .. "update() must return string"
 		)
 	end
-	-- return statusline[index]
 end
 
 M.update_all_components = function(opts) M.foreach_component(opts, M.update_component_value) end
