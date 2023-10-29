@@ -39,9 +39,9 @@ M.update_statusline = function() opt.statusline = table.concat(statusline, "") e
 
 M.setup = function(opts)
 	M.init(opts)
-	M.update_statusline()
 	M.refresh_highlight_on_colorscheme(opts)
 	M.disable_for_filetype(opts)
+	M.update_statusline()
 end
 
 M.foreach_component = function(opts, comp_cb, empty_comp_cb)
@@ -54,37 +54,38 @@ M.foreach_component = function(opts, comp_cb, empty_comp_cb)
 			end
 		end
 	else
+		local index = 0
 		for _, component in ipairs(opts.components) do
 			if type(component) == "string" and #component > 0 then
 				if component == "%=" then
-					local index = #component_cache + 1
+					index = index + 1
 					component_cache[index] = component
 					utils.eval_func(empty_comp_cb, component, index)
 				else
 					local status_ok, real_comp = pcall(require, COMPONENT_PARENT_MODULE .. "." .. component)
 					if status_ok then
-						local index = #component_cache + 1
+						index = index + 1
 						component_cache[index] = real_comp
 						comp_cb(real_comp, index)
 					else
 						require("sttusline.utils.notify").error("Failed to load component: " .. component)
 					end
 				end
-			elseif type(component) == "table" and #component > 0 then
-				if type(component[1] == "string") then
+			elseif type(component) == "table" and next(component) then
+				if type(component[1]) == "string" then
 					local status_ok, real_comp = pcall(require, COMPONENT_PARENT_MODULE .. "." .. component[1])
 					if status_ok then
 						if type(component[2]) == "table" then
 							real_comp = vim.tbl_deep_extend("force", real_comp, component[2])
 						end
-						local index = #component_cache + 1
+						index = index + 1
 						component_cache[index] = real_comp
 						comp_cb(real_comp, index)
 					else
 						require("sttusline.utils.notify").error("Failed to load component: " .. component[1])
 					end
 				else
-					local index = #component_cache + 1
+					index = index + 1
 					component_cache[index] = component
 					comp_cb(component, index)
 				end
@@ -152,8 +153,12 @@ M.start_timer = function()
 	)
 end
 
+M.init_component_timer = function()
+	if #timming_component_index_cache > 0 then M.start_timer() end
+end
+
 M.set_component_highlight = function(component, index)
-	if type(component.colors) == "table" and #component.colors > 0 then
+	if type(component.colors) == "table" and next(component.colors) then
 		api.nvim_set_hl(0, HIGHLIGHT_COMPONENT_PREFIX .. index, component.colors)
 	end
 
@@ -202,21 +207,27 @@ end
 
 M.cache_event_component_index = function(event, index, cache_key)
 	if type(event) == "string" then
-		event_component_index_cache[cache_key][event] = event_component_index_cache[cache_key][event] or {}
-		table.insert(event_component_index_cache[cache_key][event], index)
+		if event_component_index_cache[cache_key][event] then
+			table.insert(event_component_index_cache[cache_key][event], index)
+		else
+			event_component_index_cache[cache_key][event] = { index }
+		end
 	elseif type(event) == "table" then
 		for _, e in ipairs(event) do
-			event_component_index_cache[cache_key][e] = event_component_index_cache[cache_key][e] or {}
-			table.insert(event_component_index_cache[cache_key][e], index)
+			if event_component_index_cache[cache_key][e] then
+				table.insert(event_component_index_cache[cache_key][e], index)
+			else
+				event_component_index_cache[cache_key][e] = { index }
+			end
 		end
 	end
 end
 
 M.init_component_autocmds = function()
-	if #event_component_index_cache.default > 0 then
+	if next(event_component_index_cache.default) then
 		M.create_default_autocmd(vim.tbl_keys(event_component_index_cache.default))
 	end
-	if #event_component_index_cache.user > 0 then
+	if next(event_component_index_cache.user) then
 		M.create_user_autocmd(vim.tbl_keys(event_component_index_cache.user))
 	end
 end
@@ -232,7 +243,7 @@ M.init = function(opts)
 		M.set_component_highlight(component, index)
 	end, function(empty_comp, index) statusline[index] = empty_comp end)
 	M.init_component_autocmds()
-	M.start_timer()
+	M.init_component_timer()
 end
 
 M.update_component_value = function(component, index)
@@ -245,7 +256,7 @@ M.update_component_value = function(component, index)
 	local value = eval_component_func(component, "update")
 	if type(value) == "string" then
 		value = utils.add_padding(value, component.padding)
-		if type(component.colors) == "table" and #component.colors > 0 then
+		if type(component.colors) == "table" and next(component.colors) then
 			statusline[index] = utils.add_highlight_name(value, HIGHLIGHT_COMPONENT_PREFIX .. index)
 		else
 			statusline[index] = value
@@ -256,6 +267,7 @@ M.update_component_value = function(component, index)
 			"component " .. component.name and component.name .. " " or "" .. "update() must return string"
 		)
 	end
+	-- return statusline[index]
 end
 
 M.update_all_components = function(opts) M.foreach_component(opts, M.update_component_value) end
@@ -271,7 +283,7 @@ M.run = function(event_name, is_user_event)
 		or event_component_index_cache.default
 	vim.schedule(function()
 		M.update_on_trigger(event_name and event_table[event_name] or timming_component_index_cache)
-		M.update_statusline()
+		if not statusline_hidden then M.update_statusline() end
 	end, 0)
 end
 

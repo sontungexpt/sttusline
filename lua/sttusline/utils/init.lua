@@ -4,9 +4,9 @@ M.eval_func = function(func, ...)
 	if type(func) == "function" then return func(...) end
 end
 
-M.eval_component_func = function(component, func, ...)
+M.eval_component_func = function(component, func_name, ...)
 	return M.eval_func(
-		component[func],
+		component[func_name],
 		type(component.configs) == "table" and component.configs or {},
 		type(component.utils) == "table" and component.utils or {},
 		...
