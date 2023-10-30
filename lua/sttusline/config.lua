@@ -341,7 +341,6 @@ local configs = {
 				local copilot_client = nil
 				local copilot_handler_registered = false
 				local S = {}
-
 				local handle_status_data = function(data) copilot_status = string.lower(data.status) end
 
 				S.check_status = function()
@@ -500,5 +499,4 @@ M.apply_user_config = function(opts)
 	end
 	return configs
 end
-
 return M

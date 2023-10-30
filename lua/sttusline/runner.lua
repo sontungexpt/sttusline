@@ -163,15 +163,13 @@ end
 
 M.set_component_highlight = function(component, index)
 	local colors = component.colors
-	if type(colors) == "table" and next(colors) then
+	if type(colors) == "table" then
 		local is_list = false
 		for k, v in ipairs(colors) do
 			is_list = true
-			if type(v) == "table" and next(v) then
-				api.nvim_set_hl(0, HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k, v)
-			end
+			utils.set_hl(HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k, v)
 		end
-		if not is_list then api.nvim_set_hl(0, HIGHLIGHT_COMPONENT_PREFIX .. index, colors) end
+		if not is_list then utils.set_hl(HIGHLIGHT_COMPONENT_PREFIX .. index, colors) end
 	end
 	eval_component_func(component, "on_highlight")
 end
@@ -300,7 +298,7 @@ M.update_component_value = function(component, index)
 				component.colors[k] = v[2]
 				updating_value[k] =
 					utils.add_highlight_name(v[1], HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k)
-				api.nvim_set_hl(0, HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k, v[2])
+				utils.set_hl(HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k, v[2])
 				eval_component_func(component, "on_highlight")
 			elseif type(v[2]) == "string" then
 				updating_value[k] = utils.add_highlight_name(v[1], v[2])
@@ -312,7 +310,8 @@ M.update_component_value = function(component, index)
 	else
 		statusline[index] = ""
 		require("sttusline.utils.notify").error(
-			"component " .. component.name and component.name .. " " or "" .. "update() must return string"
+			"component " .. component.name and component.name .. " "
+				or "" .. "update() must return string or table"
 		)
 	end
 end

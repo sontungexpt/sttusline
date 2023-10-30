@@ -1,3 +1,4 @@
+local api = vim.api
 local color_utils = require("sttusline.utils.color")
 local M = {}
 
@@ -82,8 +83,7 @@ M.add_padding = function(str, value)
 end
 
 M.add_highlight_name = function(str, highlight_name)
-	vim.validate { str = { str, "string" }, highlight_name = { highlight_name, "string" } }
-	return "%#" .. highlight_name .. "#" .. str .. "%*"
+	return #str > 0 and "%#" .. highlight_name .. "#" .. str .. "%*" or ""
 end
 
 M.array_filter = function(func, arr, ...)
@@ -97,8 +97,8 @@ end
 M.is_color = function(color) return type(color) == "string" and color:match("^#%x%x%x%x%x%x$") end
 
 M.is_disabled = function(opts)
-	local filetype = vim.api.nvim_buf_get_option(0, "filetype")
-	local buftype = vim.api.nvim_buf_get_option(0, "buftype")
+	local filetype = api.nvim_buf_get_option(0, "filetype")
+	local buftype = api.nvim_buf_get_option(0, "buftype")
 	if
 		vim.tbl_contains(opts.disabled.filetypes or {}, filetype)
 		or vim.tbl_contains(opts.disabled.buftypes or {}, buftype)
@@ -106,6 +106,20 @@ M.is_disabled = function(opts)
 		return true
 	end
 	return false
+end
+
+M.set_hl = function(group, opts)
+	if type(opts) == "table" and next(opts) then
+		if opts.fg and not M.is_color(opts.fg) then
+			local ok, colors = pcall(api.nvim_get_hl_by_name, opts.fg, true)
+			opts.fg = ok and colors.foreground or nil
+		end
+		if opts.bg and not M.is_color(opts.bg) then
+			local ok, colors = pcall(api.nvim_get_hl_by_name, opts.bg, true)
+			opts.bg = ok and colors.background or nil
+		end
+		pcall(api.nvim_set_hl, 0, group, opts)
+	end
 end
 
 return M
