@@ -413,7 +413,6 @@ local configs = {
 					inprogress = "",
 				},
 			},
-
 			update = function(_, _, space)
 				if package.loaded["copilot"] then
 					space.register_status_notification_handler()
