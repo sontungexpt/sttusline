@@ -1,21 +1,16 @@
-local FILENAME_HIGHLIGHT = "STTUSLINE_FILE_NAME"
-local ICON_HIGHLIGHT = "STTUSLINE_FILE_ICON"
-
 local fn = vim.fn
 local get_option = vim.api.nvim_buf_get_option
-local hl = vim.api.nvim_set_hl
 
 local colors = require("sttusline.utils.color")
-local utils = require("sttusline.utils")
 
 return {
 	name = "filename",
 	event = { "BufEnter", "WinEnter" }, -- The component will be update when the event is triggered
 	user_event = { "VeryLazy" },
-	configs = {
-		color = { fg = colors.orange, bg = colors.bg },
+	colors = {
+		{},
+		{ fg = colors.orange, bg = colors.bg },
 	},
-
 	update = function()
 		local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 
@@ -49,15 +44,6 @@ return {
 			end
 		end
 
-		hl(0, ICON_HIGHLIGHT, { fg = color_icon, bg = colors.bg })
-
-		if icon then
-			return utils.add_highlight_name(icon, ICON_HIGHLIGHT)
-				.. " "
-				.. utils.add_highlight_name(filename, FILENAME_HIGHLIGHT)
-		else
-			return utils.add_highlight_name(filename, FILENAME_HIGHLIGHT)
-		end
+		return { icon and { icon, { fg = color_icon } } or "", " " .. filename }
 	end,
-	on_highlight = function(configs) hl(0, FILENAME_HIGHLIGHT, configs.color) end,
 }

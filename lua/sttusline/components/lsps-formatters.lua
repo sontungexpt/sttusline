@@ -3,19 +3,7 @@ local colors = require("sttusline.utils.color")
 return {
 	name = "lsps-formatters",
 	event = { "LspAttach", "LspDetach", "BufWritePost", "BufEnter", "VimResized" }, -- The component will be update when the event is triggered
-
-	timing = false, -- The component will be update every time interval
-
-	lazy = true,
-
-	utils = {},
-	configs = {},
-
-	-- number or table
-	padding = 1, -- { left = 1, right = 1 }
 	colors = { fg = colors.magenta, bg = colors.bg }, -- { fg = colors.black, bg = colors.white }
-
-	init = function() end,
 	update = function()
 		local buf_clients = vim.lsp.buf_get_clients()
 		if not buf_clients or #buf_clients == 0 then return "NO LSP  " end
@@ -91,6 +79,4 @@ return {
 		return table.concat(vim.fn.uniq(server_names), ", ")
 	end,
 	condition = function() return vim.o.columns > 70 end,
-
-	on_highlight = function() end,
 }

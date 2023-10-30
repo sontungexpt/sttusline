@@ -162,10 +162,17 @@ M.init_component_timer = function()
 end
 
 M.set_component_highlight = function(component, index)
-	if type(component.colors) == "table" and next(component.colors) then
-		api.nvim_set_hl(0, HIGHLIGHT_COMPONENT_PREFIX .. index, component.colors)
+	local colors = component.colors
+	if type(colors) == "table" and next(colors) then
+		local is_list = false
+		for k, v in ipairs(colors) do
+			is_list = true
+			if type(v) == "table" and next(v) then
+				api.nvim_set_hl(0, HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k, v)
+			end
+		end
+		if not is_list then api.nvim_set_hl(0, HIGHLIGHT_COMPONENT_PREFIX .. index, colors) end
 	end
-
 	eval_component_func(component, "on_highlight")
 end
 
@@ -255,14 +262,53 @@ M.update_component_value = function(component, index)
 		return
 	end
 
-	local value = eval_component_func(component, "update")
-	if type(value) == "string" then
-		value = utils.add_padding(value, component.padding)
-		if type(component.colors) == "table" and next(component.colors) then
-			statusline[index] = utils.add_highlight_name(value, HIGHLIGHT_COMPONENT_PREFIX .. index)
+	local updating_value = eval_component_func(component, "update")
+	local colors = component.colors
+	if type(updating_value) == "string" then
+		updating_value = utils.add_padding(updating_value, component.padding)
+		if type(colors) == "table" and next(colors) then
+			statusline[index] = utils.add_highlight_name(updating_value, HIGHLIGHT_COMPONENT_PREFIX .. index)
+		elseif type(colors) == "string" then
+			statusline[index] = utils.add_highlight_name(updating_value, colors)
 		else
-			statusline[index] = value
+			statusline[index] = updating_value
 		end
+	elseif type(updating_value) == "table" then
+		-- { "filetype_icon", "filename" }
+		-- { {"filetype_icon", { fg="", bg="" }}, "filename" }
+
+		-- filter out invalid value
+		updating_value = utils.array_filter(
+			function(v) return type(v) == "string" or (type(v) == "table" and type(v[1]) == "string") end,
+			updating_value
+		)
+
+		updating_value = utils.add_padding(updating_value, component.padding)
+		for k, v in ipairs(updating_value) do
+			if type(v) == "string" then
+				if type(colors[k]) == "table" and next(colors[k]) then
+					updating_value[k] =
+						utils.add_highlight_name(v, HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k)
+				elseif type(colors[k]) == "string" then
+					updating_value[k] = utils.add_highlight_name(v, colors[k])
+				else
+					updating_value[k] = v
+				end
+				-- v type is table
+			elseif type(v[2]) == "table" and next(v[2]) then
+				component.colors = colors or {}
+				component.colors[k] = v[2]
+				updating_value[k] =
+					utils.add_highlight_name(v[1], HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k)
+				api.nvim_set_hl(0, HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k, v[2])
+				eval_component_func(component, "on_highlight")
+			elseif type(v[2]) == "string" then
+				updating_value[k] = utils.add_highlight_name(v[1], v[2])
+			else
+				updating_value[k] = v[1]
+			end
+		end
+		statusline[index] = table.concat(updating_value, "")
 	else
 		statusline[index] = ""
 		require("sttusline.utils.notify").error(

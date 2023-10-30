@@ -68,17 +68,10 @@ return {
 		auto_hide_on_vim_resized = true,
 	},
 
-	-- number or table
-	padding = 0, -- { left = 1, right = 1 }
-
 	update = function(configs)
 		local mode_code = vim.api.nvim_get_mode().mode
 		local mode = configs.modes[mode_code]
-		if mode then
-			local hl_name = mode[2]
-			vim.api.nvim_set_hl(0, hl_name, configs.mode_colors[hl_name])
-			return utils.add_highlight_name(" " .. mode[1] .. " ", hl_name)
-		end
+		if mode then return { { mode[1], configs.mode_colors[mode[2]] } } end
 		return " " .. mode_code .. " "
 	end,
 	condition = function(configs)

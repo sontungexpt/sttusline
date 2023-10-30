@@ -1,5 +1,4 @@
 local colors = require("sttusline.utils.color")
-local utils = require("sttusline.utils")
 local M = {}
 
 local configs = {
@@ -12,10 +11,8 @@ local configs = {
 	components = {
 		{
 			name = "mode",
-
 			event = { "ModeChanged", "VimResized" }, -- The component will be update when the event is triggered
 			user_event = { "VeryLazy" },
-
 			configs = {
 				modes = {
 					["n"] = { "NORMAL", "STTUSLINE_NORMAL_MODE" },
@@ -76,17 +73,14 @@ local configs = {
 				},
 				auto_hide_on_vim_resized = true,
 			},
-
 			-- number or table
-			padding = 0, -- { left = 1, right = 1 }
-
+			padding = 1, -- { left = 1, right = 1 }
 			update = function(configs)
 				local mode_code = vim.api.nvim_get_mode().mode
 				local mode = configs.modes[mode_code]
 				if mode then
 					local hl_name = mode[2]
-					vim.api.nvim_set_hl(0, hl_name, configs.mode_colors[hl_name])
-					return utils.add_highlight_name(" " .. mode[1] .. " ", hl_name)
+					return { { mode[1], configs.mode_colors[hl_name] } }
 				end
 				return " " .. mode_code .. " "
 			end,
@@ -106,16 +100,11 @@ local configs = {
 			name = "filename",
 			event = { "BufEnter", "WinEnter" }, -- The component will be update when the event is triggered
 			user_event = { "VeryLazy" },
-			configs = {
-				color = { fg = colors.orange, bg = colors.bg },
+			colors = {
+				{},
+				{ fg = colors.orange, bg = colors.bg },
 			},
-
-			space = {
-				FILENAME_HIGHLIGHT = "STTUSLINE_FILE_NAME",
-				ICON_HIGHLIGHT = "STTUSLINE_FILE_ICON",
-			},
-
-			update = function(_, _, space)
+			update = function()
 				local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 
 				local filename = vim.fn.expand("%:t")
@@ -147,19 +136,7 @@ local configs = {
 						icon, color_icon = "", colors.red
 					end
 				end
-
-				vim.api.nvim_set_hl(0, space.ICON_HIGHLIGHT, { fg = color_icon, bg = colors.bg })
-
-				if icon then
-					return utils.add_highlight_name(icon, space.ICON_HIGHLIGHT)
-						.. " "
-						.. utils.add_highlight_name(filename, space.FILENAME_HIGHLIGHT)
-				else
-					return utils.add_highlight_name(filename, space.FILENAME_HIGHLIGHT)
-				end
-			end,
-			on_highlight = function(configs, _, space)
-				vim.api.nvim_set_hl(0, space.FILENAME_HIGHLIGHT, configs.color)
+				return { icon and { icon, { fg = color_icon, bg = colors.bg } } or "", " " .. filename }
 			end,
 		},
 		{
@@ -195,8 +172,10 @@ local configs = {
 			name = "git-diff",
 			event = { "BufWritePost", "VimResized", "BufEnter" }, -- The component will be update when the event is triggered
 			user_event = { "GitSignsUpdate" },
-			space = {
-				ADD_HIGHLIGHT_PREFIX = "STTUSLINE_GIT_DIFF_",
+			colors = {
+				{ fg = colors.tokyo_diagnostics_hint, bg = colors.bg },
+				{ fg = colors.tokyo_diagnostics_info, bg = colors.bg },
+				{ fg = colors.tokyo_diagnostics_error, bg = colors.bg },
 			},
 			configs = {
 				icons = {
@@ -204,60 +183,41 @@ local configs = {
 					changed = "",
 					removed = "",
 				},
-				colors = {
-					added = { fg = colors.tokyo_diagnostics_hint, bg = colors.bg },
-					changed = { fg = colors.tokyo_diagnostics_hint, bg = colors.bg },
-					removed = { fg = colors.tokyo_diagnostics_error, bg = colors.bg },
-				},
 				order = { "added", "changed", "removed" },
 			},
-			update = function(configs, _, space)
+			update = function(configs)
 				local git_status = vim.b.gitsigns_status_dict
 
 				local order = configs.order
 				local icons = configs.icons
-				local diff_colors = configs.colors
 
 				local result = {}
-				for _, v in ipairs(order) do
+				for k, v in ipairs(order) do
 					if git_status[v] and git_status[v] > 0 then
-						local color = diff_colors[v]
-
-						if color then
-							if utils.is_color(color) or type(color) == "table" then
-								table.insert(
-									result,
-									utils.add_highlight_name(
-										icons[v] .. " " .. git_status[v],
-										space.ADD_HIGHLIGHT_PREFIX .. v
-									)
-								)
-							else
-								table.insert(result, utils.add_highlight_name(icons[v] .. " " .. git_status[v], color))
-							end
+						if result[k - 1] and result[k - 1] ~= "" then
+							table.insert(result, " " .. icons[v] .. " " .. git_status[v])
+						else
+							table.insert(result, icons[v] .. " " .. git_status[v])
 						end
+					else
+						table.insert(result, "")
 					end
 				end
-
-				return #result > 0 and table.concat(result, " ") or ""
+				return result
 			end,
 			condition = function() return vim.b.gitsigns_status_dict ~= nil and vim.o.columns > 70 end,
-			on_highlight = function(configs, _, space)
-				local conf_colors = configs.colors
-				for key, color in pairs(conf_colors) do
-					if utils.is_color(color) then
-						vim.api.nvim_set_hl(0, space.ADD_HIGHLIGHT_PREFIX .. key, { fg = color, bg = colors.bg })
-					elseif type(color) == "table" then
-						vim.api.nvim_set_hl(0, space.ADD_HIGHLIGHT_PREFIX .. key, color)
-					end
-				end
-			end,
 		},
 		"%=",
 		{
 			name = "diagnostics",
 			event = { "DiagnosticChanged" }, -- The component will be update when the event is triggered
+			colors = {
 
+				{ fg = colors.tokyo_diagnostics_error, bg = colors.bg },
+				{ fg = colors.tokyo_diagnostics_warn, bg = colors.bg },
+				{ fg = colors.tokyo_diagnostics_hint, bg = colors.bg },
+				{ fg = colors.tokyo_diagnostics_info, bg = colors.bg },
+			},
 			configs = {
 				icons = {
 					ERROR = "",
@@ -265,76 +225,38 @@ local configs = {
 					HINT = "󰌵",
 					WARN = "",
 				},
-				diagnostics_color = {
-					ERROR = { fg = colors.tokyo_diagnostics_error, bg = colors.bg },
-					WARN = { fg = colors.tokyo_diagnostics_warn, bg = colors.bg },
-					HINT = { fg = colors.tokyo_diagnostics_hint, bg = colors.bg },
-					INFO = { fg = colors.tokyo_diagnostics_info, bg = colors.bg },
-				},
 				order = { "ERROR", "WARN", "INFO", "HINT" },
 			},
-			space = {
-				HIGHLIGHT_PREFIX = "STTUSLINE_DIAGNOSTICS_",
-			},
-			update = function(configs, _, space)
+			update = function(configs)
 				local result = {}
 
 				local icons = configs.icons
-				local diagnostics_color = configs.diagnostics_color
 				local order = configs.order
 
-				for _, key in ipairs(order) do
+				for index, key in ipairs(order) do
 					local count = #vim.diagnostic.get(0, { severity = vim.diagnostic.severity[key] })
 
 					if count > 0 then
-						local color = diagnostics_color[key]
-						if color then
-							if utils.is_color(color) or type(color) == "table" then
-								table.insert(
-									result,
-									utils.add_highlight_name(icons[key] .. " " .. count, space.HIGHLIGHT_PREFIX .. key)
-								)
-							else
-								table.insert(result, utils.add_highlight_name(icons[key] .. " " .. count, color))
-							end
+						if result[index - 1] and result[index - 1] ~= "" then
+							table.insert(result, " " .. icons[key] .. " " .. count)
+						else
+							table.insert(result, icons[key] .. " " .. count)
 						end
+					else
+						table.insert(result, "")
 					end
 				end
-
-				return #result > 0 and table.concat(result, " ") or ""
+				return result
 			end,
 			condition = function()
 				local filetype = vim.api.nvim_buf_get_option(0, "filetype")
 				return filetype ~= "lazy"
 			end,
-
-			on_highlight = function(configs, _, space)
-				local diagnostics_color = configs.diagnostics_color
-				for key, color in pairs(diagnostics_color) do
-					if utils.is_color(color) then
-						vim.api.nvim_set_hl(0, space.HIGHLIGHT_PREFIX .. key, { fg = color, bg = colors.bg })
-					elseif type(color) == "table" then
-						vim.api.nvim_set_hl(0, space.HIGHLIGHT_PREFIX .. key, color)
-					end
-				end
-			end,
 		},
 		{
 			name = "lsps-formatters",
 			event = { "LspAttach", "LspDetach", "BufWritePost", "BufEnter", "VimResized" }, -- The component will be update when the event is triggered
-
-			timing = false, -- The component will be update every time interval
-
-			lazy = true,
-
-			utils = {},
-			configs = {},
-
-			-- number or table
-			padding = 1, -- { left = 1, right = 1 }
 			colors = { fg = colors.magenta, bg = colors.bg }, -- { fg = colors.black, bg = colors.white }
-
-			init = function() end,
 			update = function()
 				local buf_clients = vim.lsp.buf_get_clients()
 				if not buf_clients or #buf_clients == 0 then return "NO LSP  " end
@@ -410,13 +332,10 @@ local configs = {
 				return table.concat(vim.fn.uniq(server_names), ", ")
 			end,
 			condition = function() return vim.o.columns > 70 end,
-
-			on_highlight = function() end,
 		},
 		{
 			name = "copilot",
 			event = { "InsertEnter", "InsertLeave", "CursorHoldI" }, -- The component will be update when the event is triggered
-
 			space = function(configs)
 				local copilot_status = ""
 				local copilot_client = nil
@@ -540,18 +459,11 @@ local configs = {
 		},
 		{
 			name = "pos-cursor-progress",
-
 			event = { "CursorMoved", "CursorMovedI" }, -- The component will be update when the event is triggered
 			user_event = { "VeryLazy" },
-
-			timing = false, -- The component will be update every time interval
-
-			lazy = true,
-
 			configs = {
 				chars = { "_", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█" },
 			},
-
 			-- number or table
 			padding = 0, -- { left = 1, right = 1 }
 			colors = { fg = colors.orange, bg = colors.bg }, -- { fg = colors.black, bg = colors.white }
