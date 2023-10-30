@@ -50,12 +50,12 @@ M.add_padding = function(str, value)
 		return str
 	elseif type(value) == "table" then
 		local left_padding = type(value.left) == "number"
-				and value.left >= 0
-				and (" "):rep(math.floor(value.left))
+			and value.left >= 0
+			and (" "):rep(math.floor(value.left))
 			or " "
 		local right_padding = type(value.right) == "number"
-				and value.right >= 0
-				and (" "):rep(math.floor(value.right))
+			and value.right >= 0
+			and (" "):rep(math.floor(value.right))
 			or " "
 
 		if type(str) == "string" then
@@ -97,19 +97,12 @@ end
 M.is_color = function(color) return type(color) == "string" and color:match("^#%x%x%x%x%x%x$") end
 
 M.is_disabled = function(opts)
-	local filetype = api.nvim_buf_get_option(0, "filetype")
-	local buftype = api.nvim_buf_get_option(0, "buftype")
-	if
-		vim.tbl_contains(opts.disabled.filetypes or {}, filetype)
-		or vim.tbl_contains(opts.disabled.buftypes or {}, buftype)
-	then
-		return true
-	end
-	return false
+	return vim.tbl_contains(opts.disabled.filetypes or {}, api.nvim_buf_get_option(0, "filetype"))
+		or vim.tbl_contains(opts.disabled.buftypes or {}, api.nvim_buf_get_option(0, "buftype"))
 end
 
 M.set_hl = function(group, opts)
-	if type(opts) == "table" and next(opts) then
+	if M.is_highlight_option(opts) then
 		if opts.fg and not M.is_color(opts.fg) then
 			local ok, colors = pcall(api.nvim_get_hl_by_name, opts.fg, true)
 			opts.fg = ok and colors.foreground or nil
@@ -121,5 +114,11 @@ M.set_hl = function(group, opts)
 		pcall(api.nvim_set_hl, 0, group, opts)
 	end
 end
+
+M.is_highlight_option = function(opts) return type(opts) == "table" and (opts.fg ~= nil or opts.bg ~= nil) end
+
+M.is_highlight_name = function(hl_name) return type(hl_name) == "string" end
+
+M.is_existed_highlight_name = function(hl_name) return pcall(api.nvim_get_hl_by_name, hl_name, true) end
 
 return M

@@ -12,6 +12,8 @@ local HIGHLIGHT_COMPONENT_PREFIX = "STTUSLINE_COMPONENT_"
 
 local utils = require("sttusline.utils")
 local eval_component_func = utils.eval_component_func
+local is_highlight_option = utils.is_highlight_option
+local is_highlight_name = utils.is_highlight_name
 
 local core_autocmd_group = nil
 local component_autocmd_group = nil
@@ -61,11 +63,11 @@ M.foreach_component = function(opts, comp_cb, empty_comp_cb)
 		local index = 0
 		for _, component in ipairs(opts.components) do
 			if type(component) == "string" and #component > 0 then
-				if component == "%=" then
+				if component == "%=" then -- empty component
 					index = index + 1
 					component_cache[index] = component
 					utils.eval_func(empty_comp_cb, component, index)
-				else
+				else -- default component name
 					local status_ok, real_comp = pcall(require, COMPONENT_PARENT_MODULE .. "." .. component)
 					if status_ok then
 						index = index + 1
@@ -76,10 +78,10 @@ M.foreach_component = function(opts, comp_cb, empty_comp_cb)
 					end
 				end
 			elseif type(component) == "table" and next(component) then
-				if type(component[1]) == "string" then
+				if type(component[1]) == "string" then -- default component name
 					local status_ok, real_comp = pcall(require, COMPONENT_PARENT_MODULE .. "." .. component[1])
 					if status_ok then
-						if type(component[2]) == "table" then
+						if type(component[2]) == "table" then -- override component
 							real_comp = vim.tbl_deep_extend("force", real_comp, component[2])
 						end
 						index = index + 1
@@ -88,7 +90,7 @@ M.foreach_component = function(opts, comp_cb, empty_comp_cb)
 					else
 						require("sttusline.utils.notify").error("Failed to load component: " .. component[1])
 					end
-				else
+				else -- custom component
 					index = index + 1
 					component_cache[index] = component
 					comp_cb(component, index)
@@ -253,6 +255,13 @@ M.init = function(opts)
 	M.init_component_timer()
 end
 
+M.get_valid_updating_components = function(updating_components)
+	return utils.array_filter(
+		function(comp) return type(comp) == "string" or (type(comp) == "table" and type(comp[1]) == "string") end,
+		updating_components
+	)
+end
+
 M.update_component_value = function(component, index)
 	local should_display = eval_component_func(component, "condition")
 	if type(should_display) == "boolean" and not should_display then
@@ -261,48 +270,61 @@ M.update_component_value = function(component, index)
 	end
 
 	local updating_value = eval_component_func(component, "update")
+	-- updating_value must be string or table
+	-- if updating_value is table, then it must be a list of string or list of
+	-- two elements table, the first element is string, the second element is the
+	-- colors option of component
+	-- example:
+	-- { "filetype_icon", "filename" }
+	-- { {"filetype_icon", { fg="", bg="" }}, "filename" }
+	-- { {"filetype_icon"}  }
+
 	local colors = component.colors
 	if type(updating_value) == "string" then
 		updating_value = utils.add_padding(updating_value, component.padding)
-		if type(colors) == "table" and next(colors) then
+		if is_highlight_option(colors) then
+			-- if assign colors to component, then add highlight name to component
 			statusline[index] = utils.add_highlight_name(updating_value, HIGHLIGHT_COMPONENT_PREFIX .. index)
-		elseif type(colors) == "string" then
+		elseif is_highlight_name(colors) then
+			-- if assign the highlight name to component, then add that highlight name to component
 			statusline[index] = utils.add_highlight_name(updating_value, colors)
 		else
+			-- if not assign colors to component, then not need to add highlight name
 			statusline[index] = updating_value
 		end
 	elseif type(updating_value) == "table" then
-		-- { "filetype_icon", "filename" }
-		-- { {"filetype_icon", { fg="", bg="" }}, "filename" }
-
 		-- filter out invalid value
-		updating_value = utils.array_filter(
-			function(v) return type(v) == "string" or (type(v) == "table" and type(v[1]) == "string") end,
-			updating_value
-		)
+		updating_value = M.get_valid_updating_components(updating_value)
 
 		updating_value = utils.add_padding(updating_value, component.padding)
 		for k, v in ipairs(updating_value) do
 			if type(v) == "string" then
-				if type(colors[k]) == "table" and next(colors[k]) then
-					updating_value[k] =
-						utils.add_highlight_name(v, HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k)
-				elseif type(colors[k]) == "string" then
-					updating_value[k] = utils.add_highlight_name(v, colors[k])
+				-- "filename"
+				if type(colors) == "table" then
+					if is_highlight_option(colors[k]) then
+						updating_value[k] =
+							utils.add_highlight_name(v, HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k)
+					elseif is_highlight_name(colors[k]) then
+						updating_value[k] = utils.add_highlight_name(v, colors[k])
+					end
 				else
 					updating_value[k] = v
 				end
-				-- v type is table
-			elseif type(v[2]) == "table" and next(v[2]) then
+
+				-- after filter, the v is a table from below
+			elseif is_highlight_option(v[2]) then
+				-- { "filename", { fg="", bg="" }}
 				component.colors = colors or {}
 				component.colors[k] = v[2]
 				updating_value[k] =
 					utils.add_highlight_name(v[1], HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k)
 				utils.set_hl(HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k, v[2])
 				eval_component_func(component, "on_highlight")
-			elseif type(v[2]) == "string" then
+			elseif is_highlight_name(v[2]) then
+				-- { "filename", "HIGHLIGHT_NAME" }
 				updating_value[k] = utils.add_highlight_name(v[1], v[2])
 			else
+				-- {"filename"}
 				updating_value[k] = v[1]
 			end
 		end
@@ -311,7 +333,7 @@ M.update_component_value = function(component, index)
 		statusline[index] = ""
 		require("sttusline.utils.notify").error(
 			"component " .. component.name and component.name .. " "
-				or "" .. "update() must return string or table"
+			or "" .. "update() must return string or table"
 		)
 	end
 end
