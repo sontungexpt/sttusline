@@ -5,9 +5,9 @@ return {
 	event = { "BufWritePost", "VimResized", "BufEnter" }, -- The component will be update when the event is triggered
 	user_event = { "GitSignsUpdate" },
 	colors = {
-		{ fg = colors.tokyo_diagnostics_hint, bg = colors.bg },
-		{ fg = colors.tokyo_diagnostics_info, bg = colors.bg },
-		{ fg = colors.tokyo_diagnostics_error, bg = colors.bg },
+		{ fg = colors.tokyo_diagnostics_hint },
+		{ fg = colors.tokyo_diagnostics_info },
+		{ fg = colors.tokyo_diagnostics_error },
 	},
 	configs = {
 		icons = {

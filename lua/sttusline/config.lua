@@ -2,6 +2,7 @@ local colors = require("sttusline.utils.color")
 local M = {}
 
 local configs = {
+	statusline_color = "StatusLine",
 	disabled = {
 		filetypes = {},
 		buftypes = {
@@ -61,15 +62,15 @@ local configs = {
 					["x"] = { "CONFIRM", "STTUSLINE_CONFIRM_MODE" },
 				},
 				mode_colors = {
-					["STTUSLINE_NORMAL_MODE"] = { fg = colors.blue, bg = colors.bg },
-					["STTUSLINE_INSERT_MODE"] = { fg = colors.green, bg = colors.bg },
-					["STTUSLINE_VISUAL_MODE"] = { fg = colors.purple, bg = colors.bg },
-					["STTUSLINE_NTERMINAL_MODE"] = { fg = colors.gray, bg = colors.bg },
-					["STTUSLINE_TERMINAL_MODE"] = { fg = colors.cyan, bg = colors.bg },
-					["STTUSLINE_REPLACE_MODE"] = { fg = colors.red, bg = colors.bg },
-					["STTUSLINE_SELECT_MODE"] = { fg = colors.magenta, bg = colors.bg },
-					["STTUSLINE_COMMAND_MODE"] = { fg = colors.yellow, bg = colors.bg },
-					["STTUSLINE_CONFIRM_MODE"] = { fg = colors.yellow, bg = colors.bg },
+					["STTUSLINE_NORMAL_MODE"] = { fg = colors.blue },
+					["STTUSLINE_INSERT_MODE"] = { fg = colors.green },
+					["STTUSLINE_VISUAL_MODE"] = { fg = colors.purple },
+					["STTUSLINE_NTERMINAL_MODE"] = { fg = colors.gray },
+					["STTUSLINE_TERMINAL_MODE"] = { fg = colors.cyan },
+					["STTUSLINE_REPLACE_MODE"] = { fg = colors.red },
+					["STTUSLINE_SELECT_MODE"] = { fg = colors.magenta },
+					["STTUSLINE_COMMAND_MODE"] = { fg = colors.yellow },
+					["STTUSLINE_CONFIRM_MODE"] = { fg = colors.yellow },
 				},
 				auto_hide_on_vim_resized = true,
 			},
@@ -102,7 +103,7 @@ local configs = {
 			user_event = { "VeryLazy" },
 			colors = {
 				{},
-				{ fg = colors.orange, bg = colors.bg },
+				{ fg = colors.orange },
 			},
 			update = function()
 				local has_devicons, devicons = pcall(require, "nvim-web-devicons")
@@ -136,7 +137,7 @@ local configs = {
 						icon, color_icon = "", colors.red
 					end
 				end
-				return { icon and { icon, { fg = color_icon, bg = colors.bg } } or "", " " .. filename }
+				return { icon and { icon, { fg = color_icon } } or "", " " .. filename }
 			end,
 		},
 		{
@@ -146,7 +147,7 @@ local configs = {
 			configs = {
 				icon = "",
 			},
-			colors = { fg = colors.pink, bg = colors.bg }, -- { fg = colors.black, bg = colors.white }
+			colors = { fg = colors.pink }, -- { fg = colors.black, bg = colors.white }
 			space = {
 				get_branch = function()
 					local git_dir = vim.fn.finddir(".git", ".;")
@@ -173,9 +174,9 @@ local configs = {
 			event = { "BufWritePost", "VimResized", "BufEnter" }, -- The component will be update when the event is triggered
 			user_event = { "GitSignsUpdate" },
 			colors = {
-				{ fg = colors.tokyo_diagnostics_hint, bg = colors.bg },
-				{ fg = colors.tokyo_diagnostics_info, bg = colors.bg },
-				{ fg = colors.tokyo_diagnostics_error, bg = colors.bg },
+				{ fg = colors.tokyo_diagnostics_hint },
+				{ fg = colors.tokyo_diagnostics_info },
+				{ fg = colors.tokyo_diagnostics_error },
 			},
 			configs = {
 				icons = {
@@ -213,10 +214,10 @@ local configs = {
 			event = { "DiagnosticChanged" }, -- The component will be update when the event is triggered
 			colors = {
 
-				{ fg = colors.tokyo_diagnostics_error, bg = colors.bg },
-				{ fg = colors.tokyo_diagnostics_warn, bg = colors.bg },
-				{ fg = colors.tokyo_diagnostics_hint, bg = colors.bg },
-				{ fg = colors.tokyo_diagnostics_info, bg = colors.bg },
+				{ fg = colors.tokyo_diagnostics_error },
+				{ fg = colors.tokyo_diagnostics_warn },
+				{ fg = colors.tokyo_diagnostics_hint },
+				{ fg = colors.tokyo_diagnostics_info },
 			},
 			configs = {
 				icons = {
@@ -256,7 +257,7 @@ local configs = {
 		{
 			name = "lsps-formatters",
 			event = { "LspAttach", "LspDetach", "BufWritePost", "BufEnter", "VimResized" }, -- The component will be update when the event is triggered
-			colors = { fg = colors.magenta, bg = colors.bg }, -- { fg = colors.black, bg = colors.white }
+			colors = { fg = colors.magenta }, -- { fg = colors.black, bg = colors.white }
 			update = function()
 				local buf_clients = vim.lsp.buf_get_clients()
 				if not buf_clients or #buf_clients == 0 then return "NO LSP  " end
@@ -425,7 +426,7 @@ local configs = {
 			name = "indent",
 			event = { "BufEnter" }, -- The component will be update when the event is triggered
 			user_event = { "VeryLazy" },
-			colors = { fg = colors.cyan, bg = colors.bg }, -- { fg = colors.black, bg = colors.white }
+			colors = { fg = colors.cyan }, -- { fg = colors.black, bg = colors.white }
 			update = function() return "Tab: " .. vim.api.nvim_buf_get_option(0, "shiftwidth") .. "" end,
 		},
 		{
@@ -439,7 +440,7 @@ local configs = {
 				["utf-16le"] = "",
 				["utf-16be"] = "",
 			},
-			colors = { fg = colors.yellow, bg = colors.bg }, -- { fg = colors.black, bg = colors.white }
+			colors = { fg = colors.yellow }, -- { fg = colors.black, bg = colors.white }
 			update = function(configs)
 				local enc = vim.bo.fenc ~= "" and vim.bo.fenc or vim.o.enc
 				return configs[enc] or enc
@@ -464,7 +465,7 @@ local configs = {
 			},
 			-- number or table
 			padding = 0, -- { left = 1, right = 1 }
-			colors = { fg = colors.orange, bg = colors.bg }, -- { fg = colors.black, bg = colors.white }
+			colors = { fg = colors.orange }, -- { fg = colors.black, bg = colors.white }
 
 			update = function(configs)
 				return configs.chars[math.ceil(vim.fn.line(".") / vim.fn.line("$") * #configs.chars)] or ""
@@ -475,6 +476,9 @@ local configs = {
 
 M.setup = function(user_opts)
 	user_opts = M.apply_user_config(user_opts)
+	if user_opts.statusline_color then
+		require("sttusline.utils").set_hl("StatusLine", { bg = user_opts.statusline_color })
+	end
 	return user_opts
 end
 

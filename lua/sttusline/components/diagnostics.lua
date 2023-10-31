@@ -4,10 +4,10 @@ return {
 	name = "diagnostics",
 	event = { "DiagnosticChanged" }, -- The component will be update when the event is triggered
 	colors = {
-		{ fg = colors.tokyo_diagnostics_error, bg = colors.bg },
-		{ fg = colors.tokyo_diagnostics_warn, bg = colors.bg },
-		{ fg = colors.tokyo_diagnostics_hint, bg = colors.bg },
-		{ fg = colors.tokyo_diagnostics_info, bg = colors.bg },
+		{ fg = colors.tokyo_diagnostics_error },
+		{ fg = colors.tokyo_diagnostics_warn },
+		{ fg = colors.tokyo_diagnostics_hint },
+		{ fg = colors.tokyo_diagnostics_info },
 	},
 	configs = {
 		icons = {

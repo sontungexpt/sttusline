@@ -1,4 +1,3 @@
-local utils = require("sttusline.utils")
 local colors = require("sttusline.utils.color")
 
 return {
@@ -55,15 +54,15 @@ return {
 			["x"] = { "CONFIRM", "STTUSLINE_CONFIRM_MODE" },
 		},
 		mode_colors = {
-			["STTUSLINE_NORMAL_MODE"] = { fg = colors.blue, bg = colors.bg },
-			["STTUSLINE_INSERT_MODE"] = { fg = colors.green, bg = colors.bg },
-			["STTUSLINE_VISUAL_MODE"] = { fg = colors.purple, bg = colors.bg },
-			["STTUSLINE_NTERMINAL_MODE"] = { fg = colors.gray, bg = colors.bg },
-			["STTUSLINE_TERMINAL_MODE"] = { fg = colors.cyan, bg = colors.bg },
-			["STTUSLINE_REPLACE_MODE"] = { fg = colors.red, bg = colors.bg },
-			["STTUSLINE_SELECT_MODE"] = { fg = colors.magenta, bg = colors.bg },
-			["STTUSLINE_COMMAND_MODE"] = { fg = colors.yellow, bg = colors.bg },
-			["STTUSLINE_CONFIRM_MODE"] = { fg = colors.yellow, bg = colors.bg },
+			["STTUSLINE_NORMAL_MODE"] = { fg = colors.blue },
+			["STTUSLINE_INSERT_MODE"] = { fg = colors.green },
+			["STTUSLINE_VISUAL_MODE"] = { fg = colors.purple },
+			["STTUSLINE_NTERMINAL_MODE"] = { fg = colors.gray },
+			["STTUSLINE_TERMINAL_MODE"] = { fg = colors.cyan },
+			["STTUSLINE_REPLACE_MODE"] = { fg = colors.red },
+			["STTUSLINE_SELECT_MODE"] = { fg = colors.magenta },
+			["STTUSLINE_COMMAND_MODE"] = { fg = colors.yellow },
+			["STTUSLINE_CONFIRM_MODE"] = { fg = colors.yellow },
 		},
 		auto_hide_on_vim_resized = true,
 	},

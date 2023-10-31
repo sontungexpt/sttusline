@@ -9,7 +9,7 @@ return {
 	user_event = { "VeryLazy" },
 	colors = {
 		{},
-		{ fg = colors.orange, bg = colors.bg },
+		{ fg = colors.orange },
 	},
 	update = function()
 		local has_devicons, devicons = pcall(require, "nvim-web-devicons")

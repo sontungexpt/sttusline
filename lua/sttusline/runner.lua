@@ -148,35 +148,42 @@ M.restore_statusline = function(opts)
 	end
 end
 
-M.start_timer = function()
+M.start_timer = function(opts)
 	if timer == nil then timer = vim.loop.new_timer() end
 	timer:start(
 		1000,
 		1000,
 		vim.schedule_wrap(function()
-			if not statusline_hidden then M.run() end
+			if not statusline_hidden then M.run(opts) end
 		end)
 	)
 end
 
-M.init_component_timer = function()
-	if #timming_component_index_cache > 0 then M.start_timer() end
+M.init_component_timer = function(opts)
+	if #timming_component_index_cache > 0 then M.start_timer(opts) end
 end
 
-M.set_component_highlight = function(component, index)
+M.set_component_highlight = function(opts, component, index)
 	local colors = component.colors
 	if type(colors) == "table" then
 		local is_list = false
-		for k, v in ipairs(colors) do
+		for k, color in ipairs(colors) do
 			is_list = true
-			utils.set_hl(HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k, v)
+			utils.set_hl(HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k, color, opts.statusline_color)
 		end
-		if not is_list then utils.set_hl(HIGHLIGHT_COMPONENT_PREFIX .. index, colors) end
+		if not is_list then
+			utils.set_hl(HIGHLIGHT_COMPONENT_PREFIX .. index, colors, opts.statusline_color)
+		end
 	end
 	eval_component_func(component, "on_highlight")
 end
 
-M.set_all_component_highlight = function(opts) M.foreach_component(opts, M.set_component_highlight) end
+M.set_all_component_highlight = function(opts)
+	M.foreach_component(
+		opts,
+		function(component, index) M.set_component_highlight(opts, component, index) end
+	)
+end
 
 M.get_component_autocmd_group = function()
 	if component_autocmd_group == nil then
@@ -192,22 +199,22 @@ M.get_core_autocmd_group = function()
 	return core_autocmd_group
 end
 
-M.create_default_autocmd = function(event)
+M.create_default_autocmd = function(opts, event)
 	autocmd(event, {
 		pattern = "*",
 		group = M.get_component_autocmd_group(),
 		callback = function(e)
-			if not statusline_hidden then M.run(e.event) end
+			if not statusline_hidden then M.run(opts, e.event) end
 		end,
 	})
 end
 
-M.create_user_autocmd = function(event)
+M.create_user_autocmd = function(opts, event)
 	autocmd("User", {
 		pattern = event,
 		group = M.get_component_autocmd_group(),
 		callback = function(e)
-			if not statusline_hidden then M.run(e.match, true) end
+			if not statusline_hidden then M.run(opts, e.match, true) end
 		end,
 	})
 end
@@ -228,12 +235,12 @@ M.cache_event_component_index = function(event, index, cache_key)
 	end
 end
 
-M.init_component_autocmds = function()
+M.init_component_autocmds = function(opts)
 	if next(event_component_index_cache.default) then
-		M.create_default_autocmd(vim.tbl_keys(event_component_index_cache.default))
+		M.create_default_autocmd(opts, vim.tbl_keys(event_component_index_cache.default))
 	end
 	if next(event_component_index_cache.user) then
-		M.create_user_autocmd(vim.tbl_keys(event_component_index_cache.user))
+		M.create_user_autocmd(opts, vim.tbl_keys(event_component_index_cache.user))
 	end
 end
 
@@ -249,10 +256,10 @@ M.init = function(opts)
 		M.cache_event_component_index(component.event, index, "default")
 		M.cache_event_component_index(component.user_event, index, "user")
 		M.cache_timming_component_index(component, index)
-		M.set_component_highlight(component, index)
+		M.set_component_highlight(opts, component, index)
 	end, function(empty_comp, index) statusline[index] = empty_comp end)
-	M.init_component_autocmds()
-	M.init_component_timer()
+	M.init_component_autocmds(opts)
+	M.init_component_timer(opts)
 end
 
 M.get_valid_updating_components = function(updating_components)
@@ -262,7 +269,7 @@ M.get_valid_updating_components = function(updating_components)
 	)
 end
 
-M.update_component_value = function(component, index)
+M.update_component_value = function(opts, component, index)
 	local should_display = eval_component_func(component, "condition")
 	if type(should_display) == "boolean" and not should_display then
 		statusline[index] = ""
@@ -318,7 +325,7 @@ M.update_component_value = function(component, index)
 				component.colors[k] = v[2]
 				updating_value[k] =
 					utils.add_highlight_name(v[1], HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k)
-				utils.set_hl(HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k, v[2])
+				utils.set_hl(HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k, v[2], opts.statusline_color)
 				eval_component_func(component, "on_highlight")
 			elseif is_highlight_name(v[2]) then
 				-- { "filename", "HIGHLIGHT_NAME" }
@@ -333,24 +340,29 @@ M.update_component_value = function(component, index)
 		statusline[index] = ""
 		require("sttusline.utils.notify").error(
 			"component " .. component.name and component.name .. " "
-			or "" .. "update() must return string or table"
+				or "" .. "update() must return string or table"
 		)
 	end
 end
 
-M.update_all_components = function(opts) M.foreach_component(opts, M.update_component_value) end
+M.update_all_components = function(opts)
+	M.foreach_component(
+		opts,
+		function(component, index) M.update_component_value(opts, component, index) end
+	)
+end
 
-M.update_on_trigger = function(indexs)
+M.update_on_trigger = function(opts, indexs)
 	for _, index in ipairs(indexs) do
-		M.update_component_value(component_cache[index], index)
+		M.update_component_value(opts, component_cache[index], index)
 	end
 end
 
-M.run = function(event_name, is_user_event)
+M.run = function(opts, event_name, is_user_event)
 	local event_table = is_user_event and event_component_index_cache.user
 		or event_component_index_cache.default
 	vim.schedule(function()
-		M.update_on_trigger(event_name and event_table[event_name] or timming_component_index_cache)
+		M.update_on_trigger(opts, event_name and event_table[event_name] or timming_component_index_cache)
 		if not statusline_hidden then M.update_statusline() end
 	end, 0)
 end

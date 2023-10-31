@@ -50,12 +50,12 @@ M.add_padding = function(str, value)
 		return str
 	elseif type(value) == "table" then
 		local left_padding = type(value.left) == "number"
-			and value.left >= 0
-			and (" "):rep(math.floor(value.left))
+				and value.left >= 0
+				and (" "):rep(math.floor(value.left))
 			or " "
 		local right_padding = type(value.right) == "number"
-			and value.right >= 0
-			and (" "):rep(math.floor(value.right))
+				and value.right >= 0
+				and (" "):rep(math.floor(value.right))
 			or " "
 
 		if type(str) == "string" then
@@ -101,7 +101,7 @@ M.is_disabled = function(opts)
 		or vim.tbl_contains(opts.disabled.buftypes or {}, api.nvim_buf_get_option(0, "buftype"))
 end
 
-M.set_hl = function(group, opts)
+M.set_hl = function(group, opts, global_background)
 	if M.is_highlight_option(opts) then
 		if opts.fg and not M.is_color(opts.fg) then
 			local ok, colors = pcall(api.nvim_get_hl_by_name, opts.fg, true)
@@ -110,12 +110,19 @@ M.set_hl = function(group, opts)
 		if opts.bg and not M.is_color(opts.bg) then
 			local ok, colors = pcall(api.nvim_get_hl_by_name, opts.bg, true)
 			opts.bg = ok and colors.background or nil
+		elseif global_background then
+			if M.is_color(global_background) then
+				opts.bg = global_background
+			else
+				local ok, colors = pcall(api.nvim_get_hl_by_name, global_background, true)
+				opts.bg = ok and colors.background or nil
+			end
 		end
 		pcall(api.nvim_set_hl, 0, group, opts)
 	end
 end
 
-M.is_highlight_option = function(opts) return type(opts) == "table" and (opts.fg ~= nil or opts.bg ~= nil) end
+M.is_highlight_option = function(opts) return type(opts) == "table" and next(opts) end
 
 M.is_highlight_name = function(hl_name) return type(hl_name) == "string" end
 

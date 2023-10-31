@@ -20,7 +20,7 @@ return {
 	configs = {
 		icon = "",
 	},
-	colors = { fg = colors.pink, bg = colors.bg }, -- { fg = colors.black, bg = colors.white }
+	colors = { fg = colors.pink }, -- { fg = colors.black, bg = colors.white }
 	update = function(configs)
 		local branch = get_branch()
 		return branch ~= "" and configs.icon .. " " .. branch or ""
