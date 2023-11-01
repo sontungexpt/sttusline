@@ -155,7 +155,8 @@ local configs = {
 						if head_file then
 							local content = head_file:read("*all")
 							head_file:close()
-							return content:match("ref: refs/heads/(.-)%s*$")
+							-- branch name  or commit hash
+							return content:match("ref: refs/heads/(.-)%s*$") or content:sub(1, 7)
 						end
 						return ""
 					end

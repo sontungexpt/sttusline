@@ -66,7 +66,6 @@ return {
 		},
 		auto_hide_on_vim_resized = true,
 	},
-
 	update = function(configs)
 		local mode_code = vim.api.nvim_get_mode().mode
 		local mode = configs.modes[mode_code]

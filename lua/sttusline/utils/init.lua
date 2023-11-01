@@ -114,7 +114,7 @@ M.set_hl = function(group, opts, global_background)
 	end
 end
 
-M.is_highlight_option = function(hl_opts) return type(hl_opts) == "table" and next(hl_opts) end
+M.is_highlight_option = function(hl_opts) return type(hl_opts) == "table" and next(hl_opts) ~= nil end
 
 M.is_highlight_name = function(hl_name) return type(hl_name) == "string" and #hl_name > 0 end
 
