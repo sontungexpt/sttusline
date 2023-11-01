@@ -86,14 +86,6 @@ M.add_highlight_name = function(str, highlight_name)
 	return #str > 0 and "%#" .. highlight_name .. "#" .. str .. "%*" or ""
 end
 
-M.array_filter = function(func, arr, ...)
-	local new_arr = {}
-	for k, v in ipairs(arr) do
-		if func(v, k, ...) then table.insert(new_arr, v) end
-	end
-	return new_arr
-end
-
 M.is_color = function(color) return type(color) == "string" and color:match("^#%x%x%x%x%x%x$") end
 
 M.is_disabled = function(opts)
@@ -122,10 +114,8 @@ M.set_hl = function(group, opts, global_background)
 	end
 end
 
-M.is_highlight_option = function(opts) return type(opts) == "table" and next(opts) end
+M.is_highlight_option = function(hl_opts) return type(hl_opts) == "table" and next(hl_opts) end
 
-M.is_highlight_name = function(hl_name) return type(hl_name) == "string" end
-
-M.is_existed_highlight_name = function(hl_name) return pcall(api.nvim_get_hl_by_name, hl_name, true) end
+M.is_highlight_name = function(hl_name) return type(hl_name) == "string" and #hl_name > 0 end
 
 return M

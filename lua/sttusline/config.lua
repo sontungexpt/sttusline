@@ -12,7 +12,7 @@ local configs = {
 	components = {
 		{
 			name = "mode",
-			event = { "ModeChanged", "VimResized" }, -- The component will be update when the event is triggered
+			event = { "ModeChanged", "VimResized" },
 			user_event = { "VeryLazy" },
 			configs = {
 				modes = {
@@ -74,8 +74,7 @@ local configs = {
 				},
 				auto_hide_on_vim_resized = true,
 			},
-			-- number or table
-			padding = 1, -- { left = 1, right = 1 }
+			padding = 1,
 			update = function(configs)
 				local mode_code = vim.api.nvim_get_mode().mode
 				local mode = configs.modes[mode_code]
@@ -99,7 +98,7 @@ local configs = {
 		},
 		{
 			name = "filename",
-			event = { "BufEnter", "WinEnter" }, -- The component will be update when the event is triggered
+			event = { "BufEnter", "WinEnter" },
 			user_event = { "VeryLazy" },
 			colors = {
 				{},
@@ -142,12 +141,12 @@ local configs = {
 		},
 		{
 			name = "git-branch",
-			event = { "BufEnter" }, -- The component will be update when the event is triggered
+			event = { "BufEnter" },
 			user_event = { "VeryLazy", "GitSignsUpdate" },
 			configs = {
 				icon = "",
 			},
-			colors = { fg = colors.pink }, -- { fg = colors.black, bg = colors.white }
+			colors = { fg = colors.pink },
 			space = {
 				get_branch = function()
 					local git_dir = vim.fn.finddir(".git", ".;")
@@ -171,7 +170,7 @@ local configs = {
 		},
 		{
 			name = "git-diff",
-			event = { "BufWritePost", "VimResized", "BufEnter" }, -- The component will be update when the event is triggered
+			event = { "BufWritePost", "VimResized", "BufEnter" },
 			user_event = { "GitSignsUpdate" },
 			colors = {
 				{ fg = colors.tokyo_diagnostics_hint },
@@ -193,9 +192,9 @@ local configs = {
 				local icons = configs.icons
 
 				local result = {}
-				for k, v in ipairs(order) do
+				for _, v in ipairs(order) do
 					if git_status[v] and git_status[v] > 0 then
-						if result[k - 1] and result[k - 1] ~= "" then
+						if result[1] and result[1] ~= "" then
 							table.insert(result, " " .. icons[v] .. " " .. git_status[v])
 						else
 							table.insert(result, icons[v] .. " " .. git_status[v])
@@ -211,7 +210,7 @@ local configs = {
 		"%=",
 		{
 			name = "diagnostics",
-			event = { "DiagnosticChanged" }, -- The component will be update when the event is triggered
+			event = { "DiagnosticChanged" },
 			colors = {
 
 				{ fg = colors.tokyo_diagnostics_error },
@@ -234,11 +233,11 @@ local configs = {
 				local icons = configs.icons
 				local order = configs.order
 
-				for index, key in ipairs(order) do
+				for _, key in ipairs(order) do
 					local count = #vim.diagnostic.get(0, { severity = vim.diagnostic.severity[key] })
 
 					if count > 0 then
-						if result[index - 1] and result[index - 1] ~= "" then
+						if result[1] and result[1] ~= "" then
 							table.insert(result, " " .. icons[key] .. " " .. count)
 						else
 							table.insert(result, icons[key] .. " " .. count)
@@ -256,8 +255,8 @@ local configs = {
 		},
 		{
 			name = "lsps-formatters",
-			event = { "LspAttach", "LspDetach", "BufWritePost", "BufEnter", "VimResized" }, -- The component will be update when the event is triggered
-			colors = { fg = colors.magenta }, -- { fg = colors.black, bg = colors.white }
+			event = { "LspAttach", "LspDetach", "BufWritePost", "BufEnter", "VimResized" },
+			colors = { fg = colors.magenta },
 			update = function()
 				local buf_clients = vim.lsp.buf_get_clients()
 				if not buf_clients or #buf_clients == 0 then return "NO LSP  " end
@@ -336,7 +335,7 @@ local configs = {
 		},
 		{
 			name = "copilot",
-			event = { "InsertEnter", "InsertLeave", "CursorHoldI" }, -- The component will be update when the event is triggered
+			event = { "InsertEnter", "InsertLeave", "CursorHoldI" },
 			space = function(configs)
 				local copilot_status = ""
 				local copilot_client = nil
@@ -424,9 +423,9 @@ local configs = {
 		},
 		{
 			name = "indent",
-			event = { "BufEnter" }, -- The component will be update when the event is triggered
+			event = { "BufEnter" },
 			user_event = { "VeryLazy" },
-			colors = { fg = colors.cyan }, -- { fg = colors.black, bg = colors.white }
+			colors = { fg = colors.cyan },
 			update = function() return "Tab: " .. vim.api.nvim_buf_get_option(0, "shiftwidth") .. "" end,
 		},
 		{
@@ -440,7 +439,7 @@ local configs = {
 				["utf-16le"] = "",
 				["utf-16be"] = "",
 			},
-			colors = { fg = colors.yellow }, -- { fg = colors.black, bg = colors.white }
+			colors = { fg = colors.yellow },
 			update = function(configs)
 				local enc = vim.bo.fenc ~= "" and vim.bo.fenc or vim.o.enc
 				return configs[enc] or enc
@@ -448,9 +447,9 @@ local configs = {
 		},
 		{
 			name = "pos-cursor",
-			event = { "CursorMoved", "CursorMovedI" }, -- The component will be update when the event is triggered
+			event = { "CursorMoved", "CursorMovedI" },
 			user_event = { "VeryLazy" },
-			colors = { fg = colors.fg }, -- { fg = colors.black, bg = colors.white }
+			colors = { fg = colors.fg },
 			update = function()
 				local pos = vim.api.nvim_win_get_cursor(0)
 				return pos[1] .. ":" .. pos[2]
@@ -458,15 +457,13 @@ local configs = {
 		},
 		{
 			name = "pos-cursor-progress",
-			event = { "CursorMoved", "CursorMovedI" }, -- The component will be update when the event is triggered
+			event = { "CursorMoved", "CursorMovedI" },
 			user_event = { "VeryLazy" },
 			configs = {
 				chars = { "_", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█" },
 			},
-			-- number or table
-			padding = 0, -- { left = 1, right = 1 }
-			colors = { fg = colors.orange }, -- { fg = colors.black, bg = colors.white }
-
+			padding = 0,
+			colors = { fg = colors.orange },
 			update = function(configs)
 				return configs.chars[math.ceil(vim.fn.line(".") / vim.fn.line("$") * #configs.chars)] or ""
 			end,
@@ -502,4 +499,5 @@ M.apply_user_config = function(opts)
 	end
 	return configs
 end
+
 return M

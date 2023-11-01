@@ -262,13 +262,6 @@ M.init = function(opts)
 	M.init_component_timer(opts)
 end
 
-M.get_valid_updating_components = function(updating_components)
-	return utils.array_filter(
-		function(comp) return type(comp) == "string" or (type(comp) == "table" and type(comp[1]) == "string") end,
-		updating_components
-	)
-end
-
 M.update_component_value = function(opts, component, index)
 	local should_display = eval_component_func(component, "condition")
 	if type(should_display) == "boolean" and not should_display then
@@ -300,9 +293,6 @@ M.update_component_value = function(opts, component, index)
 			statusline[index] = updating_value
 		end
 	elseif type(updating_value) == "table" then
-		-- filter out invalid value
-		updating_value = M.get_valid_updating_components(updating_value)
-
 		updating_value = utils.add_padding(updating_value, component.padding)
 		for k, v in ipairs(updating_value) do
 			if type(v) == "string" then
@@ -317,30 +307,39 @@ M.update_component_value = function(opts, component, index)
 				else
 					updating_value[k] = v
 				end
-
-				-- after filter, the v is a table from below
-			elseif is_highlight_option(v[2]) then
-				-- { "filename", { fg="", bg="" }}
-				component.colors = colors or {}
-				component.colors[k] = v[2]
-				updating_value[k] =
-					utils.add_highlight_name(v[1], HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k)
-				utils.set_hl(HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k, v[2], opts.statusline_color)
-				eval_component_func(component, "on_highlight")
-			elseif is_highlight_name(v[2]) then
-				-- { "filename", "HIGHLIGHT_NAME" }
-				updating_value[k] = utils.add_highlight_name(v[1], v[2])
+			elseif type(v) == "table" and type(v[1]) == "string" then
+				if is_highlight_option(v[2]) then
+					-- { "filename", { fg="", bg="" }}
+					component.colors = colors or {}
+					component.colors[k] = v[2]
+					updating_value[k] =
+						utils.add_highlight_name(v[1], HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k)
+					utils.set_hl(HIGHLIGHT_COMPONENT_PREFIX .. index .. "_" .. k, v[2], opts.statusline_color)
+					eval_component_func(component, "on_highlight")
+				elseif is_highlight_name(v[2]) then
+					-- { "filename", "HIGHLIGHT_NAME" }
+					updating_value[k] = utils.add_highlight_name(v[1], v[2])
+				else
+					-- {"filename"}
+					updating_value[k] = v[1]
+				end
 			else
-				-- {"filename"}
-				updating_value[k] = v[1]
+				statusline[index] = ""
+				require("sttusline.utils.notify").error(
+					"component "
+						.. (component.name and component.name .. " " or "")
+						.. "update() must return string or table of string or table of {string, table}"
+				)
+				return
 			end
 		end
 		statusline[index] = table.concat(updating_value, "")
 	else
 		statusline[index] = ""
 		require("sttusline.utils.notify").error(
-			"component " .. component.name and component.name .. " "
-				or "" .. "update() must return string or table"
+			"component "
+				.. (component.name and component.name .. " " or "")
+				.. "update() must return string or table of string or table of {string, table}"
 		)
 	end
 end

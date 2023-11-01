@@ -24,10 +24,10 @@ return {
 		local icons = configs.icons
 		local order = configs.order
 
-		for index, key in ipairs(order) do
+		for _, key in ipairs(order) do
 			local count = #vim.diagnostic.get(0, { severity = vim.diagnostic.severity[key] })
 			if count > 0 then
-				if result[index - 1] and result[index - 1] ~= "" then
+				if result[1] and result[1] ~= "" then
 					table.insert(result, " " .. icons[key] .. " " .. count)
 				else
 					table.insert(result, icons[key] .. " " .. count)

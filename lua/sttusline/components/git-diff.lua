@@ -24,9 +24,9 @@ return {
 		local icons = configs.icons
 
 		local result = {}
-		for k, v in ipairs(order) do
+		for _, v in ipairs(order) do
 			if git_status[v] and git_status[v] > 0 then
-				if result[k - 1] and result[k - 1] ~= "" then
+				if result[1] and result[1] ~= "" then
 					table.insert(result, " " .. icons[v] .. " " .. git_status[v])
 				else
 					table.insert(result, icons[v] .. " " .. git_status[v])
