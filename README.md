@@ -53,6 +53,7 @@ any idea to create a new component, please open an issue or pull request.
         config = function(_, opts)
             require("sttusline").setup {
                 -- the colors of statusline will be set follow the colors of the active buffer
+	            -- statusline_color = "#fdff00",
 	            statusline_color = "StatusLine",
                 disabled = {
                     filetypes = {
@@ -60,7 +61,7 @@ any idea to create a new component, please open an issue or pull request.
                         -- "lazy",
                     },
                     buftypes = {
-                        -- "terminal",
+                        "terminal",
                     },
                 },
                 components = {
