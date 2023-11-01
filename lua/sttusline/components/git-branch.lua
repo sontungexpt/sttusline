@@ -17,7 +17,7 @@ return {
 					local content = head_file:read("*all")
 					head_file:close()
 					-- branch name  or commit hash
-					return content:match("ref: refs/heads/(.-)%s*$") or content:sub(1, 7)
+					return content:match("ref: refs/heads/(.-)%s*$") or content:sub(1, 7) or ""
 				end
 				return ""
 			end

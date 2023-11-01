@@ -39,6 +39,9 @@ return {
 			elseif filetype == "lazy" then
 				icon, color_icon = "󰏔", colors.red
 				filename = "Lazy"
+			elseif filetype == "checkhealth" then
+				icon, color_icon = "", colors.red
+				filename = "CheckHealth"
 			elseif filetype == "dashboard" then
 				icon, color_icon = "", colors.red
 			end

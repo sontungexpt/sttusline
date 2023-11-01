@@ -132,11 +132,14 @@ local configs = {
 					elseif filetype == "lazy" then
 						icon, color_icon = "󰏔", colors.red
 						filename = "Lazy"
+					elseif filetype == "checkhealth" then
+						icon, color_icon = "", colors.red
+						filename = "CheckHealth"
 					elseif filetype == "dashboard" then
 						icon, color_icon = "", colors.red
 					end
 				end
-				return { icon and { icon, { fg = color_icon } } or "", " " .. filename }
+				return { icon and { icon .. " ", { fg = color_icon } } or "", filename }
 			end,
 		},
 		{
@@ -156,7 +159,7 @@ local configs = {
 							local content = head_file:read("*all")
 							head_file:close()
 							-- branch name  or commit hash
-							return content:match("ref: refs/heads/(.-)%s*$") or content:sub(1, 7)
+							return content:match("ref: refs/heads/(.-)%s*$") or content:sub(1, 7) or ""
 						end
 						return ""
 					end
