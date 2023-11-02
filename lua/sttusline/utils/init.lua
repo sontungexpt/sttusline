@@ -102,8 +102,8 @@ M.set_hl = function(group, opts, global_background)
 	if M.is_highlight_option(opts) then
 		if opts.fg and not M.is_color(opts.fg) then opts.fg = M.get_hl_name_color(opts.fg).foreground end
 
-		if opts.bg and not M.is_color(opts.bg) then
-			opts.bg = M.get_hl_name_color(opts.bg).background
+		if opts.bg then
+			opts.bg = M.is_color(opts.bg) and opts.bg or M.get_hl_name_color(opts.bg).background
 		elseif global_background then
 			opts.bg = M.is_color(global_background) and global_background
 				or M.get_hl_name_color(global_background).background
