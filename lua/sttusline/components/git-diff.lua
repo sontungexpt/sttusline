@@ -23,12 +23,14 @@ return {
 		local order = configs.order
 		local icons = configs.icons
 
+		local should_add_spacing = false
 		local result = {}
 		for _, v in ipairs(order) do
 			if git_status[v] and git_status[v] > 0 then
-				if result[1] and result[1] ~= "" then
+				if should_add_spacing then
 					table.insert(result, " " .. icons[v] .. " " .. git_status[v])
 				else
+					should_add_spacing = true
 					table.insert(result, icons[v] .. " " .. git_status[v])
 				end
 			else

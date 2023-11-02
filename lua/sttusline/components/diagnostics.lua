@@ -24,12 +24,15 @@ return {
 		local icons = configs.icons
 		local order = configs.order
 
+		local should_add_spacing = false
 		for _, key in ipairs(order) do
 			local count = #vim.diagnostic.get(0, { severity = vim.diagnostic.severity[key] })
+
 			if count > 0 then
-				if result[1] and result[1] ~= "" then
+				if should_add_spacing then
 					table.insert(result, " " .. icons[key] .. " " .. count)
 				else
+					should_add_spacing = true
 					table.insert(result, icons[key] .. " " .. count)
 				end
 			else

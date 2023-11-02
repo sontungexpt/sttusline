@@ -135,6 +135,8 @@ local configs = {
 					elseif filetype == "checkhealth" then
 						icon, color_icon = "", colors.red
 						filename = "CheckHealth"
+					elseif filetype == "plantuml" then
+						icon, color_icon = "", colors.green
 					elseif filetype == "dashboard" then
 						icon, color_icon = "", colors.red
 					end
@@ -195,12 +197,14 @@ local configs = {
 				local order = configs.order
 				local icons = configs.icons
 
+				local should_add_spacing = false
 				local result = {}
 				for _, v in ipairs(order) do
 					if git_status[v] and git_status[v] > 0 then
-						if result[1] and result[1] ~= "" then
+						if should_add_spacing then
 							table.insert(result, " " .. icons[v] .. " " .. git_status[v])
 						else
+							should_add_spacing = true
 							table.insert(result, icons[v] .. " " .. git_status[v])
 						end
 					else
@@ -237,13 +241,15 @@ local configs = {
 				local icons = configs.icons
 				local order = configs.order
 
+				local should_add_spacing = false
 				for _, key in ipairs(order) do
 					local count = #vim.diagnostic.get(0, { severity = vim.diagnostic.severity[key] })
 
 					if count > 0 then
-						if result[1] and result[1] ~= "" then
+						if should_add_spacing then
 							table.insert(result, " " .. icons[key] .. " " .. count)
 						else
+							should_add_spacing = true
 							table.insert(result, icons[key] .. " " .. count)
 						end
 					else

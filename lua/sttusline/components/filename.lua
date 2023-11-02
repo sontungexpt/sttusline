@@ -42,6 +42,8 @@ return {
 			elseif filetype == "checkhealth" then
 				icon, color_icon = "", colors.red
 				filename = "CheckHealth"
+			elseif filetype == "plantuml" then
+				icon, color_icon = "", colors.green
 			elseif filetype == "dashboard" then
 				icon, color_icon = "", colors.red
 			end
