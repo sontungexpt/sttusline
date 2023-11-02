@@ -86,13 +86,8 @@ local configs = {
 			end,
 			condition = function(configs)
 				if configs.auto_hide_on_vim_resized then
-					if vim.o.columns > 70 then
-						vim.opt.showmode = false
-						return true
-					else
-						vim.opt.showmode = true
-						return false
-					end
+					vim.opt.showmode = not (vim.o.columns > 70)
+					return not vim.opt.showmode:get()
 				end
 			end,
 		},
@@ -258,10 +253,7 @@ local configs = {
 				end
 				return result
 			end,
-			condition = function()
-				local filetype = vim.api.nvim_buf_get_option(0, "filetype")
-				return filetype ~= "lazy"
-			end,
+			condition = function() return vim.api.nvim_buf_get_option(0, "filetype") ~= "lazy" end,
 		},
 		{
 			name = "lsps-formatters",

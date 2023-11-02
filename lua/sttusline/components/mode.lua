@@ -74,13 +74,8 @@ return {
 	end,
 	condition = function(configs)
 		if configs.auto_hide_on_vim_resized then
-			if vim.o.columns > 70 then
-				vim.opt.showmode = false
-				return true
-			else
-				vim.opt.showmode = true
-				return false
-			end
+			vim.opt.showmode = not (vim.o.columns > 70)
+			return not vim.opt.showmode:get()
 		end
 	end,
 }

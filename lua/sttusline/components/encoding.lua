@@ -13,6 +13,6 @@ return {
 	colors = { fg = colors.yellow }, -- { fg = colors.black, bg = colors.white }
 	update = function(configs)
 		local enc = vim.bo.fenc ~= "" and vim.bo.fenc or vim.o.enc
-		return configs[enc] or enc
+		return configs[enc] or enc or ""
 	end,
 }

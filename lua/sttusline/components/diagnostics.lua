@@ -41,8 +41,5 @@ return {
 		end
 		return result
 	end,
-	condition = function()
-		local filetype = vim.api.nvim_buf_get_option(0, "filetype")
-		return filetype ~= "lazy"
-	end,
+	condition = function() return vim.api.nvim_buf_get_option(0, "filetype") ~= "lazy" end,
 }
