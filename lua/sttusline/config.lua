@@ -2,7 +2,8 @@ local colors = require("sttusline.utils.color")
 local M = {}
 
 local configs = {
-	statusline_color = "StatusLine",
+	-- statusline_color = "#1e2030",
+	-- statusline_color = "StatusLine",
 	disabled = {
 		filetypes = {},
 		buftypes = {

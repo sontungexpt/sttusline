@@ -93,22 +93,23 @@ M.is_disabled = function(opts)
 		or vim.tbl_contains(opts.disabled.buftypes or {}, api.nvim_buf_get_option(0, "buftype"))
 end
 
+M.get_hl_name_color = function(hl_name)
+	local ok, colors = pcall(api.nvim_get_hl_by_name, hl_name, true)
+	return ok and colors or {}
+end
+
 M.set_hl = function(group, opts, global_background)
 	if M.is_highlight_option(opts) then
-		if opts.fg and not M.is_color(opts.fg) then
-			local ok, colors = pcall(api.nvim_get_hl_by_name, opts.fg, true)
-			opts.fg = ok and colors.foreground or nil
-		end
+		if opts.fg and not M.is_color(opts.fg) then opts.fg = M.get_hl_name_color(opts.fg).foreground end
+
 		if opts.bg and not M.is_color(opts.bg) then
-			local ok, colors = pcall(api.nvim_get_hl_by_name, opts.bg, true)
-			opts.bg = ok and colors.background or nil
+			opts.bg = M.get_hl_name_color(opts.bg).background
 		elseif global_background then
-			if M.is_color(global_background) then
-				opts.bg = global_background
-			else
-				local ok, colors = pcall(api.nvim_get_hl_by_name, global_background, true)
-				opts.bg = ok and colors.background or nil
-			end
+			opts.bg = M.is_color(global_background) and global_background
+				or M.get_hl_name_color(global_background).background
+		else
+			-- fallback to StatusLine background
+			opts.bg = M.get_hl_name_color("StatusLine").background
 		end
 		pcall(api.nvim_set_hl, 0, group, opts)
 	end
