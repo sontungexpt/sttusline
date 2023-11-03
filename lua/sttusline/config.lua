@@ -262,8 +262,6 @@ local configs = {
 			colors = { fg = colors.magenta },
 			update = function()
 				local buf_clients = vim.lsp.buf_get_clients()
-				if not buf_clients or #buf_clients == 0 then return "NO LSP  " end
-
 				local server_names = {}
 
 				for _, client in pairs(buf_clients) do
@@ -332,7 +330,8 @@ local configs = {
 					end
 				end
 
-				return table.concat(vim.fn.uniq(server_names), ", ")
+				return #server_names > 0 and table.concat(vim.fn.uniq(server_names), ", ")
+					or "NO LSP, FORMATTER  "
 			end,
 			condition = function() return vim.o.columns > 70 end,
 		},
