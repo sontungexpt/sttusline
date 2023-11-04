@@ -247,7 +247,7 @@ end
 M.init = function(opts)
 	M.foreach_component(opts, function(component, index)
 		if component.lazy == false then
-			M.update_component_value(component, index)
+			M.update_component_value(opts, component, index)
 		else
 			statusline[index] = ""
 		end
