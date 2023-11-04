@@ -1,20 +1,14 @@
-local FILENAME_HIGHLIGHT = "STTUSLINE_FILE_NAME"
-local ICON_HIGHLIGHT = "STTUSLINE_FILE_ICON"
-
 local fn = vim.fn
 local get_option = vim.api.nvim_buf_get_option
-local hl = vim.api.nvim_set_hl
-
 local colors = require("sttusline.utils.color")
-local utils = require("sttusline.utils")
 
 local Filename = require("sttusline.component").new()
 
-Filename.set_config {
-	color = { fg = colors.orange, bg = colors.bg },
-}
-
 Filename.set_event { "BufEnter", "WinEnter" }
+Filename.set_colors {
+	{},
+	{ fg = colors.orange },
+}
 
 Filename.set_update(function()
 	local has_devicons, devicons = pcall(require, "nvim-web-devicons")
@@ -44,22 +38,17 @@ Filename.set_update(function()
 		elseif filetype == "lazy" then
 			icon, color_icon = "󰏔", colors.red
 			filename = "Lazy"
+		elseif filetype == "checkhealth" then
+			icon, color_icon = "", colors.red
+			filename = "CheckHealth"
+		elseif filetype == "plantuml" then
+			icon, color_icon = "", colors.green
 		elseif filetype == "dashboard" then
 			icon, color_icon = "", colors.red
 		end
 	end
 
-	hl(0, ICON_HIGHLIGHT, { fg = color_icon, bg = colors.bg })
-
-	if icon then
-		return utils.add_highlight_name(icon, ICON_HIGHLIGHT)
-			.. " "
-			.. utils.add_highlight_name(filename, FILENAME_HIGHLIGHT)
-	else
-		return utils.add_highlight_name(filename, FILENAME_HIGHLIGHT)
-	end
+	return { icon and { icon, { fg = color_icon } } or "", " " .. filename }
 end)
-
-Filename.set_onhighlight(function() hl(0, FILENAME_HIGHLIGHT, Filename.get_config().color) end)
 
 return Filename

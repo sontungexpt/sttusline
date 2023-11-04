@@ -25,7 +25,9 @@ please open an issue or pull request. I'm very happy to hear from you.
 create your own component. I'm very happy to see your component. So if you have
 any idea to create a new component, please open an issue or pull request.
 
-🛠️ At present, the highlight feature of this plugin is very simple. So I hope you can contribute to this plugin to make it better.
+🛠️ At present, I feel that use table to create new component is easy to control
+than creating by calling get and set function. So I recommend you to use branch
+[table_version](https://github.com/sontungexpt/sttusline/tree/table_version) instead of this branch
 
 ## Preview
 
@@ -53,7 +55,10 @@ any idea to create a new component, please open an issue or pull request.
         event = { "BufEnter" },
         config = function(_, opts)
             require("sttusline").setup {
-                -- 0 | 1 | 2 | 3
+                -- statusline_color = "#000000",
+                statusline_color = "StatusLine",
+
+                -- | 1 | 2 | 3
                 -- recommended: 3
                 laststatus = 3,
                 disabled = {
@@ -99,7 +104,6 @@ or copy the template to your component module
 
 ```lua
 -- Change NewComponent to your component name
-local utils = require("sttusline.utils")
 local NewComponent = require("sttusline.set_component").new()
 
 -- The component will be update when the event is triggered
@@ -125,26 +129,51 @@ NewComponent.set_config {}
 NewComponent.set_padding(1)
 -- or NewComponent.set_padding{ left = 1, right = 1 }
 
--- The colors of the component
+-- The colors of the component. Rely on the return value of the update function, you have 3 ways to set the colors
+-- If the return value is string
+-- NewComponent.set_colors { fg = colors.set_black, bg = colors.set_white }
+-- If the return value is table of string
+-- NewComponent.set_colors { { fg = "#009900", bg = "#ffffff" }, { fg = "#000000", bg = "#ffffff" }}
+-- -- so if the return value is { "string1", "string2" }
+-- -- then the string1 will be highlight with { fg = "#009900", bg = "#ffffff" }
+-- -- and the string2 will be highlight with { fg = "#000000", bg = "#ffffff" }
+--
+-- -- if you don't want to add highlight for the string1 now
+-- -- because it will auto update new colors when the returning value in update function is a table that contains the color options,
+-- -- you can add a empty table in the first element
+-- -- {
+--     colors = {
+--         {},
+--         { fg = "#000000", bg = "#ffffff" }
+--     },
+-- -- }
+--
+-- NOTE: The colors options can be the colors name or the colors options
+-- -- colors = {
+-- --  { fg = "#009900", bg = "#ffffff" },
+-- --  "DiagnosticsSignError",
+-- -- },
+-- -- So if the return value is { "string1", "string2" }
+-- -- then the string1 will be highlight with { fg = "#009900", bg = "#ffffff" }
+-- -- and the string2 will be highlight with the colors options of the DiagnosticsSignError highlight
+-- -- Or you can set the fg(bg) follow the colors options of the DiagnosticsSignError highlight
+-- -- {
+-- --  colors = {
+-- --      { fg = "DiagnosticsSignError", bg = "#ffffff" },
+-- --      "DiagnosticsSignError",
+-- --  },
+-- -- }
+
 NewComponent.set_colors {} -- { fg = colors.set_black, bg = colors.set_white }
 
--- The function will return the value of the component to display on the statusline
--- Must return a string
+-- The function will return the value of the component to display on the statusline(required).
+-- Must return a string or a table of string or a table of  { "string", { fg = "color", bg = "color" } }
+-- NewComponent.set_update(function() return { "string1", "string2" } end)
+-- NewComponent.set_update(function() return { { "string1", {fg = "#000000", bg ="#fdfdfd"} },  "string3", "string4" } end)
 NewComponent.set_update(function() return "" end)
--- NOTE:
--- If you don't use NewComponent.set_colors{} and you want to customize the highlight of your component
--- You should use utils.add_highlight_name(value, highlight_name) to add the highlight name to the value
--- After that you can set the highlight of your component by using vim.api.nvim_set_hl(0, highlight_name, opts) (You should add this to NewComponent.set_onhighlight)
--- The function utils.add_highlight_name(value,highlight_name) will return the value
--- So you can use it like this:
--- NewComponent.set_update(function() return utils.add_highlight_name("Hello", "HelloHighlight") end)
--- NewComponent.set_onhighlight(function() vim.api.nvim_set_hl(0, "HelloHighlight", { fg = "#ffffff", bg = "#000000" }) end)
 
 
 -- The function will call when the component is highlight
--- You should use it to set the highlight of the component
--- Example:
--- NewComponent.set_onhighlight(function() vim.api.nvim_set_hl(0, "ComponentHighlight", { fg = colors.set_black, bg = colors.set_white }) end)
 NewComponent.set_onhighlight(function() end)
 
 -- The function will return the condition to display the component when the component is update
@@ -221,18 +250,7 @@ We provide you some default component:
 
 ```lua
     require("sttusline").setup {
-        -- 0 | 1 | 2 | 3
-        -- recommended: 3
-        laststatus = 3,
-        disabled = {
-            filetypes = {
-                -- "NvimTree",
-                -- "lazy",
-            },
-            buftypes = {
-                -- "terminal",
-            },
-        },
+        -- ...
         components = {
             -- "mode",
             -- "filename",
@@ -370,15 +388,15 @@ Some config I provide to override default component
         ["x"] = { "CONFIRM", "STTUSLINE_CONFIRM_MODE" },
     },
     mode_colors = {
-        ["STTUSLINE_NORMAL_MODE"] = { fg = colors.blue, bg = colors.bg },
-        ["STTUSLINE_INSERT_MODE"] = { fg = colors.green, bg = colors.bg },
-        ["STTUSLINE_VISUAL_MODE"] = { fg = colors.purple, bg = colors.bg },
-        ["STTUSLINE_NTERMINAL_MODE"] = { fg = colors.gray, bg = colors.bg },
-        ["STTUSLINE_TERMINAL_MODE"] = { fg = colors.cyan, bg = colors.bg },
-        ["STTUSLINE_REPLACE_MODE"] = { fg = colors.red, bg = colors.bg },
-        ["STTUSLINE_SELECT_MODE"] = { fg = colors.magenta, bg = colors.bg },
-        ["STTUSLINE_COMMAND_MODE"] = { fg = colors.yellow, bg = colors.bg },
-        ["STTUSLINE_CONFIRM_MODE"] = { fg = colors.yellow, bg = colors.bg },
+        ["STTUSLINE_NORMAL_MODE"] = { fg = colors.blue },
+        ["STTUSLINE_INSERT_MODE"] = { fg = colors.green },
+        ["STTUSLINE_VISUAL_MODE"] = { fg = colors.purple },
+        ["STTUSLINE_NTERMINAL_MODE"] = { fg = colors.gray },
+        ["STTUSLINE_TERMINAL_MODE"] = { fg = colors.cyan },
+        ["STTUSLINE_REPLACE_MODE"] = { fg = colors.red },
+        ["STTUSLINE_SELECT_MODE"] = { fg = colors.magenta },
+        ["STTUSLINE_COMMAND_MODE"] = { fg = colors.yellow },
+        ["STTUSLINE_CONFIRM_MODE"] = { fg = colors.yellow },
         },
     },
     auto_hide_on_vim_resized = true,
@@ -394,12 +412,6 @@ Some config I provide to override default component
             INFO = "",
             HINT = "󰌵",
             WARN = "",
-        },
-        diagnostics_color = {
-            ERROR = "DiagnosticError",
-            WARN = "DiagnosticWarn",
-            HINT = "DiagnosticHint",
-            INFO = "DiagnosticInfo",
         },
         order = { "ERROR", "WARN", "INFO", "HINT" },
     }
@@ -425,7 +437,7 @@ encoding.set_config {
 ```lua
     local filename = require("sttusline.components.filename")
     filename.set_config {
-        color = { fg = colors.orange, bg = colors.bg },
+        color = { fg = colors.orange },
     }
 ```
 
@@ -450,11 +462,6 @@ encoding.set_config {
             changed = "",
             removed = "",
         },
-        colors = {
-            added = "DiagnosticInfo",
-            changed = "DiagnosticWarn",
-            removed = "DiagnosticError",
-        },
         order = { "added", "changed", "removed" },
     }
 ```
@@ -464,7 +471,7 @@ encoding.set_config {
 ```lua
 local indent = require("sttusline.components.indent")
 
-indent.set_colors { fg = colors.cyan, bg = colors.bg }
+indent.set_colors { fg = colors.cyan }
 ```
 
 - lsps-formatters
@@ -472,7 +479,7 @@ indent.set_colors { fg = colors.cyan, bg = colors.bg }
 ```lua
 local lsps_formatters = require("sttusline.components.lsps-formatters")
 
-lsps_formatters.set_colors { fg = colors.magenta, bg = colors.bg }
+lsps_formatters.set_colors { fg = colors.magenta }
 ```
 
 - copilot
@@ -480,7 +487,7 @@ lsps_formatters.set_colors { fg = colors.magenta, bg = colors.bg }
 ```lua
 local copilot = require("sttusline.components.copilot")
 
-copilot.set_colors { fg = colors.yellow, bg = colors.bg }
+copilot.set_colors { fg = colors.yellow }
 copilot.set_config {
     icons = {
         normal = "",
@@ -502,7 +509,7 @@ pos_cursor.set_colors { fg = colors.fg }
 
 ```lua
 local pos_cursor_progress = require("sttusline.components.pos-cursor-progress")
-pos_cursor_rogress.set_colors { fg = colors.orange, bg = colors.bg }
+pos_cursor_rogress.set_colors { fg = colors.orange }
 ```
 
 ## Contributing

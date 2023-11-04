@@ -1,4 +1,3 @@
-local utils = require("sttusline.utils")
 local colors = require("sttusline.utils.color")
 
 local Mode = require("sttusline.component").new()
@@ -51,15 +50,15 @@ Mode.set_config {
 		["x"] = { "CONFIRM", "STTUSLINE_CONFIRM_MODE" },
 	},
 	mode_colors = {
-		["STTUSLINE_NORMAL_MODE"] = { fg = colors.blue, bg = colors.bg },
-		["STTUSLINE_INSERT_MODE"] = { fg = colors.green, bg = colors.bg },
-		["STTUSLINE_VISUAL_MODE"] = { fg = colors.purple, bg = colors.bg },
-		["STTUSLINE_NTERMINAL_MODE"] = { fg = colors.gray, bg = colors.bg },
-		["STTUSLINE_TERMINAL_MODE"] = { fg = colors.cyan, bg = colors.bg },
-		["STTUSLINE_REPLACE_MODE"] = { fg = colors.red, bg = colors.bg },
-		["STTUSLINE_SELECT_MODE"] = { fg = colors.magenta, bg = colors.bg },
-		["STTUSLINE_COMMAND_MODE"] = { fg = colors.yellow, bg = colors.bg },
-		["STTUSLINE_CONFIRM_MODE"] = { fg = colors.yellow, bg = colors.bg },
+		["STTUSLINE_NORMAL_MODE"] = { fg = colors.blue },
+		["STTUSLINE_INSERT_MODE"] = { fg = colors.green },
+		["STTUSLINE_VISUAL_MODE"] = { fg = colors.purple },
+		["STTUSLINE_NTERMINAL_MODE"] = { fg = colors.gray },
+		["STTUSLINE_TERMINAL_MODE"] = { fg = colors.cyan },
+		["STTUSLINE_REPLACE_MODE"] = { fg = colors.red },
+		["STTUSLINE_SELECT_MODE"] = { fg = colors.magenta },
+		["STTUSLINE_COMMAND_MODE"] = { fg = colors.yellow },
+		["STTUSLINE_CONFIRM_MODE"] = { fg = colors.yellow },
 	},
 	auto_hide_on_vim_resized = true,
 }
@@ -69,24 +68,16 @@ Mode.set_padding(0)
 
 Mode.set_condition(function()
 	if Mode.get_config().auto_hide_on_vim_resized then
-		if vim.o.columns > 70 then
-			vim.opt.showmode = false
-			return true
-		else
-			vim.opt.showmode = true
-			return false
-		end
+		vim.opt.showmode = not (vim.o.columns > 70)
+		---@diagnostic disable-next-line: undefined-field
+		return not vim.opt.showmode:get()
 	end
 end)
 
 Mode.set_update(function()
 	local mode_code = vim.api.nvim_get_mode().mode
 	local mode = Mode.get_config().modes[mode_code]
-	if mode then
-		local hl_name = mode[2]
-		vim.api.nvim_set_hl(0, hl_name, Mode.get_config().mode_colors[hl_name])
-		return utils.add_highlight_name(" " .. mode[1] .. " ", hl_name)
-	end
+	if mode then return { { mode[1], Mode.get_config().mode_colors[mode[2]] } } end
 	return " " .. mode_code .. " "
 end)
 

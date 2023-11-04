@@ -2,26 +2,28 @@ local colors = require("sttusline.utils.color")
 
 local Lsps_Formatters = require("sttusline.component"):new()
 
-Lsps_Formatters.set_colors { fg = colors.magenta, bg = colors.bg }
+Lsps_Formatters.set_colors { fg = colors.magenta }
 Lsps_Formatters.set_event { "LspAttach", "LspDetach", "BufWritePost", "BufEnter", "VimResized" } -- for null-ls and conform
 Lsps_Formatters.set_user_event {} -- disable user events
 Lsps_Formatters.set_condition(function() return vim.o.columns > 70 end)
 
 Lsps_Formatters.set_update(function()
 	local buf_clients = vim.lsp.buf_get_clients()
-	if not buf_clients or #buf_clients == 0 then return "NO LSP  " end
-
 	local server_names = {}
+	local has_null_ls = false
+	local ignore_lsp_servers = {
+		["null-ls"] = true,
+		["copilot"] = true,
+	}
 
 	for _, client in pairs(buf_clients) do
 		local client_name = client.name
-		if client_name ~= "null-ls" and client_name ~= "copilot" then
-			table.insert(server_names, client_name)
-		end
+		if not ignore_lsp_servers[client_name] then table.insert(server_names, client_name) end
 	end
 
 	if package.loaded["null-ls"] then
-		local has_null_ls, null_ls = pcall(require, "null-ls")
+		local null_ls = nil
+		has_null_ls, null_ls = pcall(require, "null-ls")
 
 		if has_null_ls then
 			local buf_ft = vim.api.nvim_buf_get_option(0, "filetype")
@@ -76,10 +78,11 @@ Lsps_Formatters.set_update(function()
 				server_names,
 				vim.tbl_map(function(formatter) return formatter.name end, conform.list_formatters(0))
 			)
+			if has_null_ls then server_names = vim.fn.uniq(server_names) end
 		end
 	end
 
-	return table.concat(vim.fn.uniq(server_names), ", ")
+	return #server_names > 0 and table.concat(server_names, ", ") or "NO LSP, FORMATTER  "
 end)
 
 return Lsps_Formatters

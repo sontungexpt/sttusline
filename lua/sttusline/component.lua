@@ -79,11 +79,11 @@ function Component.new()
 
 		get_colors = function() return component_data.colors end,
 		set_colors = function(colors)
-			if type(colors) == "table" then
-				component_data.colors = {
-					fg = type(colors.fg) == "string" and colors.fg or nil,
-					bg = type(colors.bg) == "string" and colors.bg or nil,
-				}
+			if
+				require("sttusline.utils").is_highlight_option(colors)
+				or require("sttusline.utils").is_highlight_name(colors)
+			then
+				component_data.colors = colors
 			end
 		end,
 

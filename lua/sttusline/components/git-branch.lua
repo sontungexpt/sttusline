@@ -2,7 +2,7 @@ local colors = require("sttusline.utils.color")
 
 local GitBranch = require("sttusline.component").new()
 
-GitBranch.set_colors { fg = colors.pink, bg = colors.bg }
+GitBranch.set_colors { fg = colors.pink }
 GitBranch.set_config {
 	icon = "",
 }
@@ -16,7 +16,8 @@ local get_branch = function()
 		if head_file then
 			local content = head_file:read("*all")
 			head_file:close()
-			return content:match("ref: refs/heads/(.-)%s*$")
+			-- branch name  or commit hash
+			return content:match("ref: refs/heads/(.-)%s*$") or content:sub(1, 7) or ""
 		end
 		return ""
 	end

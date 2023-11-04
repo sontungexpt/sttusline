@@ -6,7 +6,7 @@ local PosCursorProgress = require("sttusline.component").new()
 PosCursorProgress.set_event { "CursorMoved", "CursorMovedI" }
 
 PosCursorProgress.set_padding(0)
-PosCursorProgress.set_colors { fg = colors.orange, bg = colors.bg }
+PosCursorProgress.set_colors { fg = colors.orange }
 
 local chars = { "_", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█" }
 

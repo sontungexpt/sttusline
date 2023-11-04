@@ -3,7 +3,6 @@ local fn = vim.fn
 
 local NEW_COMPONENT_TEMPLATE = [[
 -- Change NewComponent to your component name
-local utils = require("sttusline.utils")
 local NewComponent = require("sttusline.set_component").new()
 
 -- The component will be update when the event is triggered
@@ -29,26 +28,53 @@ NewComponent.set_config {}
 NewComponent.set_padding(1)
 -- or NewComponent.set_padding{ left = 1, right = 1 }
 
--- The colors of the component
+-- The colors of the component. Rely on the return value of the update function, you have 3 ways to set the colors
+-- If the return value is string
+-- NewComponent.set_colors { fg = colors.set_black, bg = colors.set_white }
+-- If the return value is table of string
+-- NewComponent.set_colors { { fg = "#009900", bg = "#ffffff" }, { fg = "#000000", bg = "#ffffff" }}
+-- -- so if the return value is { "string1", "string2" }
+-- -- then the string1 will be highlight with { fg = "#009900", bg = "#ffffff" }
+-- -- and the string2 will be highlight with { fg = "#000000", bg = "#ffffff" }
+--
+-- -- if you don't want to add highlight for the string1 now
+-- -- because it will auto update new colors when the returning value in update function is a table that contains the color options,
+-- -- you can add a empty table in the first element
+-- -- {
+--     colors = {
+--         {},
+--         { fg = "#000000", bg = "#ffffff" }
+--     },
+-- -- }
+--
+-- NOTE: The colors options can be the colors name or the colors options
+-- colors = {
+--     { fg = "#009900", bg = "#ffffff" },
+--     "DiagnosticsSignError",
+-- },
+--
+-- -- So if the return value is { "string1", "string2" }
+-- -- then the string1 will be highlight with { fg = "#009900", bg = "#ffffff" }
+-- -- and the string2 will be highlight with the colors options of the DiagnosticsSignError highlight
+--
+-- -- Or you can set the fg(bg) follow the colors options of the DiagnosticsSignError highlight
+-- {
+--     colors = {
+--         { fg = "DiagnosticsSignError", bg = "#ffffff" },
+--         "DiagnosticsSignError",
+--     },
+-- }
+
 NewComponent.set_colors {} -- { fg = colors.set_black, bg = colors.set_white }
 
--- The function will return the value of the component to display on the statusline
--- Must return a string
+-- The function will return the value of the component to display on the statusline(required).
+-- Must return a string or a table of string or a table of  { "string", { fg = "color", bg = "color" } }
+-- NewComponent.set_update(function() return { "string1", "string2" } end)
+-- NewComponent.set_update(function() return { { "string1", {fg = "#000000", bg ="#fdfdfd"} },  "string3", "string4" } end)
 NewComponent.set_update(function() return "" end)
--- NOTE:
--- If you don't use NewComponent.set_colors{} and you want to customize the highlight of your component
--- You should use utils.add_highlight_name(value, highlight_name) to add the highlight name to the value
--- After that you can set the highlight of your component by using vim.api.nvim_set_hl(0, highlight_name, opts) (You should add this to NewComponent.set_onhighlight)
--- The function utils.add_highlight_name(value,highlight_name) will return the value
--- So you can use it like this:
--- NewComponent.set_update(function() return utils.add_highlight_name("Hello", "HelloHighlight") end)
--- NewComponent.set_onhighlight(function() vim.api.nvim_set_hl(0, "HelloHighlight", { fg = "#ffffff", bg = "#000000" }) end)
 
 
 -- The function will call when the component is highlight
--- You should use it to set the highlight of the component
--- Example:
--- NewComponent.set_onhighlight(function() vim.api.nvim_set_hl(0, "ComponentHighlight", { fg = colors.set_black, bg = colors.set_white }) end)
 NewComponent.set_onhighlight(function() end)
 
 -- The function will return the condition to display the component when the component is update
