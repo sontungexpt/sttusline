@@ -52,6 +52,8 @@ any idea to create a new component, please open an issue or pull request.
         event = { "BufEnter" },
         config = function(_, opts)
             require("sttusline").setup {
+                on_attach = function(create_update_group) end
+
                 -- the colors of statusline will be set follow the colors of the active buffer
                 -- statusline_color = "#fdff00",
                 statusline_color = "StatusLine",
@@ -135,7 +137,8 @@ Use default component and override default configs. I allow you to do any thing 
                 "mode",
                 -- override default component
                 {
-                    name = "form",
+                    name = "component_name",
+                    update_group = "group_name",
                     event = {}, -- The component will be update when the event is triggered
                     user_event = { "VeryLazy" },
                     timing = false, -- The component will be update every time interval
@@ -144,10 +147,10 @@ Use default component and override default configs. I allow you to do any thing 
                     configs = {},
                     padding = 1, -- { left = 1, right = 1 }
                     colors = {}, -- { fg = colors.black, bg = colors.white }
-                    init = function(configs,colors,space) end,
-                    update = function(configs,colors,space)return "" end,
-                    condition = function(configs,colors,space)return true end,
-                    on_highlight= function(configs,colors,space) end,
+                    init = function(config, space) end,
+                    update = function(configs, space)return "" end,
+                    condition = function(configs, space)return true end,
+                    on_highlight= function(configs, space) end,
                 }
             },
         },
@@ -176,41 +179,41 @@ To add the empty space between components, you need to add `%=` to `components` 
             -- ...
             {
                 -- new component
-                name = "form",
+                name = "component_name",
+                update_group = "group_name",
                 event = {}, -- The component will be update when the event is triggered
                 user_event = { "VeryLazy" },
                 timing = false, -- The component will be update every time interval
                 lazy = true,
-                override_glob_colors = {},
                 space ={}
                 configs = {},
                 padding = 1, -- { left = 1, right = 1 }
                 colors = {}, -- { fg = colors.black, bg = colors.white }
-                init = function(configs,colors,space) end,
-                update = function(configs,colors,space)return "" end,
-                condition = function(configs,colors,space)return true end,
-                on_highlight= function(configs,colors,space) end,
+                init = function(configs, space) end,
+                update = function(configs, space)return "" end,
+                condition = function(config, space)return true end,
+                on_highlight= function(configs, space) end,
             }
         },
     }
 ```
 
-| **Keys**                                      | Type of args                          | **Description**                                                                                                                                                                           |
-| --------------------------------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [name](#name)                                 | string                                | The name of component                                                                                                                                                                     |
-| [event](#event)                               | table or string                       | The component will be update when the [event](https://neovim.io/doc/user/autocmd.html) is triggered                                                                                       |
-| [user_event](#user_event)                     | table or string                       | Same as event buf for [User](https://neovim.io/doc/user/autocmd.html) autocmd                                                                                                             |
-| [timing](#timing)                             | boolean                               | If set_timing(true), component will update after 1 second                                                                                                                                 |
-| [padding](#padding)                           | number or table                       | The number of spaces to add before and after the component                                                                                                                                |
-| [lazy](#lazy)                                 | boolean                               | Load component on startup(not recommended)                                                                                                                                                |
-| [configs](#configs)                           | table                                 | The configs of components, it will be pass to the first parameter of each function                                                                                                        |
-| [space](#space)                               | table or function                     | If space is the table it will be pass to the third parameter of each function, if it is a function the return value of that function will be pass to the third parameter of each function |
-| [override_glob_colors](#override_glob_colors) | table                                 | Override colors pass to the second parameter of each function                                                                                                                             |
-| [init](#init)                                 | function                              | The function will call on the first time component load                                                                                                                                   |
-| [colors](#colors)                             | table                                 | Colors highlight                                                                                                                                                                          |
-| [update](#update)                             | function(must return string or table) | The function will return the value of the component to display on the statusline                                                                                                          |
-| [condition](#condition)                       | function(must return boolean)         | The function will return the condition to display the component when the component is update                                                                                              |
-| [on_highlight](#on_highlight)                 | function                              | The function will call when the component is set highlight                                                                                                                                |
+| **Keys**                      | Type of args                          | **Description**                                                                                                                                                                           |
+| ----------------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [name](#name)                 | string                                | The name of component                                                                                                                                                                     |
+| [update_group](#update_group) | string                                | The update group of component                                                                                                                                                             |
+| [event](#event)               | table or string                       | The component will be update when the [event](https://neovim.io/doc/user/autocmd.html) is triggered                                                                                       |
+| [user_event](#user_event)     | table or string                       | Same as event buf for [User](https://neovim.io/doc/user/autocmd.html) autocmd                                                                                                             |
+| [timing](#timing)             | boolean                               | If set_timing(true), component will update after 1 second                                                                                                                                 |
+| [padding](#padding)           | number or table                       | The number of spaces to add before and after the component                                                                                                                                |
+| [lazy](#lazy)                 | boolean                               | Load component on startup(not recommended)                                                                                                                                                |
+| [configs](#configs)           | table                                 | The configs of components, it will be pass to the first parameter of each function                                                                                                        |
+| [space](#space)               | table or function                     | If space is the table it will be pass to the third parameter of each function, if it is a function the return value of that function will be pass to the third parameter of each function |
+| [init](#init)                 | function                              | The function will call on the first time component load                                                                                                                                   |
+| [colors](#colors)             | table                                 | Colors highlight                                                                                                                                                                          |
+| [update](#update)             | function(must return string or table) | The function will return the value of the component to display on the statusline                                                                                                          |
+| [condition](#condition)       | function(must return boolean)         | The function will return the condition to display the component when the component is update                                                                                              |
+| [on_highlight](#on_highlight) | function                              | The function will call when the component is set highlight                                                                                                                                |
 
 ### Detail of each key
 
@@ -219,6 +222,39 @@ To add the empty space between components, you need to add `%=` to `components` 
 ```lua
     {
         name = "form",
+    }
+```
+
+- <a name="update_group">`update_group`</a>: The update group of component(optional). Default is `nil`
+
+If you set it, then all the components in the same group will be update in the same time
+
+NOTE: If group is set, then the event, user_event, timing will be ignored
+
+Please make sure that you create group by using:
+
+```lua
+    require("sttusline").setup {
+        on_attach = function(create_update_group)
+            create_update_group("GROUP_NAME", {
+                event = { "BufEnter" },
+                user_event = { "VeryLazy" },
+                timing = false,
+            })
+        end
+    }
+```
+
+We provide you some default group:
+
+| **Group**       | **Description**                                                                   |
+| --------------- | --------------------------------------------------------------------------------- |
+| `CURSOR_MOVING` | event = {"CursorMoved", "CursorMoveI"}, user_event = {"VeryLazy"}, timing = false |
+| `BUF_WIN_ENTER` | event = {"BufEnter", "WinEnter"}, user_event = {"VeryLazy"}, timing = false       |
+
+```lua
+    {
+        update_group = "CURSOR_MOVING",
     }
 ```
 
@@ -283,16 +319,6 @@ To add the empty space between components, you need to add `%=` to `components` 
     }
 ```
 
-- <a name="override_glob_colors">`override_glob_colors`</a>: Override colors pass to the second parameter of each function(optional). Default is false
-  NOTE: default the second parameter of each function is the colors in lua.utils.color module
-
-```lua
-    {
-        override_glob_colors = {
-        },
-    }
-```
-
 <a name="configs">`configs`</a>: The configs of components, it will be pass to the first parameter of each function(optional). Default is nil
 
 ```lua
@@ -304,12 +330,11 @@ To add the empty space between components, you need to add `%=` to `components` 
 - <a name="init">`init`</a>: The function will call on the first time component load(optional). Default is nil
 
   - configs is the [configs](#configs) table
-  - colors is the colors in lua.utils.color.lua file
   - space is the [space](#space) table
 
 ```lua
     {
-        init = function(configs,colors,space) end,
+        init = function(configs, space) end,
     }
 ```
 
@@ -318,7 +343,6 @@ To add the empty space between components, you need to add `%=` to `components` 
   You should use it to add the algorithm function for your component or constant variables
 
   - configs is the [configs](#configs) table
-  - colors is the colors in lua.utils.color.lua file
 
 ```lua
     {
@@ -326,7 +350,7 @@ To add the empty space between components, you need to add `%=` to `components` 
     }
     -- or
     {
-        space = function(configs, colors)
+        space = function(configs)
             return {}
         end,
     }
@@ -358,7 +382,7 @@ Example
                 return ""
             end,
         },
-        update = function(configs, colors, space)
+        update = function(configs, space)
             local branch = space.get_branch()
             return branch ~= "" and configs.icon .. " " .. branch or ""
         end,
@@ -396,7 +420,7 @@ OR
                 get_branch = get_branch,
             }
         end,
-        update = function(configs, _, space)
+        update = function(configs, space)
             local branch = space.get_branch()
             return branch ~= "" and configs.icon .. " " .. branch or ""
         end,
@@ -409,14 +433,13 @@ OR
   Return value must be string or table
 
   - configs is the [configs](#configs) table
-  - colors is the colors in lua.utils.color.lua file
   - space is the [space](#space) table
 
 Return string
 
 ```lua
     {
-        update = function(configs,colors,space)return "" end,
+        update = function(configs, space)return "" end,
     }
 ```
 
@@ -424,7 +447,7 @@ Return the table with all values is string
 
 ```lua
     {
-        update = function(configs,colors,space)return { "string1", "string2" } end,
+        update = function(configs, space)return { "string1", "string2" } end,
     }
 ```
 
@@ -434,7 +457,7 @@ This element will be highlight with new colors options or highlight name when th
 ```lua
     -- you can use the colors options
     {
-        update = function(configs,colors,space)return { { "string1", {fg = "#000000", bg ="#fdfdfd"} },  "string3", "string4"  } end,
+        update = function(configs, space)return { { "string1", {fg = "#000000", bg ="#fdfdfd"} },  "string3", "string4"  } end,
     }
 ```
 
@@ -443,7 +466,7 @@ OR
 ```lua
     -- only use the foreground color of the DiagnosticsSignError highlight
     {
-        update = function(configs,colors,space)return { { "string1", {fg = "DiagnosticsSignError", bg ="#000000"} },  "string3", "string4"  } end,
+        update = function(configs, space)return { { "string1", {fg = "DiagnosticsSignError", bg ="#000000"} },  "string3", "string4"  } end,
     }
 ```
 
@@ -452,7 +475,7 @@ OR
 ```lua
     -- use same colors options of the DiagnosticsSignError highlight
     {
-        update = function(configs,colors,space)return { { "string1", "DiagnosticsSignError" },  "string3", "string4"  } end,
+        update = function(configs, space)return { { "string1", "DiagnosticsSignError" },  "string3", "string4"  } end,
     }
 ```
 
@@ -517,24 +540,22 @@ NOTE: The colors options can be the colors name or the colors options
   Return value must be boolean
 
   - configs is the [configs](#configs) table
-  - colors is the colors in lua.utils.color.lua file
   - space is the [space](#space) table
 
 ```lua
     {
-        condition = function(configs,colors,space)return true end,
+        condition = function(configs, space)return true end,
     }
 ```
 
 - <a name="on_highlight">`on_highlight`</a>: The function will call when the component is set highlight(optional).
 
   - configs is the [configs](#configs) table
-  - colors is the colors in lua.utils.color.lua file
   - space is the [space](#space) table
 
 ```lua
     {
-        on_highlight= function(configs,colors,space) end,
+        on_highlight= function(configs, space) end,
     }
 ```
 
