@@ -208,7 +208,7 @@ To add the empty space between components, you need to add `%=` to `components` 
 | [padding](#padding)           | number or table                       | The number of spaces to add before and after the component                                                                                                                                |
 | [lazy](#lazy)                 | boolean                               | Load component on startup(not recommended)                                                                                                                                                |
 | [configs](#configs)           | table                                 | The configs of components, it will be pass to the first parameter of each function                                                                                                        |
-| [space](#space)               | table or function                     | If space is the table it will be pass to the third parameter of each function, if it is a function the return value of that function will be pass to the third parameter of each function |
+| [space](#space)               | table or function                     | If space is the table it will be pass to the second parameter of each function, if it is a function the return value of that function will be pass to the second parameter of each function |
 | [init](#init)                 | function                              | The function will call on the first time component load                                                                                                                                   |
 | [colors](#colors)             | table                                 | Colors highlight                                                                                                                                                                          |
 | [update](#update)             | function(must return string or table) | The function will return the value of the component to display on the statusline                                                                                                          |
@@ -338,8 +338,8 @@ We provide you some default group:
     }
 ```
 
-- <a name="space">`space`</a>: The space is the table or function(optional) and will be pass to the third parameter of each function. Default is nil
-  If it is a function the return value of that function will be pass to the third parameter of each function(optional).
+- <a name="space">`space`</a>: The space is the table or function(optional) and will be pass to the second parameter of each function. Default is nil
+  If it is a function the return value of that function will be pass to the second parameter of each function(optional).
   You should use it to add the algorithm function for your component or constant variables
 
   - configs is the [configs](#configs) table
