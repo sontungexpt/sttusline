@@ -1,5 +1,7 @@
 ## Sttusline
 
+:star2:**IMPORTANT:** As I am currently utilizing the table_version branch, kindly switch to it in order to receive the latest updates regularly.
+
 A very lightweight statusline plugin for neovim written in lua.
 
 This plugin lazy load all components and only update each component when needed.
@@ -32,6 +34,16 @@ than creating by calling get and set function. So I recommend you to use branch
 ## Preview
 
 ![preview1](./docs/readme/preview1.png)
+
+
+Copilot loading
+
+https://github.com/sontungexpt/sttusline/assets/92097639/a6cfc4d1-9d1f-445f-a90a-90f211bb1724
+
+
+
+
+
 
 ## Features
 
