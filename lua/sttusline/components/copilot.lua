@@ -31,26 +31,21 @@ return {
 			cp_api.check_status(copilot_client, {}, function(cserr, status)
 				if cserr then
 					copilot_status = "error"
-					require("sttusline.utils.notify").warn(cserr.message or vim.inspect(cserr))
 					return
 				elseif not status.user then
 					copilot_status = "error"
-					require("sttusline.utils.notify").warn("Copilot: No user found")
 					return
 				elseif status.status == "NoTelemetryConsent" then
 					copilot_status = "error"
-					require("sttusline.utils.notify").warn("Copilot: No telemetry consent")
 					return
 				elseif status.status == "NotAuthorized" then
 					copilot_status = "error"
-					require("sttusline.utils.notify").warn("Copilot: Not authorized")
 					return
 				end
 
 				local attached = cp_client.buf_is_attached(0)
 				if not attached then
 					copilot_status = "error"
-					require("sttusline.utils.notify").warn("Copilot: Not attached")
 				else
 					copilot_status = "normal"
 				end

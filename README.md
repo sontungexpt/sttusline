@@ -144,10 +144,10 @@ Use default component and override default configs. I allow you to do any thing 
                     configs = {},
                     padding = 1, -- { left = 1, right = 1 }
                     colors = {}, -- { fg = colors.black, bg = colors.white }
-                    init = function(configs,colors,space) end,
-                    update = function(configs,colors,space)return "" end,
-                    condition = function(configs,colors,space)return true end,
-                    on_highlight= function(configs,colors,space) end,
+                    init = function(config,space) end,
+                    update = function(configs,space)return "" end,
+                    condition = function(configs,space)return true end,
+                    on_highlight= function(configs,space) end,
                 }
             },
         },
@@ -181,15 +181,14 @@ To add the empty space between components, you need to add `%=` to `components` 
                 user_event = { "VeryLazy" },
                 timing = false, -- The component will be update every time interval
                 lazy = true,
-                override_glob_colors = {},
                 space ={}
                 configs = {},
                 padding = 1, -- { left = 1, right = 1 }
                 colors = {}, -- { fg = colors.black, bg = colors.white }
-                init = function(configs,colors,space) end,
-                update = function(configs,colors,space)return "" end,
-                condition = function(configs,colors,space)return true end,
-                on_highlight= function(configs,colors,space) end,
+                init = function(configs,space) end,
+                update = function(configs,space)return "" end,
+                condition = function(config,space)return true end,
+                on_highlight= function(configs,space) end,
             }
         },
     }
@@ -205,7 +204,6 @@ To add the empty space between components, you need to add `%=` to `components` 
 | [lazy](#lazy)                                 | boolean                               | Load component on startup(not recommended)                                                                                                                                                |
 | [configs](#configs)                           | table                                 | The configs of components, it will be pass to the first parameter of each function                                                                                                        |
 | [space](#space)                               | table or function                     | If space is the table it will be pass to the third parameter of each function, if it is a function the return value of that function will be pass to the third parameter of each function |
-| [override_glob_colors](#override_glob_colors) | table                                 | Override colors pass to the second parameter of each function                                                                                                                             |
 | [init](#init)                                 | function                              | The function will call on the first time component load                                                                                                                                   |
 | [colors](#colors)                             | table                                 | Colors highlight                                                                                                                                                                          |
 | [update](#update)                             | function(must return string or table) | The function will return the value of the component to display on the statusline                                                                                                          |
@@ -283,16 +281,6 @@ To add the empty space between components, you need to add `%=` to `components` 
     }
 ```
 
-- <a name="override_glob_colors">`override_glob_colors`</a>: Override colors pass to the second parameter of each function(optional). Default is false
-  NOTE: default the second parameter of each function is the colors in lua.utils.color module
-
-```lua
-    {
-        override_glob_colors = {
-        },
-    }
-```
-
 <a name="configs">`configs`</a>: The configs of components, it will be pass to the first parameter of each function(optional). Default is nil
 
 ```lua
@@ -304,12 +292,11 @@ To add the empty space between components, you need to add `%=` to `components` 
 - <a name="init">`init`</a>: The function will call on the first time component load(optional). Default is nil
 
   - configs is the [configs](#configs) table
-  - colors is the colors in lua.utils.color.lua file
   - space is the [space](#space) table
 
 ```lua
     {
-        init = function(configs,colors,space) end,
+        init = function(configs,space) end,
     }
 ```
 
@@ -318,7 +305,7 @@ To add the empty space between components, you need to add `%=` to `components` 
   You should use it to add the algorithm function for your component or constant variables
 
   - configs is the [configs](#configs) table
-  - colors is the colors in lua.utils.color.lua file
+
 
 ```lua
     {
@@ -409,14 +396,13 @@ OR
   Return value must be string or table
 
   - configs is the [configs](#configs) table
-  - colors is the colors in lua.utils.color.lua file
   - space is the [space](#space) table
 
 Return string
 
 ```lua
     {
-        update = function(configs,colors,space)return "" end,
+        update = function(configs,space)return "" end,
     }
 ```
 
@@ -424,7 +410,7 @@ Return the table with all values is string
 
 ```lua
     {
-        update = function(configs,colors,space)return { "string1", "string2" } end,
+        update = function(configs,space)return { "string1", "string2" } end,
     }
 ```
 
@@ -434,7 +420,7 @@ This element will be highlight with new colors options or highlight name when th
 ```lua
     -- you can use the colors options
     {
-        update = function(configs,colors,space)return { { "string1", {fg = "#000000", bg ="#fdfdfd"} },  "string3", "string4"  } end,
+        update = function(configs,space)return { { "string1", {fg = "#000000", bg ="#fdfdfd"} },  "string3", "string4"  } end,
     }
 ```
 
@@ -443,7 +429,7 @@ OR
 ```lua
     -- only use the foreground color of the DiagnosticsSignError highlight
     {
-        update = function(configs,colors,space)return { { "string1", {fg = "DiagnosticsSignError", bg ="#000000"} },  "string3", "string4"  } end,
+        update = function(configs,space)return { { "string1", {fg = "DiagnosticsSignError", bg ="#000000"} },  "string3", "string4"  } end,
     }
 ```
 
@@ -452,7 +438,7 @@ OR
 ```lua
     -- use same colors options of the DiagnosticsSignError highlight
     {
-        update = function(configs,colors,space)return { { "string1", "DiagnosticsSignError" },  "string3", "string4"  } end,
+        update = function(configs,space)return { { "string1", "DiagnosticsSignError" },  "string3", "string4"  } end,
     }
 ```
 
@@ -517,24 +503,22 @@ NOTE: The colors options can be the colors name or the colors options
   Return value must be boolean
 
   - configs is the [configs](#configs) table
-  - colors is the colors in lua.utils.color.lua file
   - space is the [space](#space) table
 
 ```lua
     {
-        condition = function(configs,colors,space)return true end,
+        condition = function(configs,space)return true end,
     }
 ```
 
 - <a name="on_highlight">`on_highlight`</a>: The function will call when the component is set highlight(optional).
 
   - configs is the [configs](#configs) table
-  - colors is the colors in lua.utils.color.lua file
   - space is the [space](#space) table
 
 ```lua
     {
-        on_highlight= function(configs,colors,space) end,
+        on_highlight= function(configs,space) end,
     }
 ```
 
