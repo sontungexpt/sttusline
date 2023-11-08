@@ -69,7 +69,7 @@ local update_groups = {
 			user_event = "VeryLazy",
 		},
 	},
-	BUF_WIN_ENTER_AND_VERY_LAZY = {
+	BUF_WIN_ENTER = {
 		members = {},
 		opts = {
 			event = { "BufEnter", "WinEnter" },

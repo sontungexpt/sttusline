@@ -4,6 +4,7 @@ local M = {}
 local configs = {
 	-- statusline_color = "#1e2030",
 	-- statusline_color = "StatusLine",
+	-- on_attach = function(create_update_group) end
 	disabled = {
 		filetypes = {},
 		buftypes = {
@@ -93,7 +94,7 @@ local configs = {
 		},
 		{
 			name = "filename",
-			update_group = "BUF_WIN_ENTER_AND_VERY_LAZY",
+			update_group = "BUF_WIN_ENTER",
 			colors = {
 				{},
 				{ fg = colors.orange },
@@ -415,13 +416,13 @@ local configs = {
 		},
 		{
 			name = "indent",
-			update_group = "BUF_WIN_ENTER_AND_VERY_LAZY",
+			update_group = "BUF_WIN_ENTER",
 			colors = { fg = colors.cyan },
 			update = function() return "Tab: " .. vim.api.nvim_buf_get_option(0, "shiftwidth") .. "" end,
 		},
 		{
 			name = "encoding",
-			update_group = "BUF_WIN_ENTER_AND_VERY_LAZY",
+			update_group = "BUF_WIN_ENTER",
 			configs = {
 				["utf-8"] = "󰉿",
 				["utf-16"] = "",
