@@ -28,7 +28,8 @@ local is_highlight_name = highlight.is_highlight_name
 -- local vars
 local core_autocmd_group = nil
 local component_autocmd_group = nil
-local timer = nil
+local glob_timer = nil
+local comp_timers = {}
 local statusline_hidden = false
 
 -- save the updating value of the component
@@ -291,8 +292,21 @@ M.foreach_component = function(opts, comp_cb, empty_comp_cb)
 end
 
 M.start_timer = function(opts)
-	if timer == nil then timer = vim.loop.new_timer() end
-	timer:start(1000, 1000, vim.schedule_wrap(function() M.run(opts) end))
+	if glob_timer == nil then glob_timer = vim.loop.new_timer() end
+	glob_timer:start(1000, 1000, vim.schedule_wrap(function() M.run(opts) end))
+end
+
+M.start_sub_timer = function(opts, component, index)
+	if comp_timers[index] == nil then comp_timers[index] = vim.loop.new_timer() end
+	comp_timers[index]:start(
+		component.timer_interval,
+		component.timer_interval,
+		vim.schedule_wrap(function()
+			if statusline_hidden then return end
+			M.update_component_value(opts, component, index)
+			M.update_statusline()
+		end)
+	)
 end
 
 M.index_timer_catalog = function(component, index)
@@ -483,6 +497,7 @@ M.init = function(opts)
 			M.index_timer_catalog(component, index)
 		end
 		M.set_component_highlight(opts, component, index)
+		if component.timer_interval then M.start_sub_timer(opts, component, index) end
 	end, function(empty_comp, index) statusline[index] = empty_comp end)
 
 	for _, group in pairs(update_groups) do

@@ -1,3 +1,4 @@
+local type = type
 local colors = require("sttusline.utils.color")
 local M = {}
 
@@ -339,7 +340,8 @@ local configs = {
 		},
 		{
 			name = "copilot",
-			event = { "InsertEnter", "InsertLeave", "CursorHoldI" },
+			timer_interval = 200,
+			-- event = { "InsertEnter", "InsertLeave", "CursorMovedI" },
 			space = function(configs)
 				local copilot_status = ""
 				local copilot_client = nil
@@ -395,7 +397,15 @@ local configs = {
 						end
 					end
 				end
-				S.get_status = function() return configs.icons[copilot_status] or copilot_status or "" end
+				S.get_status = function()
+					local icons = configs.icons
+					if copilot_status == "inprogress" then
+						return icons[copilot_status][math.floor(vim.loop.hrtime() / 200000000) % #icons[copilot_status] + 1]
+					else
+						return icons[copilot_status] or copilot_status or ""
+					end
+					-- return configs.icons[copilot_status] or copilot_status or ""
+				end
 				return S
 			end,
 			configs = {
@@ -403,7 +413,7 @@ local configs = {
 					normal = "",
 					error = "",
 					warning = "",
-					inprogress = "",
+					inprogress = { "◜", "◝", "◞", "◟" },
 				},
 			},
 			update = function(_, space)

@@ -1,6 +1,7 @@
 return {
 	name = "copilot",
-	event = { "InsertEnter", "InsertLeave", "CursorHoldI" },
+	timer_interval = 220,
+	-- event = { "InsertEnter", "InsertLeave", "CursorMovedI" },
 	space = function(configs)
 		local copilot_status = ""
 		local copilot_client = nil
@@ -43,12 +44,7 @@ return {
 					return
 				end
 
-				local attached = cp_client.buf_is_attached(0)
-				if not attached then
-					copilot_status = "error"
-				else
-					copilot_status = "normal"
-				end
+				copilot_status = cp_client.buf_is_attached(0) and "normal" or "error"
 			end)
 		end
 
@@ -61,16 +57,23 @@ return {
 				end
 			end
 		end
-		S.get_status = function() return configs.icons[copilot_status] or copilot_status or "" end
+		S.get_status = function()
+			local icons = configs.icons
+			if copilot_status == "inprogress" then
+				return icons[copilot_status][math.floor(vim.loop.hrtime() / 220000000) % #icons[copilot_status] + 1]
+			else
+				return icons[copilot_status] or copilot_status or ""
+			end
+			-- return configs.icons[copilot_status] or copilot_status or ""
+		end
 		return S
 	end,
-
 	configs = {
 		icons = {
 			normal = "",
 			error = "",
 			warning = "",
-			inprogress = "",
+			inprogress = { "◜", "◝", "◞", "◟" },
 		},
 	},
 	update = function(_, space)
