@@ -75,7 +75,6 @@ local configs = {
 				},
 				auto_hide_on_vim_resized = true,
 			},
-			padding = 1,
 			update = function(configs)
 				local mode_code = vim.api.nvim_get_mode().mode
 				local mode = configs.modes[mode_code]
@@ -164,7 +163,7 @@ local configs = {
 					return ""
 				end,
 			},
-			update = function(configs, _, space)
+			update = function(configs, space)
 				local branch = space.get_branch()
 				return branch ~= "" and configs.icon .. " " .. branch or ""
 			end,
@@ -195,16 +194,16 @@ local configs = {
 
 				local should_add_spacing = false
 				local result = {}
-				for _, v in ipairs(order) do
+				for index, v in ipairs(order) do
 					if git_status[v] and git_status[v] > 0 then
 						if should_add_spacing then
-							table.insert(result, " " .. icons[v] .. " " .. git_status[v])
+							result[index] = " " .. icons[v] .. " " .. git_status[v]
 						else
 							should_add_spacing = true
-							table.insert(result, icons[v] .. " " .. git_status[v])
+							result[index] = icons[v] .. " " .. git_status[v]
 						end
 					else
-						table.insert(result, "")
+						result[index] = ""
 					end
 				end
 				return result
@@ -238,18 +237,18 @@ local configs = {
 				local order = configs.order
 
 				local should_add_spacing = false
-				for _, key in ipairs(order) do
+				for index, key in ipairs(order) do
 					local count = #vim.diagnostic.get(0, { severity = vim.diagnostic.severity[key] })
 
 					if count > 0 then
 						if should_add_spacing then
-							table.insert(result, " " .. icons[key] .. " " .. count)
+							result[index] = " " .. icons[key] .. " " .. count
 						else
 							should_add_spacing = true
-							table.insert(result, icons[key] .. " " .. count)
+							result[index] = icons[key] .. " " .. count
 						end
 					else
-						table.insert(result, "")
+						result[index] = ""
 					end
 				end
 				return result
@@ -271,7 +270,7 @@ local configs = {
 
 				for _, client in pairs(buf_clients) do
 					local client_name = client.name
-					if not ignore_lsp_servers[client_name] then table.insert(server_names, client_name) end
+					if not ignore_lsp_servers[client_name] then server_names[#server_names + 1] = client_name end
 				end
 
 				if package.loaded["null-ls"] then
@@ -307,9 +306,9 @@ local configs = {
 								for _, method in ipairs(methods) do
 									if source.methods[method] then
 										if name_only then
-											table.insert(source_results, source.name)
+											source_results[#source_results + 1] = source.name
 										else
-											table.insert(source_results, source)
+											source_results[#source_results + 1] = source
 										end
 										break
 									end
@@ -372,29 +371,19 @@ local configs = {
 					cp_api.check_status(copilot_client, {}, function(cserr, status)
 						if cserr then
 							copilot_status = "error"
-							require("sttusline.utils.notify").warn(cserr)
 							return
 						elseif not status.user then
 							copilot_status = "error"
-							require("sttusline.utils.notify").warn("Copilot: No user found")
 							return
 						elseif status.status == "NoTelemetryConsent" then
 							copilot_status = "error"
-							require("sttusline.utils.notify").warn("Copilot: No telemetry consent")
 							return
 						elseif status.status == "NotAuthorized" then
 							copilot_status = "error"
-							require("sttusline.utils.notify").warn("Copilot: Not authorized")
 							return
 						end
 
-						local attached = cp_client.buf_is_attached(0)
-						if not attached then
-							copilot_status = "error"
-							require("sttusline.utils.notify").warn("Copilot: Not attached")
-						else
-							copilot_status = "normal"
-						end
+						copilot_status = cp_client.buf_is_attached(0) and "normal" or "error"
 					end)
 				end
 
@@ -407,10 +396,9 @@ local configs = {
 						end
 					end
 				end
-				S.get_status = function() return configs.icons[copilot_status] or "" end
+				S.get_status = function() return configs.icons[copilot_status] or copilot_status or "" end
 				return S
 			end,
-
 			configs = {
 				icons = {
 					normal = "",
@@ -419,7 +407,7 @@ local configs = {
 					inprogress = "",
 				},
 			},
-			update = function(_, _, space)
+			update = function(_, space)
 				if package.loaded["copilot"] then
 					space.register_status_notification_handler()
 					space.check_status()
@@ -478,11 +466,13 @@ local configs = {
 }
 
 M.setup = function(user_opts)
-	user_opts = M.apply_user_config(user_opts)
-	if user_opts.statusline_color then
-		require("sttusline.utils").set_hl("StatusLine", { bg = user_opts.statusline_color })
+	M.apply_user_config(user_opts)
+
+	if configs.statusline_color then
+		require("sttusline.highlight").set_hl("StatusLine", { bg = user_opts.statusline_color })
 	end
-	return user_opts
+
+	return configs
 end
 
 M.apply_user_config = function(opts)
@@ -505,5 +495,7 @@ M.apply_user_config = function(opts)
 	end
 	return configs
 end
+
+M.get_config = function() return configs end
 
 return M

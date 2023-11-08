@@ -24,7 +24,7 @@ return {
 			return ""
 		end,
 	},
-	update = function(configs, _, space)
+	update = function(configs, space)
 		local branch = space.get_branch()
 		return branch ~= "" and configs.icon .. " " .. branch or ""
 	end,

@@ -9,10 +9,10 @@ local api = vim.api
 local opt = vim.opt
 local autocmd = api.nvim_create_autocmd
 local augroup = api.nvim_create_augroup
+local concat = table.concat
 
 -- module
 local highlight = require("sttusline.highlight")
--- local NestedTable = require("sttusline.utils.NestedTable")
 
 -- local vars
 local core_autocmd_group = nil
@@ -20,7 +20,9 @@ local component_autocmd_group = nil
 local timer = nil
 local statusline_hidden = false
 
+-- save the updating value of the component
 local statusline = {}
+
 -- save the valid component after the first time call M.foreach_component
 local components = {}
 
@@ -31,26 +33,21 @@ local catalog = {
 		-- example: { BufEnter = { 1, 2, 3 }, BufWritePre = { 1, 2, 3 } }
 
 		-- the key is the name of the default event
-		nvim = {},
+		nvim = {
+			-- The number of the event that the component listen to
+			length = 0,
+			keys = {},
+		},
 		-- the key is the name of user defined event
-		user = {},
+		user = {
+			-- The number of the event that the component listen to
+			length = 0,
+			keys = {},
+		},
 	},
 
 	-- save the index of the component that update when the timer trigger
 	timer = {},
-}
-
-local update_groups = {
-	CURSOR_MOVING = {
-		childs = {
-			-- the index of the component belong to the group
-		},
-		value = {
-			event = { "CursorMoved", "CursorMovedI" },
-			user_event = { "VeryLazy" },
-			timing = false,
-		},
-	},
 }
 
 M.get_component_autocmd_group = function()
@@ -67,8 +64,52 @@ M.get_core_autocmd_group = function()
 	return core_autocmd_group
 end
 
+M.create_default_autocmd = function(opts, event)
+	autocmd(event, {
+		group = M.get_component_autocmd_group(),
+		callback = function(e) M.run(opts, e.event) end,
+	})
+end
+
+M.create_user_autocmd = function(opts, event)
+	autocmd("User", {
+		pattern = event,
+		group = M.get_component_autocmd_group(),
+		callback = function(e) M.run(opts, e.match, true) end,
+	})
+end
+
+local add_event_index_entry = function(event, index, cache_key)
+	local event_table = catalog.event[cache_key]
+	local catalog_event = event_table[event]
+	if catalog_event == nil then
+		event_table[event] = { index }
+		event_table.length = (event_table.length or 0) + 1
+		event_table.keys[event_table.length] = event
+	else
+		catalog_event[#catalog_event + 1] = index
+	end
+end
+
+M.index_event_catalog = function(event, index, cache_key)
+	if type(event) == "table" then
+		for _, e in ipairs(event) do
+			add_event_index_entry(e, index, cache_key)
+		end
+	elseif type(event) == "string" then
+		add_event_index_entry(event, index, cache_key)
+	end
+end
+
+M.init_component_autocmds = function(opts)
+	local nvim_keys = catalog.event.nvim.keys
+	local user_keys = catalog.event.user.keys
+	if next(nvim_keys) then M.create_default_autocmd(opts, nvim_keys) end
+	if next(user_keys) then M.create_user_autocmd(opts, user_keys) end
+end
+
 M.update_statusline = function()
-	local str_statusline = table.concat(statusline, "")
+	local str_statusline = concat(statusline, "")
 	opt.statusline = #str_statusline > 0 and str_statusline or " "
 end
 
@@ -77,16 +118,17 @@ M.eval_func = function(func, ...)
 end
 
 M.eval_component_func = function(component, func_name, ...)
-	local configs = type(component.configs) == "table" and component.configs or {}
+	local comp_configs = type(component.configs) == "table" and component.configs or {}
+
 	local space = nil
 
 	if type(component.space) == "function" then
-		space = component.space(configs)
+		space = component.space(comp_configs)
 	elseif type(component.space) == "table" then
 		space = component.space
 	end
 
-	return M.eval_func(component[func_name], configs, space, ...)
+	return M.eval_func(component[func_name], comp_configs, space, ...)
 end
 
 M.is_sub_table_child = function(child) return type(child) == "table" and type(child[1]) == "string" end
@@ -138,7 +180,7 @@ M.tbl_contains = function(tbl, item)
 	return false
 end
 
-M.is_in_disabled_opts = function(opts)
+M.should_statusline_hidden = function(opts)
 	return M.tbl_contains(opts.disabled.filetypes, api.nvim_buf_get_option(0, "filetype"))
 		or M.tbl_contains(opts.disabled.buftypes, api.nvim_buf_get_option(0, "buftype"))
 end
@@ -151,7 +193,7 @@ M.disable_for_filetype = function(opts)
 			if not event_trigger then
 				event_trigger = true
 				vim.schedule(function()
-					if M.is_in_disabled_opts(opts) then
+					if M.should_statusline_hidden(opts) then
 						M.hide_statusline()
 					else
 						M.restore_statusline(opts)
@@ -182,8 +224,10 @@ M.restore_statusline = function(opts)
 end
 
 M.foreach_component = function(opts, comp_cb, empty_comp_cb)
-	if #components > 0 then
-		for index, component in ipairs(components) do
+	local component_count = #components
+	if component_count > 0 then
+		for index = 1, component_count do
+			local component = components[index]
 			if type(component) == "string" then
 				M.eval_func(empty_comp_cb, component, index)
 			else
@@ -191,12 +235,13 @@ M.foreach_component = function(opts, comp_cb, empty_comp_cb)
 			end
 		end
 	else
-		local index = 0
-
-		local cache_and_eval_comp_cb = function(component, callback)
-			index = index + 1
-			components[index] = component
-			M.eval_func(callback, component, index)
+		-- Why not call callback in this function?
+		-- Because i want that the comp_cb always be a function that receive 2 arguments, and empty_comp_cb can be nil
+		-- And if it not exist, then the compiler will throw an error
+		-- If we call M.eval_func(cb,component,index) in this function so the comp_cb can be any other types
+		local cache_component = function(component)
+			component_count = component_count + 1
+			components[component_count] = component
 		end
 
 		local load_default_component = function(component_name, overrides)
@@ -205,7 +250,8 @@ M.foreach_component = function(opts, comp_cb, empty_comp_cb)
 				if type(overrides) == "table" then
 					real_comp = vim.tbl_deep_extend("force", real_comp, overrides)
 				end
-				cache_and_eval_comp_cb(real_comp, comp_cb)
+				cache_component(real_comp)
+				comp_cb(real_comp, component_count)
 			else
 				require("sttusline.utils.notify").error("Failed to load component: " .. component_name)
 			end
@@ -214,7 +260,8 @@ M.foreach_component = function(opts, comp_cb, empty_comp_cb)
 		for _, component in ipairs(opts.components) do
 			if type(component) == "string" then
 				if component == "%=" then -- empty component
-					cache_and_eval_comp_cb(component, empty_comp_cb)
+					cache_component(component)
+					M.eval_func(empty_comp_cb, component, component_count)
 				else -- default component name
 					load_default_component(component)
 				end
@@ -222,7 +269,8 @@ M.foreach_component = function(opts, comp_cb, empty_comp_cb)
 				if type(component[1]) == "string" then -- default component name
 					load_default_component(component[1], component[2])
 				else -- custom component
-					cache_and_eval_comp_cb(component, comp_cb)
+					cache_component(component)
+					comp_cb(component, component_count)
 				end
 			end
 		end
@@ -231,17 +279,15 @@ end
 
 M.start_timer = function(opts)
 	if timer == nil then timer = vim.loop.new_timer() end
-	timer:start(
-		1000,
-		1000,
-		vim.schedule_wrap(function()
-			if not statusline_hidden then M.run(opts) end
-		end)
-	)
+	timer:start(1000, 1000, vim.schedule_wrap(function() M.run(opts) end))
+end
+
+M.index_timer_catalog = function(component, index)
+	if component.timming == true then catalog.timer[#catalog.timer + 1] = index end
 end
 
 M.init_component_timer = function(opts)
-	if #catalog.timer > 0 then M.start_timer(opts) end
+	if next(catalog.timer) then M.start_timer(opts) end
 end
 
 M.set_component_highlight = function(opts, component, index)
@@ -284,7 +330,7 @@ M.update_component_value = function(opts, component, index)
 	-- If updating_value is table, then it must be a table of string or table of {string, table (highlight_option)}
 	-- Example:
 	-- table of string: { "filename", "filetype_icon" }
-	-- table of {string, table}: { {"filename", { fg="", bg="" }}, {"filetype_icon", { fg="", bg="" }} }
+	-- table of {string, table}: { { "filename", { fg="", bg="" } }, { "filetype_icon", { fg="", bg="" }} }
 	-- table of {string, nil}: { { "filename" }, { "filetype_icon" } }
 
 	local colors = component.colors
@@ -339,19 +385,19 @@ M.update_component_value = function(opts, component, index)
 				require("sttusline.utils.notify").error(
 					string.format(
 						"component %s update() must return string or table of string or table of {string, table}",
-						component.name or ""
+						type(component) == "string" and component or component.name or ""
 					)
 				)
 				return
 			end
 		end
-		statusline[index] = table.concat(updating_value, "")
+		statusline[index] = concat(updating_value, "")
 	else
 		statusline[index] = ""
 		require("sttusline.utils.notify").error(
 			string.format(
 				"component %s update() must return string or table of string or table of {string, table}",
-				component.name or ""
+				type(component) == "string" and component or component.name or ""
 			)
 		)
 	end
@@ -364,18 +410,46 @@ M.update_all_components = function(opts)
 	)
 end
 
-M.update_on_trigger = function(opts, indexs)
-	for _, index in ipairs(indexs) do
+M.update_on_trigger = function(opts, update_indexs)
+	for _, index in ipairs(update_indexs) do
 		M.update_component_value(opts, components[index], index)
 	end
 end
 
 M.run = function(opts, event_name, is_user_event)
+	if statusline_hidden then return end
+
 	local event_table = is_user_event and catalog.event.user or catalog.event.nvim
 	vim.schedule(function()
 		M.update_on_trigger(opts, event_name and event_table[event_name] or catalog.timer)
-		if not statusline_hidden then M.update_statusline() end
+		M.update_statusline()
 	end, 0)
+end
+
+M.init = function(opts)
+	M.foreach_component(opts, function(component, index)
+		M.eval_component_func(component, "init")
+		if component.lazy == false then
+			M.update_component_value(opts, component, index)
+		else
+			statusline[index] = ""
+		end
+
+		M.index_event_catalog(component.event, index, "nvim")
+		M.index_event_catalog(component.user_event, index, "user")
+		M.index_timer_catalog(component, index)
+		M.set_component_highlight(opts, component, index)
+	end, function(empty_comp, index) statusline[index] = empty_comp end)
+
+	M.init_component_autocmds(opts)
+	M.init_component_timer(opts)
+end
+
+M.setup = function(opts)
+	M.init(opts)
+	M.update_statusline()
+	M.refresh_highlight_on_colorscheme(opts)
+	M.disable_for_filetype(opts)
 end
 
 return M

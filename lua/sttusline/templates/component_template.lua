@@ -8,9 +8,8 @@ return {
 
 	lazy = true,
 
-	utils = {},
+	space = {},
 	configs = {},
-	override_glob_colors = {},
 
 	-- number or table
 	padding = 1, -- { left = 1, right = 1 }
