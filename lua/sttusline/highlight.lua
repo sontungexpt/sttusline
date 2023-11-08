@@ -1,6 +1,10 @@
 local HIGHLIGHT_COMPONENT_PREFIX = "STTUSLINE_COMPONENT_"
 
 local api = vim.api
+local next = next
+local type = type
+local pcall = pcall
+
 local M = {}
 
 M.is_highlight_option = function(hl_opts) return type(hl_opts) == "table" and next(hl_opts) ~= nil end

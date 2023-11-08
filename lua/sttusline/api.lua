@@ -5,14 +5,25 @@ local COMPONENT_PARENT_MODULE = "sttusline.components"
 local AUTOCMD_CORE_GROUP = "STTUSLINE_CORE_EVENTS"
 local AUTOCMD_COMPONENT_GROUP = "STTUSLINE_COMPONENT_EVENTS"
 
+local vim = vim
 local api = vim.api
 local opt = vim.opt
+local schedule = vim.schedule
 local autocmd = api.nvim_create_autocmd
 local augroup = api.nvim_create_augroup
 local concat = table.concat
+local pairs = pairs
+local ipairs = ipairs
+local next = next
+local type = type
+local require = require
 
 -- module
 local highlight = require("sttusline.highlight")
+local gen_component_hl_name = highlight.gen_component_hl_name
+local add_highlight_name = highlight.add_highlight_name
+local is_highlight_option = highlight.is_highlight_option
+local is_highlight_name = highlight.is_highlight_name
 
 -- local vars
 local core_autocmd_group = nil
@@ -50,6 +61,30 @@ local catalog = {
 	timer = {},
 }
 
+local update_groups = {
+	CURSOR_MOVING = {
+		members = {},
+		opts = {
+			event = { "CursorMoved", "CursorMovedI" },
+			user_event = "VeryLazy",
+		},
+	},
+	BUF_WIN_ENTER_AND_VERY_LAZY = {
+		members = {},
+		opts = {
+			event = { "BufEnter", "WinEnter" },
+			user_event = "VeryLazy",
+		},
+	},
+}
+
+M.create_update_group = function(group_name, opts)
+	vim.validate { group_name = { group_name, "string" }, opts = { opts, "table" } }
+	update_groups[group_name] = update_groups[group_name] or { members = {} }
+	update_groups[group_name].opts = opts
+	return group_name
+end
+
 M.get_component_autocmd_group = function()
 	if component_autocmd_group == nil then
 		component_autocmd_group = augroup(AUTOCMD_COMPONENT_GROUP, { clear = true })
@@ -77,28 +112,6 @@ M.create_user_autocmd = function(opts, event)
 		group = M.get_component_autocmd_group(),
 		callback = function(e) M.run(opts, e.match, true) end,
 	})
-end
-
-local add_event_index_entry = function(event, index, cache_key)
-	local event_table = catalog.event[cache_key]
-	local catalog_event = event_table[event]
-	if catalog_event == nil then
-		event_table[event] = { index }
-		event_table.length = (event_table.length or 0) + 1
-		event_table.keys[event_table.length] = event
-	else
-		catalog_event[#catalog_event + 1] = index
-	end
-end
-
-M.index_event_catalog = function(event, index, cache_key)
-	if type(event) == "table" then
-		for _, e in ipairs(event) do
-			add_event_index_entry(e, index, cache_key)
-		end
-	elseif type(event) == "string" then
-		add_event_index_entry(event, index, cache_key)
-	end
 end
 
 M.init_component_autocmds = function(opts)
@@ -180,9 +193,9 @@ M.tbl_contains = function(tbl, item)
 	return false
 end
 
-M.should_statusline_hidden = function(opts)
-	return M.tbl_contains(opts.disabled.filetypes, api.nvim_buf_get_option(0, "filetype"))
-		or M.tbl_contains(opts.disabled.buftypes, api.nvim_buf_get_option(0, "buftype"))
+M.should_statusline_hidden = function(disabled_list)
+	return M.tbl_contains(disabled_list.filetypes, api.nvim_buf_get_option(0, "filetype"))
+		or M.tbl_contains(disabled_list.buftypes, api.nvim_buf_get_option(0, "buftype"))
 end
 
 M.disable_for_filetype = function(opts)
@@ -192,8 +205,8 @@ M.disable_for_filetype = function(opts)
 		callback = function()
 			if not event_trigger then
 				event_trigger = true
-				vim.schedule(function()
-					if M.should_statusline_hidden(opts) then
+				schedule(function()
+					if M.should_statusline_hidden(opts.disabled) then
 						M.hide_statusline()
 					else
 						M.restore_statusline(opts)
@@ -211,7 +224,7 @@ end
 M.hide_statusline = function()
 	if not statusline_hidden then
 		statusline_hidden = true
-		vim.schedule(function() opt.statusline = " " end, 0)
+		schedule(function() opt.statusline = " " end, 0)
 	end
 end
 
@@ -294,10 +307,10 @@ M.set_component_highlight = function(opts, component, index)
 	local colors = component.colors
 	if type(colors) == "table" then
 		if colors[1] == nil then
-			highlight.set_hl(highlight.gen_component_hl_name(index), colors, opts.statusline_color)
+			highlight.set_hl(gen_component_hl_name(index), colors, opts.statusline_color)
 		else
 			for k, color in ipairs(colors) do
-				highlight.set_hl(highlight.gen_component_hl_name(index, k), color, opts.statusline_color)
+				highlight.set_hl(gen_component_hl_name(index, k), color, opts.statusline_color)
 			end
 		end
 	end
@@ -336,13 +349,12 @@ M.update_component_value = function(opts, component, index)
 	local colors = component.colors
 	if type(updating_value) == "string" then
 		updating_value = M.add_component_padding(updating_value, component.padding)
-		if highlight.is_highlight_option(colors) then
+		if is_highlight_option(colors) then
 			-- if assign colors to component, then add highlight name to component
-			statusline[index] =
-				highlight.add_highlight_name(updating_value, highlight.gen_component_hl_name(index))
-		elseif highlight.is_highlight_name(colors) then
+			statusline[index] = add_highlight_name(updating_value, gen_component_hl_name(index))
+		elseif is_highlight_name(colors) then
 			-- if assign the highlight name to component, then add that highlight name to component
-			statusline[index] = highlight.add_highlight_name(updating_value, colors)
+			statusline[index] = add_highlight_name(updating_value, colors)
 		else
 			-- if not assign colors to component, then not need to add highlight name
 			statusline[index] = updating_value
@@ -353,29 +365,28 @@ M.update_component_value = function(opts, component, index)
 			if type(child) == "string" then
 				-- "filename"
 				if type(colors) == "table" then -- is assigned colors to component
-					if highlight.is_highlight_option(colors[k]) then
-						updating_value[k] =
-							highlight.add_highlight_name(child, highlight.gen_component_hl_name(index, k))
-					elseif highlight.is_highlight_name(colors[k]) then
-						updating_value[k] = highlight.add_highlight_name(child, colors[k])
+					if is_highlight_option(colors[k]) then
+						updating_value[k] = add_highlight_name(child, gen_component_hl_name(index, k))
+					elseif is_highlight_name(colors[k]) then
+						updating_value[k] = add_highlight_name(child, colors[k])
 					end
 				else
 					updating_value[k] = child
 				end
 			elseif M.is_sub_table_child(child) then
-				if highlight.is_highlight_option(child[2]) then
+				if is_highlight_option(child[2]) then
 					-- { "filename", { fg="", bg="" }}
 					component.colors = colors or {}
 					component.colors[k] = child[2]
 
-					local component_hl_name = highlight.gen_component_hl_name(index, k)
-					updating_value[k] = highlight.add_highlight_name(child[1], component_hl_name)
+					local component_hl_name = gen_component_hl_name(index, k)
+					updating_value[k] = add_highlight_name(child[1], component_hl_name)
 					highlight.set_hl(component_hl_name, child[2], opts.statusline_color)
 
 					M.eval_component_func(component, "on_highlight")
-				elseif highlight.is_highlight_name(child[2]) then
+				elseif is_highlight_name(child[2]) then
 					-- { "filename", "HIGHLIGHT_NAME" }
-					updating_value[k] = highlight.add_highlight_name(child[1], child[2])
+					updating_value[k] = add_highlight_name(child[1], child[2])
 				else
 					-- {"filename"}
 					updating_value[k] = child[1]
@@ -412,7 +423,13 @@ end
 
 M.update_on_trigger = function(opts, update_indexs)
 	for _, index in ipairs(update_indexs) do
-		M.update_component_value(opts, components[index], index)
+		if type(index) == "table" then
+			for _, i in ipairs(index) do
+				M.update_component_value(opts, components[i], i)
+			end
+		else
+			M.update_component_value(opts, components[index], index)
+		end
 	end
 end
 
@@ -420,10 +437,32 @@ M.run = function(opts, event_name, is_user_event)
 	if statusline_hidden then return end
 
 	local event_table = is_user_event and catalog.event.user or catalog.event.nvim
-	vim.schedule(function()
+	schedule(function()
 		M.update_on_trigger(opts, event_name and event_table[event_name] or catalog.timer)
 		M.update_statusline()
 	end, 0)
+end
+
+local add_event_index_entry = function(event, index, cache_key)
+	local event_table = catalog.event[cache_key]
+	local catalog_event = event_table[event]
+	if catalog_event == nil then
+		event_table[event] = { index }
+		event_table.length = (event_table.length or 0) + 1
+		event_table.keys[event_table.length] = event
+	else
+		catalog_event[#catalog_event + 1] = index
+	end
+end
+
+M.index_event_catalog = function(event, index, cache_key)
+	if type(event) == "string" then
+		add_event_index_entry(event, index, cache_key)
+	elseif type(event) == "table" then
+		for _, e in ipairs(event) do
+			add_event_index_entry(e, index, cache_key)
+		end
+	end
 end
 
 M.init = function(opts)
@@ -435,11 +474,26 @@ M.init = function(opts)
 			statusline[index] = ""
 		end
 
-		M.index_event_catalog(component.event, index, "nvim")
-		M.index_event_catalog(component.user_event, index, "user")
-		M.index_timer_catalog(component, index)
+		local update_group = update_groups[component.update_group]
+		if type(update_group) == "table" then
+			update_group.members[#update_group.members + 1] = index
+		else
+			M.index_event_catalog(component.event, index, "nvim")
+			M.index_event_catalog(component.user_event, index, "user")
+			M.index_timer_catalog(component, index)
+		end
 		M.set_component_highlight(opts, component, index)
 	end, function(empty_comp, index) statusline[index] = empty_comp end)
+
+	for _, group in pairs(update_groups) do
+		local members = group.members
+		if #members > 0 then
+			local group_opts = group.opts
+			M.index_event_catalog(group_opts.event, members, "nvim")
+			M.index_event_catalog(group_opts.user_event, members, "user")
+			M.index_timer_catalog(group_opts, members)
+		end
+	end
 
 	M.init_component_autocmds(opts)
 	M.init_component_timer(opts)

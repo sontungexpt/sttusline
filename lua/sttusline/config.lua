@@ -14,7 +14,7 @@ local configs = {
 		{
 			name = "mode",
 			event = { "ModeChanged", "VimResized" },
-			user_event = { "VeryLazy" },
+			user_event = "VeryLazy",
 			configs = {
 				modes = {
 					["n"] = { "NORMAL", "STTUSLINE_NORMAL_MODE" },
@@ -93,8 +93,7 @@ local configs = {
 		},
 		{
 			name = "filename",
-			event = { "BufEnter", "WinEnter" },
-			user_event = { "VeryLazy" },
+			update_group = "BUF_WIN_ENTER_AND_VERY_LAZY",
 			colors = {
 				{},
 				{ fg = colors.orange },
@@ -141,7 +140,7 @@ local configs = {
 		},
 		{
 			name = "git-branch",
-			event = { "BufEnter" },
+			event = "BufEnter",
 			user_event = { "VeryLazy", "GitSignsUpdate" },
 			configs = {
 				icon = "",
@@ -172,7 +171,7 @@ local configs = {
 		{
 			name = "git-diff",
 			event = { "BufWritePost", "VimResized", "BufEnter" },
-			user_event = { "GitSignsUpdate" },
+			user_event = "GitSignsUpdate",
 			colors = {
 				{ fg = colors.tokyo_diagnostics_hint },
 				{ fg = colors.tokyo_diagnostics_info },
@@ -213,9 +212,8 @@ local configs = {
 		"%=",
 		{
 			name = "diagnostics",
-			event = { "DiagnosticChanged" },
+			event = "DiagnosticChanged",
 			colors = {
-
 				{ fg = colors.tokyo_diagnostics_error },
 				{ fg = colors.tokyo_diagnostics_warn },
 				{ fg = colors.tokyo_diagnostics_hint },
@@ -417,14 +415,13 @@ local configs = {
 		},
 		{
 			name = "indent",
-			event = { "BufEnter" },
-			user_event = { "VeryLazy" },
+			update_group = "BUF_WIN_ENTER_AND_VERY_LAZY",
 			colors = { fg = colors.cyan },
 			update = function() return "Tab: " .. vim.api.nvim_buf_get_option(0, "shiftwidth") .. "" end,
 		},
 		{
 			name = "encoding",
-			user_event = { "VeryLazy" },
+			update_group = "BUF_WIN_ENTER_AND_VERY_LAZY",
 			configs = {
 				["utf-8"] = "󰉿",
 				["utf-16"] = "",
@@ -441,8 +438,7 @@ local configs = {
 		},
 		{
 			name = "pos-cursor",
-			event = { "CursorMoved", "CursorMovedI" },
-			user_event = { "VeryLazy" },
+			update_group = "CURSOR_MOVING",
 			colors = { fg = colors.fg },
 			update = function()
 				local pos = vim.api.nvim_win_get_cursor(0)
@@ -451,8 +447,7 @@ local configs = {
 		},
 		{
 			name = "pos-cursor-progress",
-			event = { "CursorMoved", "CursorMovedI" },
-			user_event = { "VeryLazy" },
+			update_group = "CURSOR_MOVING",
 			configs = {
 				chars = { "_", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█" },
 			},
@@ -467,6 +462,11 @@ local configs = {
 
 M.setup = function(user_opts)
 	M.apply_user_config(user_opts)
+
+	if type(configs.on_attach) == "function" then
+		local create_update_group = require("sttusline.api").create_update_group
+		configs.on_attach(create_update_group)
+	end
 
 	if configs.statusline_color then
 		require("sttusline.highlight").set_hl("StatusLine", { bg = user_opts.statusline_color })
