@@ -29,6 +29,12 @@ any idea to create a new component, please open an issue or pull request.
 
 ![preview1](./docs/readme/preview1.png)
 
+Copilot loading
+
+https://github.com/sontungexpt/sttusline/assets/92097639/ec1a7150-0f05-4f55-9603-790edbd49863
+
+
+
 ## Features
 
 🎉 Lightweight and super fast.
