@@ -142,6 +142,7 @@ Use default component and override default configs. I allow you to do any thing 
                     event = {}, -- The component will be update when the event is triggered
                     user_event = { "VeryLazy" },
                     timing = false, -- The component will be update every time interval
+                    timer_interval = 200, -- The sub time interval of the component
                     lazy = true,
                     space ={}
                     configs = {},
@@ -205,6 +206,7 @@ To add the empty space between components, you need to add `%=` to `components` 
 | [event](#event)               | table or string                       | The component will be update when the [event](https://neovim.io/doc/user/autocmd.html) is triggered                                                                                       |
 | [user_event](#user_event)     | table or string                       | Same as event buf for [User](https://neovim.io/doc/user/autocmd.html) autocmd                                                                                                             |
 | [timing](#timing)             | boolean                               | If set_timing(true), component will update after 1 second                                                                                                                                 |
+| [timer_interval](#timer_interval) | number                            | The sub time interval of the component                                                                                                                                                   |
 | [padding](#padding)           | number or table                       | The number of spaces to add before and after the component                                                                                                                                |
 | [lazy](#lazy)                 | boolean                               | Load component on startup(not recommended)                                                                                                                                                |
 | [configs](#configs)           | table                                 | The configs of components, it will be pass to the first parameter of each function                                                                                                        |
@@ -288,6 +290,18 @@ We provide you some default group:
 ```lua
     {
         timing = true,
+    }
+```
+
+- <a name="timer_interval">`timer_interval`</a>: The sub time interval of the component(optional). Default is `nil`
+
+If you set it, then it will create a timer to update the this component every time interval
+
+Please only set it when you really need it to avoid performance issues
+
+```lua
+    {
+        timer_interval = 200, -- integer in milliseconds
     }
 ```
 
