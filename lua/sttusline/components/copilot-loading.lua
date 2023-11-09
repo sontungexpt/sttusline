@@ -1,6 +1,6 @@
 return {
 	name = "copilot",
-	timming = 500,
+	timing = 500,
 	space = function(configs, component)
 		local require = require
 		local pcall = pcall
@@ -60,7 +60,7 @@ return {
 		S.get_status = function()
 			local icon = configs.icons[copilot_status]
 			if copilot_status == "inprogress" then
-				return icon[math.floor(vim.loop.hrtime() / 1000000 / component.timming) % #icon + 1]
+				return icon[math.floor(vim.loop.hrtime() / 1000000 / component.timing) % #icon + 1]
 			else
 				return icon or copilot_status or ""
 			end

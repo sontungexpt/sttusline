@@ -2,6 +2,7 @@ return {
 	name = "copilot",
 	event = { "InsertEnter", "InsertLeave", "CursorMovedI" },
 	space = function(configs)
+		local require = require
 		local copilot_status = ""
 		local copilot_client = nil
 		local copilot_handler_registered = false
@@ -29,16 +30,12 @@ return {
 			end
 
 			cp_api.check_status(copilot_client, {}, function(cserr, status)
-				if cserr then
-					copilot_status = "error"
-					return
-				elseif not status.user then
-					copilot_status = "error"
-					return
-				elseif status.status == "NoTelemetryConsent" then
-					copilot_status = "error"
-					return
-				elseif status.status == "NotAuthorized" then
+				if
+					cserr
+					or not status.user
+					or status.status == "NoTelemetryConsent"
+					or status.status == "NotAuthorized"
+				then
 					copilot_status = "error"
 					return
 				end

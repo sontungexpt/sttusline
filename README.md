@@ -300,12 +300,12 @@ We provide you some default group:
 
 ```lua
     {
+        -- If timing is true, the component will be updated after 1 second, following the global timer.
         timing = true,
 
         -- or
 
         timing = 200, -- 200ms
-
         -- This will create a sub timer for the component that will be update every 200ms
         -- Please make sure that you don't create too many sub timers because it will affect the performance
 

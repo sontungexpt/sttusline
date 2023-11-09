@@ -5,8 +5,7 @@ local colors = require("sttusline.utils.color")
 
 return {
 	name = "filename",
-	event = { "BufEnter", "WinEnter" }, -- The component will be update when the event is triggered
-	user_event = { "VeryLazy" },
+	update_group = "BUF_WIN_ENTER",
 	colors = {
 		{},
 		{ fg = colors.orange },

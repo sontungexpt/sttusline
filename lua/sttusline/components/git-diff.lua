@@ -25,16 +25,16 @@ return {
 
 		local should_add_spacing = false
 		local result = {}
-		for _, v in ipairs(order) do
+		for index, v in ipairs(order) do
 			if git_status[v] and git_status[v] > 0 then
 				if should_add_spacing then
-					table.insert(result, " " .. icons[v] .. " " .. git_status[v])
+					result[index] = " " .. icons[v] .. " " .. git_status[v]
 				else
 					should_add_spacing = true
-					table.insert(result, icons[v] .. " " .. git_status[v])
+					result[index] = icons[v] .. " " .. git_status[v]
 				end
 			else
-				table.insert(result, "")
+				result[index] = ""
 			end
 		end
 		return result

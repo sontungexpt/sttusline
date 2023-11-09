@@ -291,11 +291,11 @@ M.start_timer = function(opts)
 	glob_timer:start(1000, 1000, vim.schedule_wrap(function() M.run(opts) end))
 end
 
-M.start_sub_timer = function(opts, component, index, timming)
+M.start_sub_timer = function(opts, component, index, timing)
 	if comp_timers[index] == nil then comp_timers[index] = vim.loop.new_timer() end
 	comp_timers[index]:start(
-		timming,
-		timming,
+		timing,
+		timing,
 		vim.schedule_wrap(function()
 			if statusline_hidden then return end
 			if type(index) == "table" then
@@ -311,10 +311,10 @@ M.start_sub_timer = function(opts, component, index, timming)
 end
 
 M.index_timer_catalog_or_start_sub_timer = function(opts, component, index)
-	if component.timming == true then
+	if component.timing == true then
 		catalog.timer[#catalog.timer + 1] = index
-	elseif type(component.timming) == "number" then
-		M.start_sub_timer(opts, component, index, component.timming)
+	elseif type(component.timing) == "number" then
+		M.start_sub_timer(opts, component, index, component.timing)
 	end
 end
 

@@ -1,4 +1,5 @@
 local colors = require("sttusline.utils.color")
+local diagnostics = vim.diagnostics
 
 return {
 	name = "diagnostics",
@@ -25,18 +26,18 @@ return {
 		local order = configs.order
 
 		local should_add_spacing = false
-		for _, key in ipairs(order) do
-			local count = #vim.diagnostic.get(0, { severity = vim.diagnostic.severity[key] })
+		for index, key in ipairs(order) do
+			local count = #diagnostics.get(0, { severity = diagnostics.severity[key] })
 
 			if count > 0 then
 				if should_add_spacing then
-					table.insert(result, " " .. icons[key] .. " " .. count)
+					result[index] = " " .. icons[key] .. " " .. count
 				else
 					should_add_spacing = true
-					table.insert(result, icons[key] .. " " .. count)
+					result[index] = icons[key] .. " " .. count
 				end
 			else
-				table.insert(result, "")
+				result[index] = ""
 			end
 		end
 		return result
