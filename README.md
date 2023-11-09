@@ -38,7 +38,7 @@ than creating by calling get and set function. So I recommend you to use branch
 
 Copilot loading
 
-https://github.com/sontungexpt/sttusline/assets/92097639/a6cfc4d1-9d1f-445f-a90a-90f211bb1724
+[https://github.com/sontungexpt/sttusline/assets/92097639/a6cfc4d1-9d1f-445f-a90a-90f211bb1724](https://github.com/sontungexpt/sttusline/assets/92097639/4582f45d-58e4-469b-a7ad-85f482d3ba57)
 
 
 
