@@ -296,21 +296,31 @@ M.start_timer = function(opts)
 	glob_timer:start(1000, 1000, vim.schedule_wrap(function() M.run(opts) end))
 end
 
-M.start_sub_timer = function(opts, component, index)
+M.start_sub_timer = function(opts, component, index, timming)
 	if comp_timers[index] == nil then comp_timers[index] = vim.loop.new_timer() end
 	comp_timers[index]:start(
-		component.timer_interval,
-		component.timer_interval,
+		timming,
+		timming,
 		vim.schedule_wrap(function()
 			if statusline_hidden then return end
-			M.update_component_value(opts, component, index)
+			if type(index) == "table" then
+				for _, i in ipairs(index) do
+					M.update_component_value(opts, components[i], i)
+				end
+			else
+				M.update_component_value(opts, component, index)
+			end
 			M.update_statusline()
 		end)
 	)
 end
 
-M.index_timer_catalog = function(component, index)
-	if component.timming == true then catalog.timer[#catalog.timer + 1] = index end
+M.index_timer_catalog_or_start_sub_timer = function(opts, component, index)
+	if component.timming == true then
+		catalog.timer[#catalog.timer + 1] = index
+	elseif type(component.timming) == "number" then
+		M.start_sub_timer(opts, component, index, component.timming)
+	end
 end
 
 M.init_component_timer = function(opts)
@@ -347,7 +357,7 @@ end
 
 M.update_component_value = function(opts, component, index)
 	local should_display = M.eval_component_func(component, "condition")
-	if type(should_display) == "boolean" and not should_display then
+	if should_display == false then
 		statusline[index] = ""
 		return
 	end
@@ -494,10 +504,9 @@ M.init = function(opts)
 		else
 			M.index_event_catalog(component.event, index, "nvim")
 			M.index_event_catalog(component.user_event, index, "user")
-			M.index_timer_catalog(component, index)
+			M.index_timer_catalog_or_start_sub_timer(opts, component, index)
 		end
 		M.set_component_highlight(opts, component, index)
-		if component.timer_interval then M.start_sub_timer(opts, component, index) end
 	end, function(empty_comp, index) statusline[index] = empty_comp end)
 
 	for _, group in pairs(update_groups) do
@@ -506,7 +515,7 @@ M.init = function(opts)
 			local group_opts = group.opts
 			M.index_event_catalog(group_opts.event, members, "nvim")
 			M.index_event_catalog(group_opts.user_event, members, "user")
-			M.index_timer_catalog(group_opts, members)
+			M.index_timer_catalog_or_start_sub_timer(opts, group_opts, members)
 		end
 	end
 

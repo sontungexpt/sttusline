@@ -340,7 +340,7 @@ local configs = {
 		},
 		{
 			name = "copilot",
-			timer_interval = 200,
+			timming = 200,
 			-- event = { "InsertEnter", "InsertLeave", "CursorMovedI" },
 			space = function(configs)
 				local copilot_status = ""
