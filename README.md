@@ -81,6 +81,7 @@ https://github.com/sontungexpt/sttusline/assets/92097639/ec1a7150-0f05-4f55-9603
                     "diagnostics",
                     "lsps-formatters",
                     "copilot",
+                    "copilot-loading",
                     "indent",
                     "encoding",
                     "pos-cursor",
@@ -115,6 +116,7 @@ We provide you some default component:
 | `diagnostics`         | Show diagnostics                                       |
 | `lsps-formatters`     | Show lsps, formatters(support for null-ls and conform) |
 | `copilot`             | Show copilot status                                    |
+| `copilot-loading`     | Show copilot loading                                   |
 | `indent`              | Show indent                                            |
 | `encoding`            | Show encoding                                          |
 | `pos-cursor`          | Show position of cursor                                |
