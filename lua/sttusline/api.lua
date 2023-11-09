@@ -100,26 +100,22 @@ M.get_core_autocmd_group = function()
 	return core_autocmd_group
 end
 
-M.create_default_autocmd = function(opts, event)
-	autocmd(event, {
-		group = M.get_component_autocmd_group(),
-		callback = function(e) M.run(opts, e.event) end,
-	})
-end
-
-M.create_user_autocmd = function(opts, event)
-	autocmd("User", {
-		pattern = event,
-		group = M.get_component_autocmd_group(),
-		callback = function(e) M.run(opts, e.match, true) end,
-	})
-end
-
 M.init_component_autocmds = function(opts)
 	local nvim_keys = catalog.event.nvim.keys
 	local user_keys = catalog.event.user.keys
-	if next(nvim_keys) then M.create_default_autocmd(opts, nvim_keys) end
-	if next(user_keys) then M.create_user_autocmd(opts, user_keys) end
+	if next(nvim_keys) then
+		autocmd(nvim_keys, {
+			group = M.get_component_autocmd_group(),
+			callback = function(e) M.run(opts, e.event) end,
+		})
+	end
+	if next(user_keys) then
+		autocmd("User", {
+			pattern = user_keys,
+			group = M.get_component_autocmd_group(),
+			callback = function(e) M.run(opts, e.match, true) end,
+		})
+	end
 end
 
 M.update_statusline = function()
@@ -137,12 +133,12 @@ M.eval_component_func = function(component, func_name, ...)
 	local space = nil
 
 	if type(component.space) == "function" then
-		space = component.space(comp_configs)
+		space = component.space(comp_configs, component, ...)
 	elseif type(component.space) == "table" then
 		space = component.space
 	end
 
-	return M.eval_func(component[func_name], comp_configs, space, ...)
+	return M.eval_func(component[func_name], comp_configs, space, component, ...)
 end
 
 M.is_sub_table_child = function(child) return type(child) == "table" and type(child[1]) == "string" end
@@ -249,43 +245,42 @@ M.foreach_component = function(opts, comp_cb, empty_comp_cb)
 			end
 		end
 	else
-		-- Why not call callback in this function?
-		-- Because i want that the comp_cb always be a function that receive 2 arguments, and empty_comp_cb can be nil
-		-- And if it not exist, then the compiler will throw an error
-		-- If we call M.eval_func(cb,component,index) in this function so the comp_cb can be any other types
-		local cache_component = function(component)
+		local track_real_component = function(component)
 			component_count = component_count + 1
+			component.index = component_count
 			components[component_count] = component
+			comp_cb(component, component_count)
 		end
 
-		local load_default_component = function(component_name, overrides)
-			local status_ok, real_comp = pcall(require, COMPONENT_PARENT_MODULE .. "." .. component_name)
-			if status_ok then
-				if type(overrides) == "table" then
-					real_comp = vim.tbl_deep_extend("force", real_comp, overrides)
-				end
-				cache_component(real_comp)
-				comp_cb(real_comp, component_count)
+		local load_and_track_default_component = function(component, overrides)
+			if type(component) ~= "string" then return false end
+
+			if component == "%=" then
+				component_count = component_count + 1
+				components[component_count] = component
+				M.eval_func(empty_comp_cb, component, component_count)
 			else
-				require("sttusline.utils.notify").error("Failed to load component: " .. component_name)
+				local status_ok, real_comp = pcall(require, COMPONENT_PARENT_MODULE .. "." .. component)
+				if status_ok then
+					if type(overrides) == "table" then
+						real_comp = vim.tbl_deep_extend("force", real_comp, overrides)
+					end
+					track_real_component(real_comp)
+				else
+					require("sttusline.utils.notify").error("Failed to load component: " .. component)
+					return false
+				end
 			end
+			return true
 		end
 
 		for _, component in ipairs(opts.components) do
-			if type(component) == "string" then
-				if component == "%=" then -- empty component
-					cache_component(component)
-					M.eval_func(empty_comp_cb, component, component_count)
-				else -- default component name
-					load_default_component(component)
+			if type(component) == "table" then
+				if not load_and_track_default_component(component[1], component[2]) then
+					track_real_component(component)
 				end
-			elseif type(component) == "table" and next(component) then
-				if type(component[1]) == "string" then -- default component name
-					load_default_component(component[1], component[2])
-				else -- custom component
-					cache_component(component)
-					comp_cb(component, component_count)
-				end
+			else
+				load_and_track_default_component(component)
 			end
 		end
 	end
@@ -323,11 +318,11 @@ M.index_timer_catalog_or_start_sub_timer = function(opts, component, index)
 	end
 end
 
-M.init_component_timer = function(opts)
+M.init_global_timer = function(opts)
 	if next(catalog.timer) then M.start_timer(opts) end
 end
 
-M.set_component_highlight = function(opts, component, index)
+M.highlight_component = function(opts, component, index)
 	local colors = component.colors
 	if type(colors) == "table" then
 		if colors[1] == nil then
@@ -341,17 +336,14 @@ M.set_component_highlight = function(opts, component, index)
 	M.eval_component_func(component, "on_highlight")
 end
 
-M.set_all_component_highlight = function(opts)
-	M.foreach_component(
-		opts,
-		function(component, index) M.set_component_highlight(opts, component, index) end
-	)
+M.highlight_all_components = function(opts)
+	M.foreach_component(opts, function(component, index) M.highlight_component(opts, component, index) end)
 end
 
 M.refresh_highlight_on_colorscheme = function(opts)
 	autocmd("ColorScheme", {
 		group = M.get_core_autocmd_group(),
-		callback = function() M.set_all_component_highlight(opts) end,
+		callback = function() M.highlight_all_components(opts) end,
 	})
 end
 
@@ -506,7 +498,7 @@ M.init = function(opts)
 			M.index_event_catalog(component.user_event, index, "user")
 			M.index_timer_catalog_or_start_sub_timer(opts, component, index)
 		end
-		M.set_component_highlight(opts, component, index)
+		M.highlight_component(opts, component, index)
 	end, function(empty_comp, index) statusline[index] = empty_comp end)
 
 	for _, group in pairs(update_groups) do
@@ -520,7 +512,7 @@ M.init = function(opts)
 	end
 
 	M.init_component_autocmds(opts)
-	M.init_component_timer(opts)
+	M.init_global_timer(opts)
 end
 
 M.setup = function(opts)
