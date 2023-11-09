@@ -1,3 +1,4 @@
+local vim = vim
 local type = type
 local colors = require("sttusline.utils.color")
 local M = {}
@@ -340,7 +341,7 @@ local configs = {
 		},
 		{
 			name = "copilot",
-			timming = 500,
+			timing = 500,
 			space = function(configs, component)
 				local require = require
 				local pcall = pcall
@@ -400,7 +401,7 @@ local configs = {
 				S.get_status = function()
 					local icon = configs.icons[copilot_status]
 					if copilot_status == "inprogress" then
-						return icon[math.floor(vim.loop.hrtime() / 1000000 / component.timming) % #icon + 1]
+						return icon[math.floor(vim.loop.hrtime() / 1000000 / component.timing) % #icon + 1]
 					else
 						return icon or copilot_status or ""
 					end
@@ -464,7 +465,8 @@ local configs = {
 			padding = 0,
 			colors = { fg = colors.orange },
 			update = function(configs)
-				return configs.chars[math.ceil(vim.fn.line(".") / vim.fn.line("$") * #configs.chars)] or ""
+				local line = vim.fn.line
+				return configs.chars[math.ceil(line(".") / line("$") * #configs.chars)] or ""
 			end,
 		},
 	},

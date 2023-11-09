@@ -1,7 +1,7 @@
 local colors = require("sttusline.utils.color")
 return {
 	name = "encoding",
-	user_event = { "VeryLazy" },
+	update_group = "BUF_WIN_ENTER",
 	configs = {
 		["utf-8"] = "󰉿",
 		["utf-16"] = "",
