@@ -21,7 +21,7 @@ return {
 				if cp_api_ok then
 					cp_api.register_status_notification_handler(function(data)
 						schedule(function()
-							-- don't need to get status when in prompt
+							-- don't need to get status when in TelescopePrompt
 							if buf_get_option(0, "buftype") == "prompt" then return end
 
 							copilot_status = string.lower(data.status or "")
@@ -32,7 +32,7 @@ return {
 							elseif copilot_status == "inprogress" then
 								sttusline_copilot_timer:start(
 									0,
-									configs.loading_speed,
+									math.floor(1000 / configs.fps),
 									vim.schedule_wrap(
 										function()
 											nvim_exec_autocmds(
@@ -62,48 +62,55 @@ return {
 			warning = "",
 			inprogress = { "", "󰪞", "󰪟", "󰪠", "󰪢", "󰪣", "󰪤", "󰪥" },
 		},
-		loading_speed = 200, -- ms
+		fps = 3, -- should be 3 - 5
 	},
-	space = {
-		check_status = function()
-			local cp_client_ok, cp_client = pcall(require, "copilot.client")
+	space = function(configs)
+		local current_inprogress_index = 0
+		local icons = configs.icons
+		return {
+			get_icon = function()
+				if copilot_status == "inprogress" then
+					current_inprogress_index = current_inprogress_index < #icons.inprogress
+							and current_inprogress_index + 1
+						or 1
+					return icons.inprogress[current_inprogress_index]
+				else
+					current_inprogress_index = 0
+					return icons[copilot_status] or copilot_status or ""
+				end
+			end,
+			check_status = function()
+				local cp_client_ok, cp_client = pcall(require, "copilot.client")
+				if not cp_client_ok then
+					copilot_status = "error"
+					require("sttusline.utils.notify").error("Cannot load copilot.client")
+					return
+				end
 
-			if not cp_client_ok then
-				copilot_status = "error"
-				require("sttusline.utils.notify").error("Cannot load copilot.client")
-				return
-			end
-
-			local copilot_client = cp_client.get()
-
-			if not copilot_client then
-				copilot_status = "error"
-				return
-			end
-
-			local cp_api_ok, cp_api = pcall(require, "copilot.api")
-
-			if not cp_api_ok then
-				copilot_status = "error"
-				require("sttusline.utils.notify").error("Cannot load copilot.api")
-				return
-			end
-
-			cp_api.check_status(copilot_client, {}, function(cserr, status)
-				if cserr or not status.user or status.status ~= "OK" then
+				local copilot_client = cp_client.get()
+				if not copilot_client then
 					copilot_status = "error"
 					return
 				end
-			end)
-		end,
-	},
-	update = function(configs, space)
+
+				local cp_api_ok, cp_api = pcall(require, "copilot.api")
+				if not cp_api_ok then
+					copilot_status = "error"
+					require("sttusline.utils.notify").error("Cannot load copilot.api")
+					return
+				end
+
+				cp_api.check_status(copilot_client, {}, function(cserr, status)
+					if cserr or not status.user or status.status ~= "OK" then
+						copilot_status = "error"
+						return
+					end
+				end)
+			end,
+		}
+	end,
+	update = function(_, space)
 		if package.loaded["copilot"] then space.check_status() end
-		local icon = configs.icons[copilot_status]
-		if copilot_status == "inprogress" then
-			return icon[math.floor(vim.loop.hrtime() / 1000000 / configs.loading_speed) % #icon + 1] or ""
-		else
-			return icon or copilot_status or ""
-		end
+		return space.get_icon()
 	end,
 }
