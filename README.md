@@ -38,7 +38,7 @@ any idea to create a new component, please open an issue or pull request.
 
 Copilot loading
 
-https://github.com/sontungexpt/sttusline/assets/92097639/4582f45d-58e4-469b-a7ad-85f482d3ba57
+https://github.com/sontungexpt/sttusline/assets/92097639/36dcc9fa-f1d3-44b5-80f9-5c4c584b2156
 
 ## Features
 
