@@ -479,9 +479,8 @@ end
 
 M.run = function(opts, event_name, is_user_event)
 	if statusline_hidden then return end
-
-	local event_table = is_user_event and catalog.event.user or catalog.event.nvim
 	schedule(function()
+		local event_table = is_user_event and catalog.event.user or catalog.event.nvim
 		M.update_on_trigger(opts, event_name and event_table[event_name] or catalog.timer)
 		M.update_statusline()
 	end, 0)
