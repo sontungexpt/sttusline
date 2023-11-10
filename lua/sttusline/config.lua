@@ -404,10 +404,9 @@ local configs = {
 				},
 				loading_speed = 200, -- ms
 			},
-			update = function(configs)
-				if package.loaded["copilot"] then
+			space = {
+				check_status = function()
 					local cp_client_ok, cp_client = pcall(require, "copilot.client")
-
 					if not cp_client_ok then
 						g.sttusline_copilot_status = "error"
 						require("sttusline.utils.notify").error("Cannot load copilot.client")
@@ -415,14 +414,12 @@ local configs = {
 					end
 
 					local copilot_client = cp_client.get()
-
 					if not copilot_client then
 						g.sttusline_copilot_status = "error"
 						return
 					end
 
 					local cp_api_ok, cp_api = pcall(require, "copilot.api")
-
 					if not cp_api_ok then
 						g.sttusline_copilot_status = "error"
 						require("sttusline.utils.notify").error("Cannot load copilot.api")
@@ -430,16 +427,18 @@ local configs = {
 					end
 
 					cp_api.check_status(copilot_client, {}, function(cserr, status)
-						if cserr or not status.user or status.status ~= "OK" or not cp_client.buf_is_attached(0) then
+						if cserr or not status.user or status.status ~= "OK" then
 							g.sttusline_copilot_status = "error"
 							return
 						end
 					end)
-				end
-
+				end,
+			},
+			update = function(configs, space)
+				if package.loaded["copilot"] then space.check_status() end
 				local icon = configs.icons[g.sttusline_copilot_status]
 				if g.sttusline_copilot_status == "inprogress" then
-					return icon[math.floor(vim.loop.hrtime() / 1000000 / configs.loading_speed) % #icon + 1]
+					return icon[math.floor(vim.loop.hrtime() / 1000000 / configs.loading_speed) % #icon + 1] or ""
 				else
 					return icon or g.sttusline_copilot_status or ""
 				end

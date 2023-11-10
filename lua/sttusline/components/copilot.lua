@@ -46,9 +46,10 @@ return {
 			end,
 		})
 	end,
-	update = function(configs)
-		if package.loaded["copilot"] then
+	space = {
+		check_status = function()
 			local cp_client_ok, cp_client = pcall(require, "copilot.client")
+
 			if not cp_client_ok then
 				copilot_status = "error"
 				require("sttusline.utils.notify").error("Cannot load copilot.client")
@@ -56,7 +57,6 @@ return {
 			end
 
 			local copilot_client = cp_client.get()
-
 			if not copilot_client then
 				copilot_status = "error"
 				return
@@ -68,23 +68,17 @@ return {
 				require("sttusline.utils.notify").error("Cannot load copilot.api")
 				return
 			end
+
 			cp_api.check_status(copilot_client, {}, function(cserr, status)
-				if cserr or not status.user or status.status ~= "OK" or not cp_client.buf_is_attached(0) then
+				if cserr or not status.user or status.status ~= "OK" then
 					copilot_status = "error"
 					return
 				end
-				-- if
-				-- 	cserr
-				-- 	or not status.user
-				-- 	or status.status == "NoTelemetryConsent"
-				-- 	or status.status == "NotAuthorized"
-				--  or not cp_client.buf_is_attached(0)
-				-- then
-				-- 	copilot_status = "error"
-				-- 	return
-				-- end
 			end)
-		end
+		end,
+	},
+	update = function(configs, space)
+		if package.loaded["copilot"] then space.check_status() end
 		return configs.icons[copilot_status] or copilot_status or ""
 	end,
 }
