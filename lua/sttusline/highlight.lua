@@ -5,6 +5,7 @@ local api = vim.api
 local next = next
 local type = type
 local pcall = pcall
+local concat = table.concat
 
 local M = {}
 
@@ -23,10 +24,10 @@ M.get_hl_name_color = function(hl_name)
 	return ok and colors or {}
 end
 
-M.gen_component_hl_name = function(...) return HIGHLIGHT_COMPONENT_PREFIX .. table.concat({ ... }, "_") end
+M.gen_component_hl_name = function(...) return HIGHLIGHT_COMPONENT_PREFIX .. concat({ ... }, "_") end
 
 M.gen_component_separator_hl_name = function(...)
-	return HIGHLIGHT_COMPONENT_SEPARATOR_PREFIX .. table.concat({ ... }, "_")
+	return HIGHLIGHT_COMPONENT_SEPARATOR_PREFIX .. concat({ ... }, "_")
 end
 
 M.set_hl = function(group, hl_opts, fallback_bg)
