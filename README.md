@@ -32,13 +32,7 @@ any idea to create a new component, please open an issue or pull request.
 
 Copilot loading
 
-
 https://github.com/sontungexpt/sttusline/assets/92097639/4582f45d-58e4-469b-a7ad-85f482d3ba57
-
-
-
-
-
 
 ## Features
 
@@ -126,6 +120,7 @@ We provide you some default component:
 | `encoding`            | Show encoding                                          |
 | `pos-cursor`          | Show position of cursor                                |
 | `pos-cursor-progress` | Show position of cursor with progress                  |
+| `os-uname`            | Show os name                                           |
 
 To use default component use should add name of component to components options
 or you can add a table with the first value is the name of component and second
@@ -214,23 +209,23 @@ To add the empty space between components, you need to add `%=` to `components` 
     }
 ```
 
-| **Keys**                      | Type of args                          | **Description**                                                                                                                                                                           |
-| ----------------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [name](#name)                 | string                                | The name of component                                                                                                                                                                     |
-| [update_group](#update_group) | string                                | The update group of component                                                                                                                                                             |
-| [event](#event)               | table or string                       | The component will be update when the [event](https://neovim.io/doc/user/autocmd.html) is triggered                                                                                       |
-| [user_event](#user_event)     | table or string                       | Same as event buf for [User](https://neovim.io/doc/user/autocmd.html) autocmd                                                                                                             |
-| [timing](#timing)             | boolean or number                              | If set_timing(true), component will update after 1 second, If set to a number it will create a sub timer for that component |
-| [padding](#padding)           | number or table                       | The number of spaces to add before and after the component                                                                                                                                |
-| [lazy](#lazy)                 | boolean                               | Load component on startup(not recommended)                                                                                                                                                |
-| [configs](#configs)           | table                                 | The configs of components, it will be pass to the first parameter of each function                                                                                                        |
+| **Keys**                      | Type of args                          | **Description**                                                                                                                                                                             |
+| ----------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [name](#name)                 | string                                | The name of component                                                                                                                                                                       |
+| [update_group](#update_group) | string                                | The update group of component                                                                                                                                                               |
+| [event](#event)               | table or string                       | The component will be update when the [event](https://neovim.io/doc/user/autocmd.html) is triggered                                                                                         |
+| [user_event](#user_event)     | table or string                       | Same as event buf for [User](https://neovim.io/doc/user/autocmd.html) autocmd                                                                                                               |
+| [timing](#timing)             | boolean or number                     | If set_timing(true), component will update after 1 second, If set to a number it will create a sub timer for that component                                                                 |
+| [padding](#padding)           | number or table                       | The number of spaces to add before and after the component                                                                                                                                  |
+| [lazy](#lazy)                 | boolean                               | Load component on startup(not recommended)                                                                                                                                                  |
+| [configs](#configs)           | table                                 | The configs of components, it will be pass to the first parameter of each function                                                                                                          |
 | [space](#space)               | table or function                     | If space is the table it will be pass to the second parameter of each function, if it is a function the return value of that function will be pass to the second parameter of each function |
-| [init](#init)                 | function                              | The function will call on the first time component load                                                                                                                                   |
-| [colors](#colors)             | table                                 | Colors highlight                                                                                                                                                                          |
-| [separator](#separator)       | table                                 | The separator of component                                                                                                                                                                |
-| [update](#update)             | function(must return string or table) | The function will return the value of the component to display on the statusline                                                                                                          |
-| [condition](#condition)       | function(must return boolean)         | The function will return the condition to display the component when the component is update                                                                                              |
-| [on_highlight](#on_highlight) | function                              | The function will call when the component is set highlight                                                                                                                                |
+| [init](#init)                 | function                              | The function will call on the first time component load                                                                                                                                     |
+| [colors](#colors)             | table                                 | Colors highlight                                                                                                                                                                            |
+| [separator](#separator)       | table                                 | The separator of component                                                                                                                                                                  |
+| [update](#update)             | function(must return string or table) | The function will return the value of the component to display on the statusline                                                                                                            |
+| [condition](#condition)       | function(must return boolean)         | The function will return the condition to display the component when the component is update                                                                                                |
+| [on_highlight](#on_highlight) | function                              | The function will call when the component is set highlight                                                                                                                                  |
 
 ### Detail of each key
 
