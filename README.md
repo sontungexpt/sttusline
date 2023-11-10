@@ -198,6 +198,30 @@ To add the empty space between components, you need to add `%=` to `components` 
     }
 ```
 
+Example: If you do this, the statusline will become
+
+```lua
+    require("sttusline").setup {
+        components = {
+            "mode",
+            "os-uname",
+            "filename",
+            "git-branch",
+            "git-diff",
+            "%=",
+            "lsps-formatters",
+            "%=",
+            "indent",
+            "encoding",
+            "pos-cursor",
+            "pos-cursor-progress",
+        },
+    }
+```
+
+![empty-component](./docs/readme/empty-component.png)
+
+
 #### Create new component
 
 ```lua
@@ -348,7 +372,7 @@ We provide you some default group:
     }
 ```
 
-- <a name="lazy">`lazy`</a>: Load component on startup(not recommended). Default is false
+- <a name="lazy">`lazy`</a>: If lazy = false then the component will be loaded on startup(not recommended). Default is true
 
 ```lua
     {
