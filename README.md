@@ -159,6 +159,7 @@ Use default component and override default configs. I allow you to do any thing 
                     space ={}
                     configs = {},
                     padding = 1, -- { left = 1, right = 1 }
+                    separator = { left = "", right = "" },
                     colors = {}, -- { fg = colors.black, bg = colors.white }
                     init = function(config, space) end,
                     update = function(configs, space)return "" end,
@@ -202,6 +203,7 @@ To add the empty space between components, you need to add `%=` to `components` 
                 configs = {},
                 padding = 1, -- { left = 1, right = 1 }
                 colors = {}, -- { fg = colors.black, bg = colors.white }
+                separator = { left = "", right = "" },
                 init = function(configs, space) end,
                 update = function(configs, space)return "" end,
                 condition = function(config, space)return true end,
@@ -224,6 +226,7 @@ To add the empty space between components, you need to add `%=` to `components` 
 | [space](#space)               | table or function                     | If space is the table it will be pass to the second parameter of each function, if it is a function the return value of that function will be pass to the second parameter of each function |
 | [init](#init)                 | function                              | The function will call on the first time component load                                                                                                                                   |
 | [colors](#colors)             | table                                 | Colors highlight                                                                                                                                                                          |
+| [separator](#separator)       | table                                 | The separator of component                                                                                                                                                                |
 | [update](#update)             | function(must return string or table) | The function will return the value of the component to display on the statusline                                                                                                          |
 | [condition](#condition)       | function(must return boolean)         | The function will return the condition to display the component when the component is update                                                                                              |
 | [on_highlight](#on_highlight) | function                              | The function will call when the component is set highlight                                                                                                                                |
@@ -554,6 +557,14 @@ NOTE: The colors options can be the colors name or the colors options
                 "DiagnosticsSignError",
             },
         }
+    }
+```
+
+- <a name="separator">`separator`</a>: The separator of component(optional). Default is `nil`
+
+```lua
+    {
+        separator = { left = "", right = "" },
     }
 ```
 

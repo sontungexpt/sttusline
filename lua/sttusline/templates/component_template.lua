@@ -7,6 +7,7 @@ return {
 	-- If update_group is set the event, user_event and timing will be ignored
 	-- It will update in the same option as update_group
 	event = {}, -- The component will be update when the event is triggered
+	separator = { left = "", right = "" },
 	user_event = { "VeryLazy" },
 	timing = false, -- The component will be update every time interval
 

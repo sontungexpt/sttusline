@@ -1,5 +1,8 @@
 local vim = vim
 local type = type
+local require = require
+local pcall = pcall
+
 local colors = require("sttusline.utils.color")
 local M = {}
 
@@ -343,8 +346,6 @@ local configs = {
 			name = "copilot",
 			timing = 500,
 			space = function(configs, component)
-				local require = require
-				local pcall = pcall
 				local copilot_status = ""
 				local copilot_client = nil
 				local copilot_handler_registered = false

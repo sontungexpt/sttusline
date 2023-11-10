@@ -1,4 +1,5 @@
 local HIGHLIGHT_COMPONENT_PREFIX = "STTUSLINE_COMPONENT_"
+local HIGHLIGHT_COMPONENT_SEPARATOR_PREFIX = "STTUSLINE_COMPONENT_SEPARATOR_"
 
 local api = vim.api
 local next = next
@@ -24,6 +25,10 @@ end
 
 M.gen_component_hl_name = function(...) return HIGHLIGHT_COMPONENT_PREFIX .. table.concat({ ... }, "_") end
 
+M.gen_component_separator_hl_name = function(...)
+	return HIGHLIGHT_COMPONENT_SEPARATOR_PREFIX .. table.concat({ ... }, "_")
+end
+
 M.set_hl = function(group, hl_opts, fallback_bg)
 	if not M.is_highlight_option(hl_opts) then return end
 
@@ -41,6 +46,19 @@ M.set_hl = function(group, hl_opts, fallback_bg)
 		hl_opts.bg = M.get_hl_name_color("StatusLine").background
 	end
 	pcall(api.nvim_set_hl, 0, group, hl_opts)
+end
+
+M.set_hl_separator = function(index, fallback_bg)
+	local statusline_color = M.is_color(fallback_bg) and fallback_bg
+		or M.get_hl_name_color(fallback_bg).background
+		or M.get_hl_name_color("StatusLine").background
+
+	local fg = M.get_hl_name_color(M.gen_component_hl_name(index)).background or statusline_color
+
+	pcall(api.nvim_set_hl, 0, M.gen_component_separator_hl_name(index), {
+		fg = fg,
+		bg = statusline_color,
+	})
 end
 
 return M

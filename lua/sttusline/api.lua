@@ -20,7 +20,10 @@ local require = require
 
 -- module
 local highlight = require("sttusline.highlight")
+local set_hl = highlight.set_hl
+local set_hl_separator = highlight.set_hl_separator
 local gen_component_hl_name = highlight.gen_component_hl_name
+local gen_component_separator_hl_name = highlight.gen_component_separator_hl_name
 local add_highlight_name = highlight.add_highlight_name
 local is_highlight_option = highlight.is_highlight_option
 local is_highlight_name = highlight.is_highlight_name
@@ -143,6 +146,40 @@ end
 
 M.is_sub_table_child = function(child) return type(child) == "table" and type(child[1]) == "string" end
 
+local add_to_left_and_right = function(component, left, right)
+	if type(component) == "string" then
+		return left .. component .. right
+	else -- component is a table
+		local first_element = component[1]
+		local last_element = component[#component]
+
+		if type(first_element) == "string" then
+			component[1] = left .. first_element
+		elseif M.is_sub_table_child(first_element) then
+			first_element[1] = left .. first_element[1]
+		end
+
+		if type(last_element) == "string" then
+			component[#component] = last_element .. right
+		elseif M.is_sub_table_child(last_element) then
+			last_element[1] = last_element[1] .. right
+		end
+		return component
+	end
+end
+
+M.add_component_separator = function(component, seps, index)
+	if type(seps) ~= "table" or #component == 0 then return component end
+
+	local left = type(seps.left) == "string"
+			and add_highlight_name(seps.left, gen_component_separator_hl_name(index))
+		or ""
+	local right = type(seps.right) == "string"
+			and add_highlight_name(seps.right, gen_component_separator_hl_name(index))
+		or ""
+	return add_to_left_and_right(component, left, right)
+end
+
 -- this function will add padding to the updating value of the component
 M.add_component_padding = function(component, nums)
 	if #component == 0 then return component end
@@ -161,28 +198,10 @@ M.add_component_padding = function(component, nums)
 		right_padding = right < 1 and "" or (" "):rep(math.floor(right))
 	end
 
-	if type(component) == "string" then
-		return left_padding .. component .. right_padding
-	else -- component is a table
-		local first_element = component[1]
-		local last_element = component[#component]
-
-		if type(first_element) == "string" then
-			component[1] = left_padding .. first_element
-		elseif M.is_sub_table_child(first_element) then
-			first_element[1] = left_padding .. first_element[1]
-		end
-
-		if type(last_element) == "string" then
-			component[#component] = last_element .. right_padding
-		elseif M.is_sub_table_child(last_element) then
-			last_element[1] = last_element[1] .. right_padding
-		end
-		return component
-	end
+	return add_to_left_and_right(component, left_padding, right_padding)
 end
 
-M.tbl_contains = function(tbl, item)
+local tbl_contains = function(tbl, item)
 	if type(tbl) ~= "table" then return false end
 	for _, value in ipairs(tbl) do
 		if value == item then return true end
@@ -191,8 +210,8 @@ M.tbl_contains = function(tbl, item)
 end
 
 M.should_statusline_hidden = function(disabled_list)
-	return M.tbl_contains(disabled_list.filetypes, api.nvim_buf_get_option(0, "filetype"))
-		or M.tbl_contains(disabled_list.buftypes, api.nvim_buf_get_option(0, "buftype"))
+	return tbl_contains(disabled_list.filetypes, api.nvim_buf_get_option(0, "filetype"))
+		or tbl_contains(disabled_list.buftypes, api.nvim_buf_get_option(0, "buftype"))
 end
 
 M.disable_for_filetype = function(opts)
@@ -324,15 +343,22 @@ end
 
 M.highlight_component = function(opts, component, index)
 	local colors = component.colors
+	local statusline_color = opts.statusline_color
+
+	-- had colors
 	if type(colors) == "table" then
 		if colors[1] == nil then
-			highlight.set_hl(gen_component_hl_name(index), colors, opts.statusline_color)
+			set_hl(gen_component_hl_name(index), colors, statusline_color)
 		else
 			for k, color in ipairs(colors) do
-				highlight.set_hl(gen_component_hl_name(index, k), color, opts.statusline_color)
+				set_hl(gen_component_hl_name(index, k), color, statusline_color)
 			end
 		end
 	end
+
+	-- had separator
+	if type(component.separator) == "table" then set_hl_separator(index, statusline_color) end
+
 	M.eval_component_func(component, "on_highlight")
 end
 
@@ -375,6 +401,8 @@ M.update_component_value = function(opts, component, index)
 			-- if not assign colors to component, then not need to add highlight name
 			statusline[index] = updating_value
 		end
+
+		statusline[index] = M.add_component_separator(statusline[index], component.separator, index)
 	elseif type(updating_value) == "table" then
 		updating_value = M.add_component_padding(updating_value, component.padding)
 		for k, child in ipairs(updating_value) do
@@ -397,7 +425,7 @@ M.update_component_value = function(opts, component, index)
 
 					local component_hl_name = gen_component_hl_name(index, k)
 					updating_value[k] = add_highlight_name(child[1], component_hl_name)
-					highlight.set_hl(component_hl_name, child[2], opts.statusline_color)
+					set_hl(component_hl_name, child[2], opts.statusline_color)
 
 					M.eval_component_func(component, "on_highlight")
 				elseif is_highlight_name(child[2]) then
@@ -418,7 +446,7 @@ M.update_component_value = function(opts, component, index)
 				return
 			end
 		end
-		statusline[index] = concat(updating_value, "")
+		statusline[index] = M.add_component_separator(concat(updating_value, ""), component.separator, index)
 	else
 		statusline[index] = ""
 		require("sttusline.utils.notify").error(
