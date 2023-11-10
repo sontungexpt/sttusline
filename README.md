@@ -1,6 +1,6 @@
 ## Sttusline
 
-:star2:**IMPORTANT:** As I am currently utilizing the table_version branch, kindly switch to it in order to receive the latest updates regularly.
+### :star2:**IMPORTANT:** As I am currently utilizing the [table_version](https://github.com/sontungexpt/sttusline/tree/table_version) branch, kindly switch to it in order to receive the latest updates regularly.
 
 A very lightweight statusline plugin for neovim written in lua.
 
