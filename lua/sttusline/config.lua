@@ -355,6 +355,7 @@ local configs = {
 			init = function(configs)
 				local nvim_exec_autocmds = vim.api.nvim_exec_autocmds
 				local schedule = vim.schedule
+				local buf_get_option = vim.api.nvim_buf_get_option
 				local sttusline_copilot_timer = vim.loop.new_timer()
 				vim.api.nvim_create_autocmd("InsertEnter", {
 					once = true,
@@ -364,6 +365,9 @@ local configs = {
 						if cp_api_ok then
 							cp_api.register_status_notification_handler(function(data)
 								schedule(function()
+									-- don't need to get status when in TelescopePrompt
+									if buf_get_option(0, "buftype") == "prompt" then return end
+
 									g.sttusline_copilot_status = string.lower(data.status or "")
 									if g.sttusline_copilot_status == "normal" then
 										nvim_exec_autocmds("User", { pattern = "CopilotStatusNormal", modeline = false })

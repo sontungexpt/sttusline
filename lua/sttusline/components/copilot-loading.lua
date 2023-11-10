@@ -11,6 +11,7 @@ return {
 	init = function(configs)
 		local nvim_exec_autocmds = vim.api.nvim_exec_autocmds
 		local schedule = vim.schedule
+		local buf_get_option = vim.api.nvim_buf_get_option
 		local sttusline_copilot_timer = vim.loop.new_timer()
 		vim.api.nvim_create_autocmd("InsertEnter", {
 			once = true,
@@ -20,6 +21,9 @@ return {
 				if cp_api_ok then
 					cp_api.register_status_notification_handler(function(data)
 						schedule(function()
+							-- don't need to get status when in prompt
+							if buf_get_option(0, "buftype") == "prompt" then return end
+
 							copilot_status = string.lower(data.status or "")
 							if copilot_status == "normal" then
 								nvim_exec_autocmds("User", { pattern = "CopilotStatusNormal", modeline = false })
