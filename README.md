@@ -12,7 +12,13 @@ including its core functions, if you have a basic understanding of Lua.
 
 - ❓ [Features](#features)
 - 👀 [Installation](#installation)
+- 🤖 [Options](#options)
+- 🤔 [A few words to say](#a-few-words-to-say)
+- 🤩 [Preview](#preview)
 - 😆 [Usage](#usage)
+- ☀️ [Create new component](#create-new-component)
+- 💻 [Default Components](#components)
+- 📰 [Detail of each key](#detail-of-each-key)
 - 😁 [Contributing](#contributing)
 - ✌️ [License](#license)
 
@@ -56,39 +62,46 @@ https://github.com/sontungexpt/sttusline/assets/92097639/4582f45d-58e4-469b-a7ad
         },
         event = { "BufEnter" },
         config = function(_, opts)
-            require("sttusline").setup {
-                on_attach = function(create_update_group) end
-
-                -- the colors of statusline will be set follow the colors of the active buffer
-                -- statusline_color = "#fdff00",
-                statusline_color = "StatusLine",
-                disabled = {
-                    filetypes = {
-                        -- "NvimTree",
-                        -- "lazy",
-                    },
-                    buftypes = {
-                        "terminal",
-                    },
-                },
-                components = {
-                    "mode",
-                    "filename",
-                    "git-branch",
-                    "git-diff",
-                    "%=",
-                    "diagnostics",
-                    "lsps-formatters",
-                    "copilot",
-                    "copilot-loading",
-                    "indent",
-                    "encoding",
-                    "pos-cursor",
-                    "pos-cursor-progress",
-                },
-            }
+            require("sttusline").setup()
         end,
     },
+```
+
+## Options
+
+```lua
+    require("sttusline").setup {
+        on_attach = function(create_update_group) end
+
+        -- the colors of statusline will be set follow the colors of the active buffer
+        -- statusline_color = "#fdff00",
+        statusline_color = "StatusLine",
+        disabled = {
+            filetypes = {
+                -- "NvimTree",
+                -- "lazy",
+            },
+            buftypes = {
+                "terminal",
+            },
+        },
+        components = {
+            "mode",
+            "os-uname",
+            "filename",
+            "git-branch",
+            "git-diff",
+            "%=",
+            "diagnostics",
+            "lsps-formatters",
+            "copilot",
+            "copilot-loading",
+            "indent",
+            "encoding",
+            "pos-cursor",
+            "pos-cursor-progress",
+        },
+    }
 ```
 
 ## Usage
@@ -136,7 +149,11 @@ Use default component with default configs
     }
 ```
 
-Use default component and override default configs. I allow you to do any thing even the core of the component.
+Use default component and override default configs.
+
+😊 How to know what configs you can override? You can see the [default component
+configs](https://github.com/sontungexpt/sttusline/tree/table_version/lua/sttusline/components) and override any thing
+you want event the core of the component
 
 ```lua
     require("sttusline").setup {
@@ -215,7 +232,7 @@ To add the empty space between components, you need to add `%=` to `components` 
 | [update_group](#update_group) | string                                | The update group of component                                                                                                                                                               |
 | [event](#event)               | table or string                       | The component will be update when the [event](https://neovim.io/doc/user/autocmd.html) is triggered                                                                                         |
 | [user_event](#user_event)     | table or string                       | Same as event buf for [User](https://neovim.io/doc/user/autocmd.html) autocmd                                                                                                               |
-| [timing](#timing)             | boolean or number                     | If set_timing(true), component will update after 1 second, If set to a number it will create a sub timer for that component                                                                 |
+| [timing](#timing)             | boolean or number                     | If true, component will update after 1 second, If set to a number it will create a sub timer for that component                                                                             |
 | [padding](#padding)           | number or table                       | The number of spaces to add before and after the component                                                                                                                                  |
 | [lazy](#lazy)                 | boolean                               | Load component on startup(not recommended)                                                                                                                                                  |
 | [configs](#configs)           | table                                 | The configs of components, it will be pass to the first parameter of each function                                                                                                          |
@@ -233,7 +250,7 @@ To add the empty space between components, you need to add `%=` to `components` 
 
 ```lua
     {
-        name = "form",
+        name = "component_name",
     }
 ```
 
