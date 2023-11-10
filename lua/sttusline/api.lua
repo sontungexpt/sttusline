@@ -32,8 +32,12 @@ local is_highlight_name = highlight.is_highlight_name
 local core_autocmd_group = nil
 local component_autocmd_group = nil
 local glob_timer = nil
-local comp_timers = {}
 local statusline_hidden = false
+
+-- save the timer of the each component so that it can be reused
+local comp_timers = {}
+-- save the space of the each component so that it can be reused
+local comp_spaces = {}
 
 -- save the updating value of the component
 local statusline = {}
@@ -126,22 +130,20 @@ M.update_statusline = function()
 	opt.statusline = #str_statusline > 0 and str_statusline or " "
 end
 
-M.eval_func = function(func, ...)
+local eval_func = function(func, ...)
 	if type(func) == "function" then return func(...) end
 end
 
-M.eval_component_func = function(component, func_name, ...)
-	local comp_configs = type(component.configs) == "table" and component.configs or {}
-
-	local space = nil
-
-	if type(component.space) == "function" then
-		space = component.space(comp_configs, component, ...)
-	elseif type(component.space) == "table" then
-		space = component.space
+local eval_component_func = function(component, func_name, ...)
+	local index = component.index
+	if not comp_spaces[index] then
+		if type(component.space) == "function" then
+			comp_spaces[index] = component.space(component.configs, component, ...)
+		elseif type(component.space) == "table" then
+			comp_spaces[index] = component.space
+		end
 	end
-
-	return M.eval_func(component[func_name], comp_configs, space, component, ...)
+	return eval_func(component[func_name], component.configs, comp_spaces[index], component, ...)
 end
 
 M.is_sub_table_child = function(child) return type(child) == "table" and type(child[1]) == "string" end
@@ -258,7 +260,7 @@ M.foreach_component = function(opts, comp_cb, empty_comp_cb)
 		for index = 1, component_count do
 			local component = components[index]
 			if type(component) == "string" then
-				M.eval_func(empty_comp_cb, component, index)
+				eval_func(empty_comp_cb, component, index)
 			else
 				comp_cb(component, index)
 			end
@@ -277,7 +279,7 @@ M.foreach_component = function(opts, comp_cb, empty_comp_cb)
 			if component == "%=" then
 				component_count = component_count + 1
 				components[component_count] = component
-				M.eval_func(empty_comp_cb, component, component_count)
+				eval_func(empty_comp_cb, component, component_count)
 			else
 				local status_ok, real_comp = pcall(require, COMPONENT_PARENT_MODULE .. "." .. component)
 				if status_ok then
@@ -359,7 +361,7 @@ M.highlight_component = function(opts, component, index)
 	-- had separator
 	if type(component.separator) == "table" then set_hl_separator(index, statusline_color) end
 
-	M.eval_component_func(component, "on_highlight")
+	eval_component_func(component, "on_highlight")
 end
 
 M.highlight_all_components = function(opts)
@@ -374,13 +376,13 @@ M.refresh_highlight_on_colorscheme = function(opts)
 end
 
 M.update_component_value = function(opts, component, index)
-	local should_display = M.eval_component_func(component, "condition")
+	local should_display = eval_component_func(component, "condition")
 	if should_display == false then
 		statusline[index] = ""
 		return
 	end
 
-	local updating_value = M.eval_component_func(component, "update")
+	local updating_value = eval_component_func(component, "update")
 	-- updating_value is string or table
 	-- If updating_value is table, then it must be a table of string or table of {string, table (highlight_option)}
 	-- Example:
@@ -427,7 +429,7 @@ M.update_component_value = function(opts, component, index)
 					updating_value[k] = add_highlight_name(child[1], component_hl_name)
 					set_hl(component_hl_name, child[2], opts.statusline_color)
 
-					M.eval_component_func(component, "on_highlight")
+					eval_component_func(component, "on_highlight")
 				elseif is_highlight_name(child[2]) then
 					-- { "filename", "HIGHLIGHT_NAME" }
 					updating_value[k] = add_highlight_name(child[1], child[2])
@@ -510,7 +512,7 @@ end
 
 M.init = function(opts)
 	M.foreach_component(opts, function(component, index)
-		M.eval_component_func(component, "init")
+		eval_component_func(component, "init")
 		if component.lazy == false then
 			M.update_component_value(opts, component, index)
 		else
