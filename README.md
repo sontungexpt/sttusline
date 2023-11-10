@@ -5,8 +5,10 @@ A very lightweight statusline plugin for neovim written in lua.
 This plugin lazy load all components and only update each component when needed.
 
 Because this plugin aim to be fast and small as possible. I don't focus on
-overriding default component. I focus on creating your custom component. So
-maybe you need to know a little bit of lua to create your own component.
+overriding default component. I focus on creating your custom component.
+
+Certainly, you can fully customize all aspects of the component's configuration,
+including its core functions, if you have a basic understanding of Lua.
 
 - ❓ [Features](#features)
 - 👀 [Installation](#installation)
