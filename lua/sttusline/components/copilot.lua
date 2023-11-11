@@ -3,11 +3,7 @@ local copilot_status = ""
 return {
 	name = "copilot",
 	user_event = {
-		"CopilotStatusNormal",
-		"CopilotStatusError",
-		"CopilotStatusInProgress",
-		"CopilotStatusWarning",
-		"CopilotStatusUnknow",
+		"SttuslineCopilotStatusUpdate",
 	},
 	configs = {
 		icons = {
@@ -33,17 +29,7 @@ return {
 							if buf_get_option(0, "buftype") == "prompt" then return end
 
 							copilot_status = string.lower(data.status or "")
-							if copilot_status == "normal" then
-								nvim_exec_autocmds("User", { pattern = "CopilotStatusNormal", modeline = false })
-							elseif copilot_status == "error" then
-								nvim_exec_autocmds("User", { pattern = "CopilotStatusError", modeline = false })
-							elseif copilot_status == "inprogress" then
-								nvim_exec_autocmds("User", { pattern = "CopilotStatusInProgress", modeline = false })
-							elseif copilot_status == "warning" then
-								nvim_exec_autocmds("User", { pattern = "CopilotStatusWarning", modeline = false })
-							else
-								nvim_exec_autocmds("User", { pattern = "CopilotStatusUnknow", modeline = false })
-							end
+							nvim_exec_autocmds("User", { pattern = "SttuslineCopilotStatusUpdate", modeline = false })
 						end)
 					end)
 				end

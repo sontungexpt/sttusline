@@ -346,11 +346,7 @@ local configs = {
 		{
 			name = "copilot-loading",
 			user_event = {
-				"CopilotStatusNormal",
-				"CopilotStatusError",
-				"CopilotStatusInProgress",
-				"CopilotStatusWarning",
-				"CopilotStatusUnknow",
+				"SttuslineCopilotStatusUpdate",
 			},
 			init = function(configs)
 				local nvim_exec_autocmds = vim.api.nvim_exec_autocmds
@@ -367,13 +363,9 @@ local configs = {
 								schedule(function()
 									-- don't need to get status when in TelescopePrompt
 									if buf_get_option(0, "buftype") == "prompt" then return end
-
 									g.sttusline_copilot_status = string.lower(data.status or "")
-									if g.sttusline_copilot_status == "normal" then
-										nvim_exec_autocmds("User", { pattern = "CopilotStatusNormal", modeline = false })
-									elseif g.sttusline_copilot_status == "error" then
-										nvim_exec_autocmds("User", { pattern = "CopilotStatusError", modeline = false })
-									elseif g.sttusline_copilot_status == "inprogress" then
+
+									if g.sttusline_copilot_status == "inprogress" then
 										sttusline_copilot_timer:start(
 											0,
 											math.floor(1000 / configs.fps),
@@ -381,18 +373,18 @@ local configs = {
 												function()
 													nvim_exec_autocmds(
 														"User",
-														{ pattern = "CopilotStatusInProgress", modeline = false }
+														{ pattern = "SttuslineCopilotStatusUpdate", modeline = false }
 													)
 												end
 											)
 										)
 										return
-									elseif g.sttusline_copilot_status == "warning" then
-										nvim_exec_autocmds("User", { pattern = "CopilotStatusWarning", modeline = false })
-									else
-										nvim_exec_autocmds("User", { pattern = "CopilotStatusUnknow", modeline = false })
 									end
 									sttusline_copilot_timer:stop()
+									nvim_exec_autocmds(
+										"User",
+										{ pattern = "SttuslineCopilotStatusUpdate", modeline = false }
+									)
 								end)
 							end)
 						end
