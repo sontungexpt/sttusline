@@ -146,7 +146,7 @@ local eval_component_func = function(component, func_name, ...)
 	return eval_func(component[func_name], component.configs, comp_spaces[index], component, ...)
 end
 
-M.is_sub_table_child = function(child) return type(child) == "table" and type(child[1]) == "string" end
+local is_sub_table_child = function(child) return type(child) == "table" and type(child[1]) == "string" end
 
 local add_to_left_and_right = function(component, left, right)
 	if type(component) == "string" then
@@ -157,13 +157,13 @@ local add_to_left_and_right = function(component, left, right)
 
 		if type(first_element) == "string" then
 			component[1] = left .. first_element
-		elseif M.is_sub_table_child(first_element) then
+		elseif is_sub_table_child(first_element) then
 			first_element[1] = left .. first_element[1]
 		end
 
 		if type(last_element) == "string" then
 			component[#component] = last_element .. right
-		elseif M.is_sub_table_child(last_element) then
+		elseif is_sub_table_child(last_element) then
 			last_element[1] = last_element[1] .. right
 		end
 		return component
@@ -173,13 +173,14 @@ end
 M.add_component_separator = function(component, seps, index)
 	if type(seps) ~= "table" or #component == 0 then return component end
 
-	local left = type(seps.left) == "string"
-			and add_highlight_name(seps.left, gen_component_separator_hl_name(index))
-		or ""
-	local right = type(seps.right) == "string"
-			and add_highlight_name(seps.right, gen_component_separator_hl_name(index))
-		or ""
-	return add_to_left_and_right(component, left, right)
+	return add_to_left_and_right(
+		component,
+		type(seps.left) == "string" and add_highlight_name(seps.left, gen_component_separator_hl_name(index))
+			or "",
+		type(seps.right) == "string"
+				and add_highlight_name(seps.right, gen_component_separator_hl_name(index))
+			or ""
+	)
 end
 
 -- this function will add padding to the updating value of the component
@@ -419,7 +420,7 @@ M.update_component_value = function(opts, component, index)
 				else
 					updating_value[k] = child
 				end
-			elseif M.is_sub_table_child(child) then
+			elseif is_sub_table_child(child) then
 				if is_highlight_option(child[2]) then
 					-- { "filename", { fg="", bg="" }}
 					component.colors = colors or {}
