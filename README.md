@@ -1,14 +1,17 @@
 ## Sttusline
 
-A very lightweight statusline plugin for neovim written in lua.
+The best statusline plugin for neovim. It's very lightweight and super fast.
+
+Best choice to replace lualine for me with small size and fast speed.
 
 This plugin lazy load all components and only update each component when needed.
 
 Because this plugin aim to be fast and small as possible. I don't focus on
-overriding default component. I focus on creating your custom component.
-
-Certainly, you can fully customize all aspects of the component's configuration,
+overriding default component. I focus on creating your custom component. But,
+you can fully customize all aspects of the component's configuration,
 including its core functions, if you have a basic understanding of Lua.
+
+## Table of Contents
 
 - ❓ [Features](#features)
 - 👀 [Installation](#installation)
@@ -39,6 +42,10 @@ any idea to create a new component, please open an issue or pull request.
 Copilot loading
 
 https://github.com/sontungexpt/sttusline/assets/92097639/36dcc9fa-f1d3-44b5-80f9-5c4c584b2156
+
+Dynamic Battery
+
+https://github.com/sontungexpt/sttusline/assets/92097639/f06fd331-9546-4046-ab88-037176f0b8dd
 
 ## Features
 
