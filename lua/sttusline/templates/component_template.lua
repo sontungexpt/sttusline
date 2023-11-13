@@ -1,3 +1,5 @@
+local colors = require("sttusline.utils.color")
+
 return {
 	name = "form",
 
