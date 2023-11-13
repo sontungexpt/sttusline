@@ -118,22 +118,24 @@ vim.opt.laststatus = 3
 
 We provide you some default component:
 
-| **Component**         | **Description**                                        |
-| --------------------- | ------------------------------------------------------ |
-| `datetime`            | Show datetime                                          |
-| `mode`                | Show current mode                                      |
-| `filename`            | Show current filename                                  |
-| `git-branch`          | Show git branch                                        |
-| `git-diff`            | Show git diff                                          |
-| `diagnostics`         | Show diagnostics                                       |
-| `lsps-formatters`     | Show lsps, formatters(support for null-ls and conform) |
-| `copilot`             | Show copilot status                                    |
-| `copilot-loading`     | Show copilot loading                                   |
-| `indent`              | Show indent                                            |
-| `encoding`            | Show encoding                                          |
-| `pos-cursor`          | Show position of cursor                                |
-| `pos-cursor-progress` | Show position of cursor with progress                  |
-| `os-uname`            | Show os name                                           |
+| **Component**         | **Description**                                              |
+| --------------------- | ------------------------------------------------------------ |
+| `datetime`            | Show datetime                                                |
+| `mode`                | Show current mode                                            |
+| `filename`            | Show current filename                                        |
+| `git-branch`          | Show git branch                                              |
+| `git-diff`            | Show git diff                                                |
+| `diagnostics`         | Show diagnostics                                             |
+| `lsps-formatters`     | Show lsps, formatters(support for null-ls and conform)       |
+| `copilot`             | Show copilot status                                          |
+| `copilot-loading`     | Show copilot loading                                         |
+| `indent`              | Show indent                                                  |
+| `encoding`            | Show encoding                                                |
+| `pos-cursor`          | Show position of cursor                                      |
+| `pos-cursor-progress` | Show position of cursor with progress                        |
+| `os-uname`            | Show os name                                                 |
+| `filesize`            | Show filesize                                                |
+| `battery`             | Show battery (support for linux only because i'm linux user) |
 
 To use default component use should add name of component to components options
 or you can add a table with the first value is the name of component and second
@@ -220,7 +222,6 @@ Example: If you do this, the statusline will become
 ```
 
 ![empty-component](./docs/readme/empty-component.png)
-
 
 #### Create new component
 
