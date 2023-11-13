@@ -2,7 +2,7 @@ local colors = require("sttusline.utils.color")
 
 return {
 	name = "git-branch",
-	event = { "BufEnter" },
+	event = "BufEnter",
 	user_event = { "VeryLazy", "GitSignsUpdate" },
 	configs = {
 		icon = "",
