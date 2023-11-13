@@ -310,13 +310,13 @@ end
 
 M.start_timer = function(opts)
 	if glob_timer == nil then glob_timer = vim.loop.new_timer() end
-	glob_timer:start(1000, 1000, vim.schedule_wrap(function() M.run(opts) end))
+	glob_timer:start(0, 1000, vim.schedule_wrap(function() M.run(opts) end))
 end
 
 M.start_sub_timer = function(opts, component, index, timing)
 	if comp_timers[index] == nil then comp_timers[index] = vim.loop.new_timer() end
 	comp_timers[index]:start(
-		timing,
+		0,
 		timing,
 		vim.schedule_wrap(function()
 			if statusline_hidden then return end
