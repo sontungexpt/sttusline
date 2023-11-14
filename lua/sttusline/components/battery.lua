@@ -1,6 +1,8 @@
 local fn = vim.fn
 local colors = require("sttusline.utils.color")
 local current_charging_index = 0
+local uv = vim.uv or vim.loop
+local is_linux = uv.os_uname().sysname == "Linux"
 
 return {
 	name = "battery",
@@ -95,5 +97,5 @@ return {
 			return "Battery: " .. capacity .. "%%"
 		end
 	end,
-	condition = function() return vim.loop.os_uname().sysname == "Linux" end,
+	condition = function() return is_linux end,
 }

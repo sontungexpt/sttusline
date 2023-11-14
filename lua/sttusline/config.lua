@@ -1,4 +1,5 @@
 local vim = vim
+local uv = vim.uv or vim.loop
 local g = vim.g
 local type = type
 local require = require
@@ -352,7 +353,7 @@ local configs = {
 				local nvim_exec_autocmds = vim.api.nvim_exec_autocmds
 				local schedule = vim.schedule
 				local buf_get_option = vim.api.nvim_buf_get_option
-				local sttusline_copilot_timer = vim.loop.new_timer()
+				local sttusline_copilot_timer = uv.new_timer()
 				vim.api.nvim_create_autocmd("InsertEnter", {
 					once = true,
 					desc = "Init copilot status",

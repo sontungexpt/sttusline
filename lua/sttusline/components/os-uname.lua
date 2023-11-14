@@ -1,3 +1,4 @@
+local uv = vim.uv or vim.loop
 local colors = require("sttusline.utils.color")
 
 return {
@@ -14,7 +15,7 @@ return {
 		},
 	},
 	update = function(configs)
-		local os_uname = vim.loop.os_uname()
+		local os_uname = uv.os_uname()
 
 		local uname = os_uname.sysname
 		if uname == "Darwin" then

@@ -8,6 +8,7 @@ local AUTOCMD_COMPONENT_GROUP = "STTUSLINE_COMPONENT_EVENTS"
 local vim = vim
 local api = vim.api
 local opt = vim.opt
+local uv = vim.uv or vim.loop
 local schedule = vim.schedule
 local autocmd = api.nvim_create_autocmd
 local augroup = api.nvim_create_augroup
@@ -309,12 +310,12 @@ M.foreach_component = function(opts, comp_cb, empty_comp_cb)
 end
 
 M.start_timer = function(opts)
-	if glob_timer == nil then glob_timer = vim.loop.new_timer() end
+	if glob_timer == nil then glob_timer = uv.new_timer() end
 	glob_timer:start(0, 1000, vim.schedule_wrap(function() M.run(opts) end))
 end
 
 M.start_sub_timer = function(opts, component, index, timing)
-	if comp_timers[index] == nil then comp_timers[index] = vim.loop.new_timer() end
+	if comp_timers[index] == nil then comp_timers[index] = uv.new_timer() end
 	comp_timers[index]:start(
 		0,
 		timing,
