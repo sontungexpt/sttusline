@@ -26,7 +26,7 @@ return {
 		elseif uname == "Windows" then
 			return { { configs.icons.windows, { fg = colors.blue } } }
 		else
-			return uname or "Unknown OS"
+			return uname or "󱚟 Unknown OS"
 		end
 	end,
 }
