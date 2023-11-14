@@ -148,7 +148,7 @@ To use default component use should add name of component to components options
 or you can add a table with the first value is the name of component and second
 value is the table that you want to override default component
 
-Use default component with default configs
+##### Use default component with default configs
 
 ```lua
     require("sttusline").setup {
@@ -158,7 +158,11 @@ Use default component with default configs
     }
 ```
 
-Use default component and override default configs.
+##### Use default component and override default configs
+
+**NOTE**: The override component must be a table with the first value is the name of
+default component and the second value is the table with `any key that a new component can have.
+All keys is list [here](#create-new-component)
 
 😊 How to know what configs you can override? You can see the [default component
 configs](https://github.com/sontungexpt/sttusline/tree/table_version/lua/sttusline/components) and override any thing
@@ -168,15 +172,29 @@ you want event the core of the component
     require("sttusline").setup {
         components = {
             {
+                -- use mode component with override configs
                 "mode",
-                -- override default component
+                {
+                    -- The table with any key that you want to override
+                    -- Example you want to mode component update after 1 second
+                    -- But the default config is not update after 1 second
+                    -- So you can override the timing key, easy right?
+                    timing = true,
+                }
+            },
+
+            {
+                -- use filename component with override configs
+                "filename",
+                -- this is the list of all keys that you can override
+                -- you can override any key that a new component can have
                 {
                     name = "component_name",
                     update_group = "group_name",
                     event = {}, -- The component will be update when the event is triggered
                     user_event = { "VeryLazy" },
                     -- timing = 200
-                    timing = false, -- The component will be update every time interval
+                    timing = false,
                     lazy = true,
                     space ={}
                     configs = {},
