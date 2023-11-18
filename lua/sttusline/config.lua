@@ -1,5 +1,6 @@
 local vim = vim
 local uv = vim.uv or vim.loop
+local api = vim.api
 local g = vim.g
 local type = type
 local require = require
@@ -84,7 +85,7 @@ local configs = {
 				auto_hide_on_vim_resized = true,
 			},
 			update = function(configs)
-				local mode_code = vim.api.nvim_get_mode().mode
+				local mode_code = api.nvim_get_mode().mode
 				local mode = configs.modes[mode_code]
 				if mode then
 					local hl_name = mode[2]
@@ -105,6 +106,7 @@ local configs = {
 			colors = {
 				{},
 				{ fg = colors.orange },
+				{ fg = colors.red },
 			},
 			update = function()
 				local has_devicons, devicons = pcall(require, "nvim-web-devicons")
@@ -117,8 +119,8 @@ local configs = {
 				end
 
 				if not icon then
-					local buftype = vim.api.nvim_buf_get_option(0, "buftype")
-					local filetype = vim.api.nvim_buf_get_option(0, "filetype")
+					local buftype = api.nvim_buf_get_option(0, "buftype")
+					local filetype = api.nvim_buf_get_option(0, "filetype")
 					if buftype == "terminal" then
 						icon, color_icon = "", colors.red
 						filename = "Terminal"
@@ -142,6 +144,11 @@ local configs = {
 					elseif filetype == "dashboard" then
 						icon, color_icon = "", colors.red
 					end
+				end
+
+				-- check if file is read-only
+				if api.nvim_buf_get_option(0, "readonly") then
+					return { icon and { icon .. " ", { fg = color_icon } } or "", filename, " " }
 				end
 				return { icon and { icon .. " ", { fg = color_icon } } or "", filename }
 			end,
@@ -174,7 +181,7 @@ local configs = {
 				local branch = space.get_branch()
 				return branch ~= "" and configs.icon .. " " .. branch or ""
 			end,
-			condition = function() return vim.api.nvim_buf_get_option(0, "buflisted") end,
+			condition = function() return api.nvim_buf_get_option(0, "buflisted") end,
 		},
 		{
 			name = "git-diff",
@@ -259,7 +266,7 @@ local configs = {
 				end
 				return result
 			end,
-			condition = function() return vim.api.nvim_buf_get_option(0, "filetype") ~= "lazy" end,
+			condition = function() return api.nvim_buf_get_option(0, "filetype") ~= "lazy" end,
 		},
 		{
 			name = "lsps-formatters",
@@ -284,7 +291,7 @@ local configs = {
 					has_null_ls, null_ls = pcall(require, "null-ls")
 
 					if has_null_ls then
-						local buf_ft = vim.api.nvim_buf_get_option(0, "filetype")
+						local buf_ft = api.nvim_buf_get_option(0, "filetype")
 						local null_ls_methods = {
 							null_ls.methods.DIAGNOSTICS,
 							null_ls.methods.DIAGNOSTICS_ON_OPEN,
@@ -350,11 +357,11 @@ local configs = {
 				"SttuslineCopilotStatusUpdate",
 			},
 			init = function(configs)
-				local nvim_exec_autocmds = vim.api.nvim_exec_autocmds
+				local nvim_exec_autocmds = api.nvim_exec_autocmds
 				local schedule = vim.schedule
-				local buf_get_option = vim.api.nvim_buf_get_option
+				local buf_get_option = api.nvim_buf_get_option
 				local sttusline_copilot_timer = uv.new_timer()
-				vim.api.nvim_create_autocmd("InsertEnter", {
+				api.nvim_create_autocmd("InsertEnter", {
 					once = true,
 					desc = "Init copilot status",
 					callback = function()
@@ -455,7 +462,7 @@ local configs = {
 			name = "indent",
 			update_group = "BUF_WIN_ENTER",
 			colors = { fg = colors.cyan },
-			update = function() return "Tab: " .. vim.api.nvim_buf_get_option(0, "shiftwidth") .. "" end,
+			update = function() return "Tab: " .. api.nvim_buf_get_option(0, "shiftwidth") .. "" end,
 		},
 		{
 			name = "encoding",
@@ -479,7 +486,7 @@ local configs = {
 			update_group = "CURSOR_MOVING",
 			colors = { fg = colors.fg },
 			update = function()
-				local pos = vim.api.nvim_win_get_cursor(0)
+				local pos = api.nvim_win_get_cursor(0)
 				return pos[1] .. ":" .. pos[2]
 			end,
 		},

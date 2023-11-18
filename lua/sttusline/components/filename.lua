@@ -9,6 +9,7 @@ return {
 	colors = {
 		{},
 		{ fg = colors.orange },
+		{ fg = colors.red },
 	},
 	update = function()
 		local has_devicons, devicons = pcall(require, "nvim-web-devicons")
@@ -48,6 +49,9 @@ return {
 			end
 		end
 
-		return { icon and { icon, { fg = color_icon } } or "", " " .. filename }
+		if get_option(0, "readonly") then
+			return { icon and { icon .. " ", { fg = color_icon } } or "", filename, " " }
+		end
+		return { icon and { icon .. " ", { fg = color_icon } } or "", filename }
 	end,
 }
