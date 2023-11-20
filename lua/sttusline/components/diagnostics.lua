@@ -42,5 +42,8 @@ return {
 		end
 		return result
 	end,
-	condition = function() return vim.api.nvim_buf_get_option(0, "filetype") ~= "lazy" end,
+	condition = function()
+		return vim.api.nvim_buf_get_option(0, "filetype") ~= "lazy"
+			and not vim.api.nvim_buf_get_name(0):match("%.env$")
+	end,
 }

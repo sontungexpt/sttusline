@@ -266,7 +266,10 @@ local configs = {
 				end
 				return result
 			end,
-			condition = function() return api.nvim_buf_get_option(0, "filetype") ~= "lazy" end,
+			condition = function()
+				return api.nvim_buf_get_option(0, "filetype") ~= "lazy"
+					and not api.nvim_buf_get_name(0):match("%.env$")
+			end,
 		},
 		{
 			name = "lsps-formatters",
