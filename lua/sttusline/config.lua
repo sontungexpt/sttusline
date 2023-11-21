@@ -541,7 +541,11 @@ M.apply_user_config = function(opts)
 				if type(v) == "table" then
 					if v[1] == nil then
 						for k2, v2 in pairs(v) do
-							if type(v2) == type(configs[k][k2]) then configs[k][k2] = v2 end
+							if type(v2) == type(configs[k][k2]) then
+								configs[k][k2] = v2
+							elseif not configs[k][k2] then
+								configs[k][k2] = v2
+							end
 						end
 					else
 						configs[k] = v
@@ -549,6 +553,8 @@ M.apply_user_config = function(opts)
 				else
 					configs[k] = v
 				end
+			elseif not configs[k] then
+				configs[k] = v
 			end
 		end
 	end
