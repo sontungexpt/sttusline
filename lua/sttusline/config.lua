@@ -534,31 +534,23 @@ M.setup = function(user_opts)
 	return configs
 end
 
-M.apply_user_config = function(opts)
+M.apply_user_config = function(opts, target)
+	target = target or configs
 	if type(opts) == "table" then
 		for k, v in pairs(opts) do
-			if type(v) == type(configs[k]) then
-				if type(v) == "table" then
-					if v[1] == nil then
-						for k2, v2 in pairs(v) do
-							if type(v2) == type(configs[k][k2]) then
-								configs[k][k2] = v2
-							elseif not configs[k][k2] then
-								configs[k][k2] = v2
-							end
-						end
-					else
-						configs[k] = v
-					end
+			if type(v) == type(target[k]) then
+				-- if is table and not array
+				if type(v) == "table" and v[1] == nil and next(v) then
+					M.apply_user_config(v, target[k])
 				else
-					configs[k] = v
+					target[k] = v
 				end
-			elseif not configs[k] then
-				configs[k] = v
+			elseif not target[k] then
+				target[k] = v
 			end
 		end
 	end
-	return configs
+	return target
 end
 
 M.get_config = function() return configs end
