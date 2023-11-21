@@ -108,46 +108,56 @@ local configs = {
 				{ fg = colors.orange },
 				{ fg = colors.red },
 			},
-			update = function()
-				local has_devicons, devicons = pcall(require, "nvim-web-devicons")
+			configs = {
+				extensions = {
+					-- filetypes = { icon, color, filename(optional) },
+					filetypes = {
+						["NvimTree"] = { "󰙅", colors.red, "NvimTree" },
+						["TelescopePrompt"] = { "", colors.red, "Telescope" },
+						["mason"] = { "󰏔", colors.red, "Mason" },
+						["lazy"] = { "󰏔", colors.red, "Lazy" },
+						["checkhealth"] = { "", colors.red, "CheckHealth" },
+						["plantuml"] = { "", colors.green },
+						["dashboard"] = { "", colors.red },
+					},
 
+					-- buftypes = { icon, color, filename(optional) },
+					buftypes = {
+						["terminal"] = { "", colors.red, "Terminal" },
+					},
+				},
+			},
+			update = function(configs)
 				local filename = vim.fn.expand("%:t")
-				if filename == "" then filename = "No File" end
+
+				local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 				local icon, color_icon = nil, nil
 				if has_devicons then
 					icon, color_icon = devicons.get_icon_color(filename, vim.fn.expand("%:e"))
 				end
 
 				if not icon then
+					local extensions = configs.extensions
 					local buftype = api.nvim_buf_get_option(0, "buftype")
-					local filetype = api.nvim_buf_get_option(0, "filetype")
-					if buftype == "terminal" then
-						icon, color_icon = "", colors.red
-						filename = "Terminal"
-					elseif filetype == "NvimTree" then
-						icon, color_icon = "󰙅", colors.red
-						filename = "NvimTree"
-					elseif filetype == "TelescopePrompt" then
-						icon, color_icon = "", colors.red
-						filename = "Telescope"
-					elseif filetype == "mason" then
-						icon, color_icon = "󰏔", colors.red
-						filename = "Mason"
-					elseif filetype == "lazy" then
-						icon, color_icon = "󰏔", colors.red
-						filename = "Lazy"
-					elseif filetype == "checkhealth" then
-						icon, color_icon = "", colors.red
-						filename = "CheckHealth"
-					elseif filetype == "plantuml" then
-						icon, color_icon = "", colors.green
-					elseif filetype == "dashboard" then
-						icon, color_icon = "", colors.red
+
+					local extension = extensions.buftypes[buftype]
+					if extension then
+						icon, color_icon, filename =
+							extension[1], extension[2], extension[3] or filename ~= "" and filename or buftype
+					else
+						local filetype = api.nvim_buf_get_option(0, "filetype")
+						extension = extensions.filetypes[filetype]
+						if extension then
+							icon, color_icon, filename =
+								extension[1], extension[2], extension[3] or filename ~= "" and filename or filetype
+						end
 					end
 				end
 
+				if filename == "" then filename = "No File" end
+
 				-- check if file is read-only
-				if api.nvim_buf_get_option(0, "readonly") then
+				if not api.nvim_buf_get_option(0, "modifiable") or api.nvim_buf_get_option(0, "readonly") then
 					return { icon and { icon .. " ", { fg = color_icon } } or "", filename, " " }
 				end
 				return { icon and { icon .. " ", { fg = color_icon } } or "", filename }

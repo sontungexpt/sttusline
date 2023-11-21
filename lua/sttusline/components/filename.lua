@@ -11,45 +11,67 @@ return {
 		{ fg = colors.orange },
 		{ fg = colors.red },
 	},
-	update = function()
-		local has_devicons, devicons = pcall(require, "nvim-web-devicons")
-
+	configs = {
+		-- 0 = full path,
+		-- 1 = filename only,
+		-- 2 = file name without extension,
+		-- 3 = parent directory + filename
+		path = 1,
+		extensions = {
+			-- filetypes = { icon, color, filename(optional) },
+			filetypes = {
+				["NvimTree"] = { "󰙅", colors.red, "NvimTree" },
+				["TelescopePrompt"] = { "", colors.red, "Telescope" },
+				["mason"] = { "󰏔", colors.red, "Mason" },
+				["lazy"] = { "󰏔", colors.red, "Lazy" },
+				["checkhealth"] = { "", colors.red, "CheckHealth" },
+				["plantuml"] = { "", colors.green },
+				["dashboard"] = { "", colors.red },
+			},
+			-- buftypes = { icon, color, filename(optional) },
+			buftypes = {
+				["terminal"] = { "", colors.red, "Terminal" },
+			},
+		},
+	},
+	update = function(configs)
 		local filename = fn.expand("%:t")
-		if filename == "" then filename = "No File" end
+
+		if configs.path == 0 then
+			filename = fn.expand("%:p")
+		elseif configs.path == 2 then
+			filename = fn.expand("%:t:r")
+		elseif configs.path == 3 then
+			filename = fn.expand("%:p:h:t") .. "/" .. fn.expand("%:t")
+		end
+
+		local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 		local icon, color_icon = nil, nil
 		if has_devicons then
 			icon, color_icon = devicons.get_icon_color(filename, fn.expand("%:e"))
 		end
 
 		if not icon then
+			local extensions = configs.extensions
 			local buftype = get_option(0, "buftype")
-			local filetype = get_option(0, "filetype")
-			if buftype == "terminal" then
-				icon, color_icon = "", colors.red
-				filename = "Terminal"
-			elseif filetype == "NvimTree" then
-				icon, color_icon = "󰙅", colors.red
-				filename = "NvimTree"
-			elseif filetype == "TelescopePrompt" then
-				icon, color_icon = "", colors.red
-				filename = "Telescope"
-			elseif filetype == "mason" then
-				icon, color_icon = "󰏔", colors.red
-				filename = "Mason"
-			elseif filetype == "lazy" then
-				icon, color_icon = "󰏔", colors.red
-				filename = "Lazy"
-			elseif filetype == "checkhealth" then
-				icon, color_icon = "", colors.red
-				filename = "CheckHealth"
-			elseif filetype == "plantuml" then
-				icon, color_icon = "", colors.green
-			elseif filetype == "dashboard" then
-				icon, color_icon = "", colors.red
+
+			local extension = extensions.buftypes[buftype]
+			if extension then
+				icon, color_icon, filename =
+					extension[1], extension[2], extension[3] or filename ~= "" and filename or buftype
+			else
+				local filetype = get_option(0, "filetype")
+				extension = extensions.filetypes[filetype]
+				if extension then
+					icon, color_icon, filename =
+						extension[1], extension[2], extension[3] or filename ~= "" and filename or filetype
+				end
 			end
 		end
 
-		if get_option(0, "readonly") then
+		if filename == "" then filename = "No File" end
+
+		if not get_option(0, "modifiable") or get_option(0, "readonly") then
 			return { icon and { icon .. " ", { fg = color_icon } } or "", filename, " " }
 		end
 		return { icon and { icon .. " ", { fg = color_icon } } or "", filename }
