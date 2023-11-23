@@ -87,10 +87,7 @@ local configs = {
 			update = function(configs)
 				local mode_code = api.nvim_get_mode().mode
 				local mode = configs.modes[mode_code]
-				if mode then
-					local hl_name = mode[2]
-					return { { mode[1], configs.mode_colors[hl_name] } }
-				end
+				if mode then return { { mode[1], configs.mode_colors[mode[2]] } } end
 				return " " .. mode_code .. " "
 			end,
 			condition = function(configs)

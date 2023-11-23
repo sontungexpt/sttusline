@@ -32,21 +32,23 @@ end
 
 M.set_hl = function(group, hl_opts, fallback_bg)
 	if not M.is_highlight_option(hl_opts) then return end
+	local real_opts = vim.deepcopy(hl_opts)
 
-	if hl_opts.fg and not M.is_color(hl_opts.fg) then
-		hl_opts.fg = M.get_hl_name_color(hl_opts.fg).foreground
+	if real_opts.fg and not M.is_color(real_opts.fg) then
+		real_opts.fg = M.get_hl_name_color(real_opts.fg).foreground
 	end
 
-	if hl_opts.bg then
-		hl_opts.bg = M.is_color(hl_opts.bg) and hl_opts.bg or M.get_hl_name_color(hl_opts.bg).background
+	if real_opts.bg then
+		real_opts.bg = M.is_color(real_opts.bg) and real_opts.bg
+			or M.get_hl_name_color(real_opts.bg).background
 	elseif fallback_bg then
 		-- fallback to fallback_bg if provided
-		hl_opts.bg = M.is_color(fallback_bg) and fallback_bg or M.get_hl_name_color(fallback_bg).background
+		real_opts.bg = M.is_color(fallback_bg) and fallback_bg or M.get_hl_name_color(fallback_bg).background
 	else
 		-- fallback to StatusLine background
-		hl_opts.bg = M.get_hl_name_color("StatusLine").background
+		real_opts.bg = M.get_hl_name_color("StatusLine").background
 	end
-	pcall(api.nvim_set_hl, 0, group, hl_opts)
+	pcall(api.nvim_set_hl, 0, group, real_opts)
 end
 
 M.set_hl_separator = function(index, fallback_bg)

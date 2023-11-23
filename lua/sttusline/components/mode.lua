@@ -2,10 +2,8 @@ local colors = require("sttusline.utils.color")
 
 return {
 	name = "mode",
-
-	event = { "ModeChanged", "VimResized" }, -- The component will be update when the event is triggered
-	user_event = { "VeryLazy" },
-
+	event = { "ModeChanged", "VimResized" },
+	user_event = "VeryLazy",
 	configs = {
 		modes = {
 			["n"] = { "NORMAL", "STTUSLINE_NORMAL_MODE" },
