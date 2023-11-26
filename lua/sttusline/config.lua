@@ -99,11 +99,11 @@ local configs = {
 		},
 		{
 			name = "filename",
-			update_group = "BUF_WIN_ENTER",
+			event = { "BufEnter", "WinEnter", "TextChangedI", "BufWritePost" },
+			user_event = "VeryLazy",
 			colors = {
 				{},
 				{ fg = colors.orange },
-				{ fg = colors.red },
 			},
 			configs = {
 				extensions = {
@@ -155,7 +155,18 @@ local configs = {
 
 				-- check if file is read-only
 				if not api.nvim_buf_get_option(0, "modifiable") or api.nvim_buf_get_option(0, "readonly") then
-					return { icon and { icon .. " ", { fg = color_icon } } or "", filename, " " }
+					return {
+						icon and { icon .. " ", { fg = color_icon } } or "",
+						filename,
+						{ " ", { fg = colors.red } },
+					}
+				-- check if unsaved
+				elseif api.nvim_buf_get_option(0, "modified") then
+					return {
+						icon and { icon .. " ", { fg = color_icon } } or "",
+						filename,
+						{ " ", { fg = colors.fg } },
+					}
 				end
 				return { icon and { icon .. " ", { fg = color_icon } } or "", filename }
 			end,

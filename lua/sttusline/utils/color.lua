@@ -1,5 +1,6 @@
 return {
 	bg = "#1e2030",
+	fg = "#c0caf5",
 	yellow = "#ffc021",
 	cyan = "#56b6c2",
 	darkblue = "#081633",

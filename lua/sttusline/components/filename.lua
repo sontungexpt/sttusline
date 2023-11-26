@@ -5,11 +5,11 @@ local colors = require("sttusline.utils.color")
 
 return {
 	name = "filename",
-	update_group = "BUF_WIN_ENTER",
+	event = { "BufEnter", "WinEnter", "TextChangedI", "BufWritePost" },
+	user_event = "VeryLazy",
 	colors = {
 		{},
 		{ fg = colors.orange },
-		{ fg = colors.red },
 	},
 	configs = {
 		-- 0 = full path,
@@ -72,7 +72,17 @@ return {
 		if filename == "" then filename = "No File" end
 
 		if not get_option(0, "modifiable") or get_option(0, "readonly") then
-			return { icon and { icon .. " ", { fg = color_icon } } or "", filename, " " }
+			return {
+				icon and { icon .. " ", { fg = color_icon } } or "",
+				filename,
+				{ " ", { fg = colors.red } },
+			}
+		elseif get_option(0, "modified") then
+			return {
+				icon and { icon .. " ", { fg = color_icon } } or "",
+				filename,
+				{ " ", { fg = colors.fg } },
+			}
 		end
 		return { icon and { icon .. " ", { fg = color_icon } } or "", filename }
 	end,
