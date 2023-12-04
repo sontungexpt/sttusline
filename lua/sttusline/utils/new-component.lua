@@ -3,7 +3,7 @@ local fn = vim.fn
 
 local NEW_COMPONENT_TEMPLATE = [[
 -- Change NewComponent to your component name
-local NewComponent = require("sttusline.set_component").new()
+local NewComponent = require("sttusline.component").new()
 
 -- The component will be update when the event is triggered
 -- To disable default event, set NewComponent.set_event = {}
