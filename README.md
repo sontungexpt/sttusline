@@ -96,7 +96,6 @@ https://github.com/sontungexpt/sttusline/assets/92097639/f06fd331-9546-4046-ab88
             "mode",
             "os-uname",
             "filename",
-            "file-type",
             "git-branch",
             "git-diff",
             "%=",
@@ -131,7 +130,6 @@ We provide you some default component:
 | `datetime`            | Show datetime                                                |
 | `mode`                | Show current mode                                            |
 | `filename`            | Show current filename                                        |
-| `file-type`           | Show file type icon                                          |
 | `git-branch`          | Show git branch                                              |
 | `git-diff`            | Show git diff                                                |
 | `diagnostics`         | Show diagnostics                                             |
