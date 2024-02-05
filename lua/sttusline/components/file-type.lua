@@ -11,17 +11,22 @@ return {
 	padding = 2,
 	user_event = "VeryLazy",
 	update = function()
-		local has_devicons, web_devicons = pcall(require, "nvim-web-devicons")
-		local ft
+		local ft, icon_highlight
+		local has_web_devicons, web_devicons = pcall(require, "nvim-web-devicons")
 
-		if has_devicons then
-			ft = web_devicons.get_icon(vim.fn.expand("%:t"), vim.fn.expand("%:e"), {
-				default = true,
-			})
+		if has_web_devicons then
+			ft, icon_highlight =
+				web_devicons.get_icon(vim.fn.expand("%:t"), vim.fn.expand("%:e"), { default = true })
 		else
 			ft = vim.bo.filetype
 		end
 
-		return string.format("%s", ft)
+		local color = ""
+		if icon_highlight then
+			local highlight_color = vim.api.nvim_get_hl(0, { name = icon_highlight })
+			color = highlight_color.foreground
+		end
+
+		return string.format("%s %s", ft, color)
 	end,
 }
