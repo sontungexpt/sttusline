@@ -1,7 +1,7 @@
 local fn = vim.fn
 local get_option = vim.api.nvim_buf_get_option
 
-local colors = require("sttusline.utils.color")
+local colors = require("sttusline.v1.utils.color")
 
 return {
 	name = "filename",

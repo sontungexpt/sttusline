@@ -1,10 +1,10 @@
 local config = require("sttusline.config")
-local api = require("sttusline.api")
+local core = require("sttusline.core")
 local M = {}
 
 M.setup = function(user_opts)
 	local opts = config.setup(user_opts)
-	api.setup(opts)
+	core.setup(opts)
 end
 
 return M

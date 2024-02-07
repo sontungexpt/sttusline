@@ -1,4 +1,4 @@
-local colors = require("sttusline.utils.color")
+local colors = require("sttusline.v1.utils.color")
 local diagnostic = vim.diagnostic
 
 return {

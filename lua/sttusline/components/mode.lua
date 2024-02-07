@@ -1,9 +1,10 @@
-local colors = require("sttusline.utils.color")
+local colors = require("sttusline.v1.utils.color")
 
 return {
 	name = "mode",
-	event = { "ModeChanged", "VimResized" },
-	user_event = "VeryLazy",
+	events = { "ModeChanged", "VimResized" },
+	timing = true,
+	user_events = "VeryLazy",
 	configs = {
 		modes = {
 			["n"] = { "NORMAL", "STTUSLINE_NORMAL_MODE" },

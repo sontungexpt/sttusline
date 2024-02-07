@@ -1,5 +1,5 @@
 local line = vim.fn.line
-local colors = require("sttusline.utils.color")
+local colors = require("sttusline.v1.utils.color")
 
 return {
 	name = "pos-cursor-progress",
