@@ -1,15 +1,14 @@
 local fn = vim.fn
 local get_option = vim.api.nvim_buf_get_option
 
-local colors = require("sttusline.v1.utils.color")
+local colors = require("sttusline.util.color")
 
 return {
 	name = "filename",
 	event = { "BufEnter", "WinEnter", "TextChangedI", "BufWritePost" },
 	user_event = "VeryLazy",
 	colors = {
-		{},
-		{ fg = colors.orange },
+		fg = colors.orange,
 	},
 	configs = {
 		-- 0 = full path,
@@ -73,17 +72,40 @@ return {
 
 		if not get_option(0, "modifiable") or get_option(0, "readonly") then
 			return {
-				icon and { icon .. " ", { fg = color_icon } } or "",
+				{
+					value = icon or "",
+					colors = { fg = color_icon },
+				},
+				" ",
 				filename,
-				{ " ", { fg = colors.red } },
+				" ",
+				{
+					value = "",
+					{ fg = colors.red },
+				},
 			}
 		elseif get_option(0, "modified") then
 			return {
-				icon and { icon .. " ", { fg = color_icon } } or "",
+				{
+					value = icon or "",
+					colors = { fg = color_icon },
+				},
+				" ",
 				filename,
-				{ " ", { fg = colors.fg } },
+				" ",
+				{
+					value = "",
+					colors = { fg = colors.fg },
+				},
 			}
 		end
-		return { icon and { icon .. " ", { fg = color_icon } } or "", filename }
+		return {
+			{
+				value = icon or "",
+				colors = { fg = color_icon },
+			},
+			" ",
+			filename,
+		}
 	end,
 }

@@ -1,5 +1,5 @@
 local fn = vim.fn
-local colors = require("sttusline.utils.color")
+local colors = require("sttusline.util.color")
 local current_charging_index = 0
 local uv = vim.uv or vim.loop
 local is_linux = uv.os_uname().sysname == "Linux"

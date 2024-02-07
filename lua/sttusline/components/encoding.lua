@@ -1,7 +1,8 @@
-local colors = require("sttusline.utils.color")
+local colors = require("sttusline.util.color")
 return {
 	name = "encoding",
-	update_group = "BUF_WIN_ENTER",
+	event = { "BufEnter", "WinEnter" },
+	user_event = { "VeryLazy" },
 	configs = {
 		["utf-8"] = "󰉿",
 		["utf-16"] = "󰊀",

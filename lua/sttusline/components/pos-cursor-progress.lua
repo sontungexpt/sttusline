@@ -10,7 +10,6 @@ return {
 	configs = {
 		chars = { "_", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█" },
 	},
-
 	padding = 0, -- { left = 1, right = 1 }
 	colors = { fg = colors.orange }, -- { fg = colors.black, bg = colors.white }
 

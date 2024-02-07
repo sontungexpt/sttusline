@@ -1,4 +1,4 @@
-local colors = require("sttusline.utils.color")
+local colors = require("sttusline.util.color")
 
 return {
 	name = "pos-cursor",

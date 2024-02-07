@@ -11,11 +11,12 @@ local configs = {
 	},
 	separator = { left = "", right = "" },
 	components = {
-		-- require("sttusline.components.filename"),
+		require("sttusline.components.filename"),
 		require("sttusline.components.diagnostics"),
 		"%=",
 		require("sttusline.components.indent"),
-		-- require("sttusline.components.os-uname"),
+		require("sttusline.components.encoding"),
+		require("sttusline.components.pos-cursor"),
 		require("sttusline.components.pos-cursor-progress"),
 	},
 }

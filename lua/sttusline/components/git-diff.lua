@@ -1,4 +1,4 @@
-local colors = require("sttusline.utils.color")
+local colors = require("sttusline.util.color")
 
 return {
 	name = "git-diff",
@@ -24,6 +24,7 @@ return {
 		local icons = configs.icons
 
 		local should_add_spacing = false
+
 		local result = {}
 		for index, v in ipairs(order) do
 			if git_status[v] and git_status[v] > 0 then
