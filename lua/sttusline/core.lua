@@ -1,14 +1,9 @@
 local type = type
 local next = next
 local concat = table.concat
-local pairs = pairs
 local ipairs = ipairs
 local require = require
-local rep = string.rep
-local floor = math.floor
 
--- local cache = require("sttusline.cache")
-local highlight = require("sttusline.util.highlight")
 local vim = vim
 local api = vim.api
 local opt = vim.opt
@@ -16,6 +11,9 @@ local uv = vim.uv or vim.loop
 local schedule = vim.schedule
 local autocmd = api.nvim_create_autocmd
 local augroup = api.nvim_create_augroup
+
+local highlight = require("sttusline.util.highlight")
+local config = require("sttusline.config")
 
 local M = {}
 
@@ -28,24 +26,20 @@ local group_ids = {
 }
 local timer_ids = {}
 local statusline = {}
-local components = {
-	length = 0,
-}
+local components = {}
 
 local cached = {
 	name_index_maps = {},
 
-	event_index_maps = {
+	events = {
 		-- the key is the name of the default event
 		nvim = {
-			-- The number of the event that the component listen to
-			length = 0,
+			keys_len = 0,
 			keys = {},
 		},
 		-- the key is the name of user defined event
 		user = {
-			-- The number of the event that the component listen to
-			length = 0,
+			keys_len = 0,
 			keys = {},
 		},
 	},
@@ -61,29 +55,9 @@ local function call_comp_func(func, comp)
 	if type(func) == "function" then return func(comp.configs, comp.__state, comp, comp.__pos) end
 end
 
-local function arr_contains(tbl, value)
-	for _, v in ipairs(tbl) do
-		if v == value then return true end
-	end
-	return false
+local function tbl_contains(tbl, value)
+	return tbl[value] or require("sttusline.util").arr_contains(tbl, value)
 end
-
-local function merge_tb(to, from)
-	if type(to) == "table" and type(from) == "table" then
-		for k, v in pairs(from) do
-			if to[1] == nil then -- to is a dict
-				to[k] = merge_tb(to[k], v)
-			else -- to is a list
-				to[#to + 1] = v
-			end
-		end
-	else
-		to = from
-	end
-	return to
-end
-
-local function tbl_contains(tbl, value) return tbl[value] or arr_contains(tbl, value) end
 
 local function should_hidden(excluded, bufnr)
 	return tbl_contains(excluded.filetypes, api.nvim_buf_get_option(bufnr or 0, "filetype"))
@@ -115,68 +89,44 @@ local auto_hidden = function(configs)
 			end
 		end,
 	})
-
-	autocmd("VimLeavePre", {
-		group = M.get_global_augroup(),
-		callback = function()
-			cache.cache_cached(cached)
-			cache.cache()
-		end,
-	})
 end
 
 local function cache_event(event, index, cache_key)
-	local events_dict = cached.event_index_maps[cache_key]
+	local events_dict = cached.events[cache_key]
 	local indexes = events_dict[event]
 	if indexes == nil then
 		events_dict[event] = { index }
-		events_dict.length = events_dict.length + 1
-		events_dict.keys[events_dict.length] = event
+		events_dict.keys_len = events_dict.keys_len + 1
+		events_dict.keys[events_dict.keys_len] = event
 	else
 		indexes[#indexes + 1] = index
 	end
 end
 
 local function handle_comp_events(comp, index)
-	local events = comp.event
-	if type(events) == "table" then
-		events.User = nil -- remove user defined events
-		for k, e in pairs(events) do
-			if type(k) == "number" then
-				cache_event(e, index, "nvim")
-			else
-				-- k : event
-				-- e : pattern
-				autocmd(k, {
-					pattern = e,
-					group = M.get_global_augroup(),
-					callback = function()
-						M.update_comp_value(index)
-						M.render()
-					end,
-				})
-				-- cache.cache_autocmd(k, e, index)
-			end
+	local nvim_event = comp.event
+	if type(nvim_event) == "table" then
+		for _, e in ipairs(nvim_event) do
+			cache_event(e, index, "nvim")
 		end
-	elseif type(events) == "string" then
-		cache_event(events, index, "nvim")
+	elseif type(nvim_event) == "string" then
+		cache_event(nvim_event, index, "nvim")
 	end
-end
 
-local function handle_comp_user_events(comp, index)
-	local events = comp.user_event
-	if type(events) == "table" then
-		for _, e in ipairs(events) do
+	local user_event = comp.user_event
+	if type(user_event) == "string" then
+		cache_event(user_event, index, "user")
+	elseif type(user_event) == "table" then
+		for _, e in ipairs(user_event) do
 			cache_event(e, index, "user")
 		end
-	elseif type(events) == "string" then
-		cache_event(events, index, "user")
 	end
 end
 
 local function init_cached_autocmds(configs)
-	local nvim_keys = cached.event_index_maps.nvim.keys
-	local user_keys = cached.event_index_maps.user.keys
+	local nvim_keys = cached.events.nvim.keys
+	local user_keys = cached.events.user.keys
+
 	if next(nvim_keys) then
 		autocmd(nvim_keys, {
 			group = M.get_global_augroup(),
@@ -190,38 +140,27 @@ local function init_cached_autocmds(configs)
 			callback = function(e) M.run(e.match, true) end,
 		})
 	end
-	-- cache.cache_autocmds()
-end
-
-local function is_child_sep_table(sep)
-	return type(sep) == "table" and (type(sep.value) == "string" or type(sep[1]) == "string")
 end
 
 local function handle_comp_highlight(comp, index)
-	comp.__hl_name = type(comp.colors) == "table" and PLUG_NAME .. "_" .. index or comp.colors
+	comp.__hl_name = PLUG_NAME .. "_" .. index
 	highlight.hl(comp.__hl_name, comp.colors)
+
 	if type(comp.separator) == "table" then
 		local separator = comp.separator
-		if type(separator) == "table" then
+
+		if type(separator) == "table" then -- has separator
+			comp.__hl_name_sep = comp.__hl_name .. "_sep"
+			comp.__hl_name_sep_left = comp.__hl_name_sep .. "_left"
+			comp.__hl_name_sep_right = comp.__hl_name_sep .. "_right"
+
 			local sep_styles = {
 				fg = highlight.get_hl(comp.__hl_name).background,
 			}
 
-			local sep_hl_name = comp.__hl_name .. "_sep"
-			highlight.hl(sep_hl_name, sep_styles)
-
-			if is_child_sep_table(separator.left) and type(separator.left.colors) == "table" then
-				highlight.hl(
-					sep_hl_name .. "_left",
-					next(separator.left.colors) and separator.left.colors or sep_styles
-				)
-			end
-			if is_child_sep_table(separator.left) and type(separator.right.colors) == "table" then
-				highlight.hl(
-					sep_hl_name .. "_right",
-					next(separator.right.colors) and separator.right.colors or sep_styles
-				)
-			end
+			highlight.hl(comp.__hl_name_sep, sep_styles)
+			highlight.hl(comp.__hl_name_sep_left, separator.colors_left or comp.__hl_name_sep)
+			highlight.hl(comp.__hl_name_sep_right, separator.colors_right or comp.__hl_name_sep)
 		end
 	end
 end
@@ -231,7 +170,6 @@ local function handle_comp_timing(comp, index)
 		cached.timer[#cached.timer + 1] = index
 	elseif type(comp.timing) == "number" then
 		if timer_ids[index] == nil then timer_ids[index] = uv.new_timer() end
-
 		timer_ids[index]:start(
 			0,
 			comp.timing,
@@ -256,72 +194,61 @@ local function update_all_pos_comp(comp, update_value)
 	end
 end
 
-local function get_sep_value(sep, hl_name_sep, left)
-	if sep == nil then
-		return ""
-	elseif type(sep) == "string" then
-		return highlight.add_hl_name(sep, hl_name_sep)
-	elseif is_child_sep_table(sep) then
-		return type(sep.colors) == "table"
-				and next(sep.colors)
-				and highlight.add_hl_name(sep.value or sep[1], hl_name_sep .. (left and "_left" or "_right"))
-			or highlight.add_hl_name(sep.value or sep[1], hl_name_sep)
+local function add_sep(update_value, comp)
+	local seps = comp.separator
+	if type(seps) ~= "table" then
+		return update_value
+	elseif update_value == "" then
+		return update_value
 	end
-	return ""
+
+	if type(seps.left) == "string" then
+		update_value = highlight.add_hl_name(seps.left, comp.__hl_name_sep_left) .. update_value
+	end
+	if type(seps.right) == "string" then
+		update_value = update_value .. highlight.add_hl_name(seps.right, comp.__hl_name_sep_right)
+	end
+
+	return update_value
 end
 
-local function add_sep_with_hl_name(str, seps, hl_name_sep)
-	if type(seps) ~= "table" or str == "" then return str end
+local function add_padding(update_value, comp, padding_hl_name)
+	local padding = comp.padding
 
-	return get_sep_value(seps.left, hl_name_sep, true)
-		.. str
-		.. get_sep_value(seps.right, hl_name_sep, false)
-end
-
-local function add_padding(str, padding)
-	if padding == nil then
-		return " " .. str .. " "
-	elseif type(padding) == "number" then
-		if padding < 1 then return str end -- no padding
-		local space = rep(" ", floor(padding))
-		return space .. str .. space
+	local left_padding = " "
+	local right_padding = " "
+	if type(padding) == "number" then
+		if padding < 1 then
+			return update_value -- no padding
+		else
+			left_padding = (" "):rep(math.floor(padding))
+			right_padding = left_padding
+		end
 	elseif type(padding) == "table" then
 		local left = type(padding.left) == "number" and padding.left or 1
 		local right = type(padding.right) == "number" and padding.right or 1
-		local left_padding = left < 1 and "" or rep(" ", floor(left))
-		local right_padding = right < 1 and "" or rep(" ", floor(right))
-		return left_padding .. str .. right_padding
+		left_padding = left < 1 and "" or (" "):rep(math.floor(left))
+		right_padding = right < 1 and "" or (" "):rep(math.floor(right))
 	end
-	return str
-end
 
-local function add_padding_with_hl_name(str, padding, padding_hl_name)
-	if padding == nil then
-		local space = highlight.add_hl_name(" ", padding_hl_name)
-		return space .. str .. space
-	elseif type(padding) == "number" then
-		if padding < 1 then return str end -- no padding
-		local space = highlight.add_hl_name(rep(" ", floor(padding)), padding_hl_name)
-		return space .. str .. space
-	elseif type(padding) == "table" then
-		local left = type(padding.left) == "number" and padding.left or 1
-		local right = type(padding.right) == "number" and padding.right or 1
-		local left_padding = left < 1 and "" or highlight.add_hl_name(rep(" ", floor(left)), padding_hl_name)
-		local right_padding = right < 1 and ""
-			or highlight.add_hl_name(rep(" ", floor(right)), padding_hl_name)
-
-		return left_padding .. str .. right_padding
+	if type(padding_hl_name) == "string" then
+		left_padding = highlight.add_hl_name(left_padding, padding_hl_name)
+		right_padding = left_padding
 	end
-	return str
+
+	if type(update_value) == "string" and update_value ~= "" then
+		return left_padding .. update_value .. right_padding
+	elseif type(update_value) == "table" and next(update_value) then
+		table.insert(update_value, 1, left_padding)
+		update_value[#update_value + 1] = right_padding
+		return update_value
+	end
+	return update_value
 end
 
 local function handle_str_returned(update_value, comp)
-	update_value = highlight.add_hl_name(add_padding(update_value, comp.padding), comp.__hl_name)
-
-	if type(comp.separator) == "table" then
-		return add_sep_with_hl_name(update_value, comp.separator, comp.__hl_name .. "_sep")
-	end
-
+	update_value = highlight.add_hl_name(add_padding(update_value, comp), comp.__hl_name)
+	if type(comp.separator) == "table" then return add_sep(update_value, comp) end
 	return update_value
 end
 
@@ -336,29 +263,25 @@ local function handle_table_returned(update_value, comp)
 			values[#values + 1] = highlight.add_hl_name(child, comp_hl_name)
 		elseif type(child) == "table" and (type(child.value) == "string" or type(child[1]) == "string") then
 			local child_value = child.value or child[1]
-
 			if child_value then
-				local colors = merge_tb(merge_tb({}, comp.colors), child.colors)
-				if type(colors) == "table" then
-					local hl_name_child = comp_hl_name .. "_child_" .. index
-					values[#values + 1] = highlight.add_hl_name(child_value, hl_name_child)
+				local colors = config.merge_config_noforce(child.colors, comp.colors)
 
-					if child.update or not pcall(api.nvim_get_hl_by_name, hl_name_child, true) then
-						highlight.hl(hl_name_child, colors)
-					end
+				local hl_name_child = comp_hl_name .. "_" .. index
+				if child.padding then
+					values[#values + 1] = highlight.add_hl_name(add_padding(child_value, child), hl_name_child)
 				else
-					values[#values + 1] = highlight.add_hl_name(child_value, comp_hl_name)
+					values[#values + 1] = highlight.add_hl_name(child_value, hl_name_child)
 				end
+
+				if child.hl_update then highlight.hl(hl_name_child, colors, true) end
 			end
 		end
 	end
 
-	--handle the padding and separator
-	local result = add_padding_with_hl_name(concat(values, ""), comp.padding, comp_hl_name)
-	if type(comp.separator) == "table" then
-		return add_sep_with_hl_name(result, comp.separator, comp_hl_name .. "_sep")
-	end
-	return result
+	values = add_padding(values, comp, comp_hl_name)
+
+	if type(comp.separator) == "table" then return add_sep(concat(values, ""), comp) end
+	return concat(values, "")
 end
 
 -- public
@@ -386,58 +309,10 @@ M.get_global_augroup = function()
 		end)()
 end
 
-M.load_components = function(conf_components)
-	local comp_index = 0
-	local key, curr_comp = nil, nil
-	local pos_in_statusline = 0
-	local unique_comps = {}
-
-	return function()
-		comp_index = comp_index + 1
-
-		key, curr_comp = next(conf_components, key)
-
-		while key do --still has components
-			pos_in_statusline = pos_in_statusline + 1
-			if type(curr_comp) ~= "table" then -- special component or path to component
-				if curr_comp == "%=" then -- special component
-					statusline[pos_in_statusline] = "%="
-					goto continue
-				elseif type(curr_comp) == "number" then -- special component
-					statusline[pos_in_statusline] = rep(" ", floor(curr_comp))
-					goto continue
-				end
-
-				local has_comp, default_comp = pcall(require, COMP_DIR .. tostring(curr_comp))
-				curr_comp = has_comp and default_comp or nil
-			elseif curr_comp[2] ~= nil then -- has custom config
-				local has_comp, default_comp = pcall(require, COMP_DIR .. tostring(curr_comp[1]))
-				curr_comp = has_comp and require("sttusline.config").merge_config(default_comp, curr_comp[2])
-					or nil
-			end
-
-			if curr_comp then
-				statusline[pos_in_statusline] = ""
-				if not unique_comps[curr_comp] then
-					unique_comps[curr_comp] = true
-					curr_comp.__pos = { pos_in_statusline }
-
-					components[comp_index] = curr_comp
-					components.length = comp_index
-					return comp_index, curr_comp, pos_in_statusline
-				else
-					curr_comp.__pos[#curr_comp.__pos + 1] = pos_in_statusline
-				end
-			end
-
-			::continue::
-			key, curr_comp = next(conf_components, key)
-		end
-	end
-end
-
 M.update_comp_value = function(index)
 	local comp = components[index]
+	handle_comp_highlight(comp, index)
+
 	local should_display = call_comp_func(comp.condition, comp)
 
 	if should_display == false then
@@ -464,7 +339,7 @@ end
 M.run = function(event_name, is_user_event)
 	if is_hidden then return end
 	schedule(function()
-		local event_dict = is_user_event and cached.event_index_maps.user or cached.event_index_maps.nvim
+		local event_dict = is_user_event and cached.events.user or cached.events.nvim
 		local indexes = event_name and event_dict[event_name] or cached.timer
 
 		---@diagnostic disable-next-line: param-type-mismatch
@@ -476,30 +351,75 @@ M.run = function(event_name, is_user_event)
 	end, 0)
 end
 
+M.load_components = function(conf_components)
+	local len = #conf_components
+	if len == 0 then return nil end
+
+	local comp_index = 0
+	local conf_comp_index = 0
+	local pos_in_line = 0
+	local unique_comps = {}
+
+	return function()
+		conf_comp_index = conf_comp_index + 1
+
+		repeat
+			local curr_comp = conf_components[conf_comp_index]
+			pos_in_line = pos_in_line + 1
+
+			if type(curr_comp) ~= "table" then -- special component or path to component
+				if curr_comp == "%=" then -- special component
+					statusline[pos_in_line] = "%="
+					goto continue
+				elseif type(curr_comp) == "number" then -- special component
+					statusline[pos_in_line] = string.rep(" ", math.floor(curr_comp))
+					goto continue
+				end
+
+				local has_comp, default_comp = pcall(require, COMP_DIR .. tostring(curr_comp))
+				curr_comp = has_comp and default_comp or nil
+			elseif type(curr_comp[2]) == "table" then -- has custom config
+				local has_comp, default_comp = pcall(require, COMP_DIR .. tostring(curr_comp[1]))
+				curr_comp = has_comp and config.merge_config_force(default_comp, curr_comp[2]) or nil
+			end
+
+			if curr_comp then
+				statusline[pos_in_line] = ""
+
+				if not unique_comps[curr_comp] then
+					unique_comps[curr_comp] = true
+					curr_comp.__pos = { pos_in_line }
+
+					comp_index = comp_index + 1
+					components[comp_index] = curr_comp
+					return comp_index, curr_comp, pos_in_line
+				end
+
+				-- already exists
+				curr_comp.__pos[#curr_comp.__pos + 1] = pos_in_line
+			end
+
+			::continue::
+			conf_comp_index = conf_comp_index + 1
+		until conf_comp_index > len
+	end
+end
+
 M.setup = function(configs)
-	local name_index_maps = cached.name_index_maps
-	local has_cached = false
+	-- local name_index_maps = cached.name_index_maps
 
 	for index, comp, pos_in_statusline in M.load_components(configs.components) do
-		if comp.name then name_index_maps[comp.name] = index end
-
+		-- if comp.name then name_index_maps[comp.name] = index end
+		--
 		comp.__state = call(comp.init, comp.configs, comp, pos_in_statusline)
 
 		if comp.lazy == false then M.update_comp_value(index) end
 
-		-- has_cached, cached = cache.read_cache(cached)
-		-- if not has_cached then
 		handle_comp_events(comp, index)
-		handle_comp_user_events(comp, index)
-		-- end
-
 		handle_comp_timing(comp, index)
-		handle_comp_highlight(comp, index)
 	end
 
 	init_cached_autocmds(configs)
-	-- if not has_cached then init_cached_autocmds(configs) end
-
 	init_cached_timers(configs)
 
 	auto_hidden(configs)
