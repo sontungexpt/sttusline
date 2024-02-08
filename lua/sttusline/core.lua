@@ -7,6 +7,8 @@ local require = require
 local rep = string.rep
 local floor = math.floor
 
+-- local cache = require("sttusline.cache")
+local highlight = require("sttusline.util.highlight")
 local vim = vim
 local api = vim.api
 local opt = vim.opt
@@ -14,8 +16,6 @@ local uv = vim.uv or vim.loop
 local schedule = vim.schedule
 local autocmd = api.nvim_create_autocmd
 local augroup = api.nvim_create_augroup
-local highlight = require("sttusline.util.highlight")
-local cache = require("sttusline.cache")
 
 local M = {}
 
@@ -155,7 +155,7 @@ local function handle_comp_events(comp, index)
 						M.render()
 					end,
 				})
-				cache.cache_autocmd(k, e, index)
+				-- cache.cache_autocmd(k, e, index)
 			end
 		end
 	elseif type(events) == "string" then
@@ -190,7 +190,7 @@ local function init_cached_autocmds(configs)
 			callback = function(e) M.run(e.match, true) end,
 		})
 	end
-	cache.cache_autocmds()
+	-- cache.cache_autocmds()
 end
 
 local function is_child_sep_table(sep)
@@ -487,17 +487,18 @@ M.setup = function(configs)
 
 		if comp.lazy == false then M.update_comp_value(index) end
 
-		has_cached, cached = cache.read_cache(cached)
-		if not has_cached then
-			handle_comp_events(comp, index)
-			handle_comp_user_events(comp, index)
-		end
+		-- has_cached, cached = cache.read_cache(cached)
+		-- if not has_cached then
+		handle_comp_events(comp, index)
+		handle_comp_user_events(comp, index)
+		-- end
 
 		handle_comp_timing(comp, index)
 		handle_comp_highlight(comp, index)
 	end
 
-	if not has_cached then init_cached_autocmds(configs) end
+	init_cached_autocmds(configs)
+	-- if not has_cached then init_cached_autocmds(configs) end
 
 	init_cached_timers(configs)
 

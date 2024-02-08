@@ -1,3 +1,4 @@
+local colors = require("sttusline.v1.utils.color")
 return {
 	name = "form", -- nick to link the componet with the group
 
@@ -9,16 +10,14 @@ return {
 
 	configs = {},
 
+	colors = {}, -- { fg = colors.black, bg = colors.white }
+
 	-- separator = { left = "", right = "" },
 	separator = {
-		left = {
-			value = "",
-			colors = { fg = "#ffffff" },
-		},
-		right = {
-			value = "",
-			colors = { fg = "#ffffff" },
-		},
+		left = "",
+		right = "",
+		colors_left = { fg = colors.black, bg = colors.white },
+		colors_right = { fg = colors.black, bg = colors.white },
 	},
 
 	timing = false, -- The component will be update every time interval
@@ -27,8 +26,6 @@ return {
 
 	-- number or table
 	padding = 1, -- { left = 1, right = 1 }
-
-	colors = {}, -- { fg = colors.black, bg = colors.white }
 
 	color_expanded = true, -- if true, the colors will be include padding
 
