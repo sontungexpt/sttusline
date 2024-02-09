@@ -1,49 +1,49 @@
-local colors = require("sttusline.v1.utils.color")
-local diagnostic = vim.diagnostic
+local api = vim.api
 
 return {
 	name = "diagnostics",
-	event = { "DiagnosticChanged" }, -- The component will be update when the event is triggered
-	colors = {
-		{ fg = colors.tokyo_diagnostics_error },
-		{ fg = colors.tokyo_diagnostics_warn },
-		{ fg = colors.tokyo_diagnostics_hint },
-		{ fg = colors.tokyo_diagnostics_info },
-	},
+	event = "DiagnosticChanged",
 	configs = {
-		icons = {
-			ERROR = "",
-			INFO = "",
-			HINT = "󰌵",
-			WARN = "",
+		ERROR = {
+			value = "",
+			colors = { fg = "DiagnosticError" },
+		},
+		WARN = {
+			value = "",
+			colors = { fg = "DiagnosticWarn" },
+		},
+		INFO = {
+			value = "",
+			colors = { fg = "DiagnosticInfo" },
+		},
+		HINT = {
+			value = "",
+			colors = { fg = "DiagnosticHint" },
 		},
 		order = { "ERROR", "WARN", "INFO", "HINT" },
 	},
 	update = function(configs)
 		local result = {}
 
-		local icons = configs.icons
-		local order = configs.order
-
 		local should_add_spacing = false
-		for index, key in ipairs(order) do
-			local count = #diagnostic.get(0, { severity = diagnostic.severity[key] })
+		for _, key in ipairs(configs.order) do
+			local count = #vim.diagnostic.get(0, { severity = vim.diagnostic.severity[key] })
 
 			if count > 0 then
-				if should_add_spacing then
-					result[index] = " " .. icons[key] .. " " .. count
-				else
-					should_add_spacing = true
-					result[index] = icons[key] .. " " .. count
-				end
-			else
-				result[index] = ""
+				result[#result + 1] = {
+					value = configs[key].value .. " " .. count,
+					colors = configs[key].colors,
+					hl_update = true,
+					padding = should_add_spacing and { left = 1 } or nil,
+				}
+				should_add_spacing = true
 			end
 		end
+
 		return result
 	end,
 	condition = function()
-		return vim.api.nvim_buf_get_option(0, "filetype") ~= "lazy"
-			and not vim.api.nvim_buf_get_name(0):match("%.env$")
+		return api.nvim_buf_get_option(0, "filetype") ~= "lazy"
+			and not api.nvim_buf_get_name(0):match("%.env$")
 	end,
 }

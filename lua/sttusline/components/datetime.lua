@@ -1,10 +1,10 @@
 return {
 	name = "datetime",
 	timing = true,
+
 	configs = {
 		style = "default",
 	},
-
 	update = function(configs)
 		local style = configs.style
 		local fmt = style

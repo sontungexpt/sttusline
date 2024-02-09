@@ -1,10 +1,10 @@
-local colors = require("sttusline.v1.utils.color")
+local api = vim.api
+local colors = require("sttusline.util.color")
 
 return {
 	name = "mode",
-	events = { "ModeChanged", "VimResized" },
-	timing = true,
-	user_events = "VeryLazy",
+	event = { "ModeChanged", "VimResized" },
+	user_event = "VeryLazy",
 	configs = {
 		modes = {
 			["n"] = { "NORMAL", "STTUSLINE_NORMAL_MODE" },
@@ -66,10 +66,18 @@ return {
 		auto_hide_on_vim_resized = true,
 	},
 	update = function(configs)
-		local mode_code = vim.api.nvim_get_mode().mode
+		local mode_code = api.nvim_get_mode().mode
 		local mode = configs.modes[mode_code]
-		if mode then return { { mode[1], configs.mode_colors[mode[2]] } } end
-		return " " .. mode_code .. " "
+
+		return mode
+				and {
+					{
+						value = mode[1],
+						colors = configs.mode_colors[mode[2]],
+						hl_update = true,
+					},
+				}
+			or mode_code
 	end,
 	condition = function(configs)
 		if configs.auto_hide_on_vim_resized then

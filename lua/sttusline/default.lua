@@ -1,5 +1,4 @@
 local vim = vim
-local g = vim.g
 local api = vim.api
 local uv = vim.uv or vim.loop
 local fn = vim.fn
@@ -209,7 +208,7 @@ return {
 			icon = "",
 		},
 		colors = { fg = colors.pink },
-		update = function(configs, state)
+		update = function(configs, context)
 			local branch = ""
 			local git_dir = fn.finddir(".git", ".;")
 			if git_dir ~= "" then
@@ -495,9 +494,9 @@ return {
 				end,
 			}
 		end,
-		update = function(_, state)
-			if package.loaded["copilot"] then state.check_status() end
-			return state.get_icon()
+		update = function(_, context)
+			if package.loaded["copilot"] then context.check_status() end
+			return context.get_icon()
 		end,
 	},
 	{

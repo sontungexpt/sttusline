@@ -1,43 +1,39 @@
-local colors = require("sttusline.util.color")
-
 return {
 	name = "git-diff",
-	event = { "BufWritePost", "VimResized", "BufEnter" }, -- The component will be update when the event is triggered
-	user_event = { "GitSignsUpdate" },
-	colors = {
-		{ fg = colors.tokyo_diagnostics_hint },
-		{ fg = colors.tokyo_diagnostics_info },
-		{ fg = colors.tokyo_diagnostics_error },
-	},
+	event = { "BufWritePost", "VimResized", "BufEnter" },
+	user_event = "GitSignsUpdate",
 	configs = {
-		icons = {
-			added = "",
-			changed = "",
-			removed = "",
+		added = {
+			value = "",
+			colors = { fg = "DiffAdd" },
+		},
+		changed = {
+			value = "",
+			colors = { fg = "DiffChange" },
+		},
+		removed = {
+			value = "",
+			colors = { fg = "DiffDelete" },
 		},
 		order = { "added", "changed", "removed" },
 	},
 	update = function(configs)
 		local git_status = vim.b.gitsigns_status_dict
 
-		local order = configs.order
-		local icons = configs.icons
-
-		local should_add_spacing = false
-
 		local result = {}
-		for index, v in ipairs(order) do
-			if git_status[v] and git_status[v] > 0 then
-				if should_add_spacing then
-					result[index] = " " .. icons[v] .. " " .. git_status[v]
-				else
-					should_add_spacing = true
-					result[index] = icons[v] .. " " .. git_status[v]
-				end
-			else
-				result[index] = ""
+		local should_add_padding = false
+		for _, key in ipairs(configs.order) do
+			if git_status[key] and git_status[key] > 0 then
+				result[#result + 1] = {
+					value = configs[key].value .. " " .. git_status[key],
+					colors = configs[key].colors,
+					hl_update = true,
+					padding = should_add_padding and { left = 1 } or nil,
+				}
+				should_add_padding = true
 			end
 		end
+
 		return result
 	end,
 	condition = function() return vim.b.gitsigns_status_dict ~= nil and vim.o.columns > 70 end,

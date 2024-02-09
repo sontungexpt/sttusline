@@ -1,7 +1,6 @@
-local fn = vim.fn
-local get_option = vim.api.nvim_buf_get_option
-
 local colors = require("sttusline.util.color")
+local api = vim.api
+local fn = vim.fn
 
 return {
 	name = "filename",
@@ -11,11 +10,6 @@ return {
 		fg = colors.orange,
 	},
 	configs = {
-		-- 0 = full path,
-		-- 1 = filename only,
-		-- 2 = file name without extension,
-		-- 3 = parent directory + filename
-		path = 1,
 		extensions = {
 			-- filetypes = { icon, color, filename(optional) },
 			filetypes = {
@@ -27,6 +21,7 @@ return {
 				["plantuml"] = { "", colors.green },
 				["dashboard"] = { "", colors.red },
 			},
+
 			-- buftypes = { icon, color, filename(optional) },
 			buftypes = {
 				["terminal"] = { "", colors.red, "Terminal" },
@@ -36,14 +31,6 @@ return {
 	update = function(configs)
 		local filename = fn.expand("%:t")
 
-		if configs.path == 0 then
-			filename = fn.expand("%:p")
-		elseif configs.path == 2 then
-			filename = fn.expand("%:t:r")
-		elseif configs.path == 3 then
-			filename = fn.expand("%:p:h:t") .. "/" .. fn.expand("%:t")
-		end
-
 		local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 		local icon, color_icon = nil, nil
 		if has_devicons then
@@ -52,14 +39,14 @@ return {
 
 		if not icon then
 			local extensions = configs.extensions
-			local buftype = get_option(0, "buftype")
+			local buftype = api.nvim_buf_get_option(0, "buftype")
 
 			local extension = extensions.buftypes[buftype]
 			if extension then
 				icon, color_icon, filename =
 					extension[1], extension[2], extension[3] or filename ~= "" and filename or buftype
 			else
-				local filetype = get_option(0, "filetype")
+				local filetype = api.nvim_buf_get_option(0, "filetype")
 				extension = extensions.filetypes[filetype]
 				if extension then
 					icon, color_icon, filename =
@@ -70,42 +57,46 @@ return {
 
 		if filename == "" then filename = "No File" end
 
-		if not get_option(0, "modifiable") or get_option(0, "readonly") then
+		-- check if file is read-only
+		if not api.nvim_buf_get_option(0, "modifiable") or api.nvim_buf_get_option(0, "readonly") then
 			return {
 				{
-					value = icon or "",
+					value = icon,
 					colors = { fg = color_icon },
+					hl_update = true,
 				},
-				" ",
-				filename,
-				" ",
+				" " .. filename,
 				{
-					value = "",
-					{ fg = colors.red },
+					value = " ",
+					colors = { fg = colors.red },
+					hl_update = true,
 				},
 			}
-		elseif get_option(0, "modified") then
+			-- check if unsaved
+		elseif api.nvim_buf_get_option(0, "modified") then
 			return {
 				{
-					value = icon or "",
+
+					value = icon,
 					colors = { fg = color_icon },
+					hl_update = true,
 				},
-				" ",
-				filename,
-				" ",
+				" " .. filename,
 				{
-					value = "",
-					colors = { fg = colors.fg },
+					value = " ",
+					colors = { fg = "Statusline" },
+					hl_update = true,
 				},
 			}
 		end
 		return {
 			{
-				value = icon or "",
+
+				value = icon,
 				colors = { fg = color_icon },
+				hl_update = true,
 			},
-			" ",
-			filename,
+			" " .. filename,
 		}
 	end,
 }

@@ -2,7 +2,7 @@ local colors = require("sttusline.util.color")
 return {
 	name = "encoding",
 	event = { "BufEnter", "WinEnter" },
-	user_event = { "VeryLazy" },
+	user_event = "VeryLazy",
 	configs = {
 		["utf-8"] = "󰉿",
 		["utf-16"] = "󰊀",
@@ -11,9 +11,9 @@ return {
 		["utf-16le"] = "󰊃",
 		["utf-16be"] = "󰊄",
 	},
-	colors = { fg = colors.yellow }, -- { fg = colors.black, bg = colors.white }
+	colors = { fg = colors.yellow },
 	update = function(configs)
 		local enc = vim.bo.fenc ~= "" and vim.bo.fenc or vim.o.enc
-		return configs[enc] or enc or ""
+		return configs[enc] or enc
 	end,
 }

@@ -40,7 +40,7 @@ return {
 	colors = {
 		fg = colors.green,
 	},
-	space = function()
+	init = function()
 		local bat_dir = fn.glob("/sys/class/power_supply/BAT*", true, true)[1]
 		if not bat_dir then return "" end
 		bat_dir = bat_dir:match("(.-)%s*$")
@@ -57,9 +57,9 @@ return {
 			get_capacity = function() return read_battery_file("capacity") end,
 		}
 	end,
-	update = function(configs, space)
-		local status = space.get_status()
-		local capacity = space.get_capacity()
+	update = function(configs, context)
+		local status = context.get_status()
+		local capacity = context.get_capacity()
 		local icon_index = math.floor(capacity / 10) + 1
 		local battery_color = icon_index > 8 and colors.green
 			or icon_index > 3 and colors.yellow
@@ -72,24 +72,27 @@ return {
 
 			return {
 				{
-					configs.icons.charging[current_charging_index] .. " " .. capacity .. "%%",
-					{ fg = battery_color },
+					value = configs.icons.charging[current_charging_index] .. " " .. capacity .. "%%",
+					colors = { fg = battery_color },
+					hl_update = true,
 				},
 			}
 		elseif status == "Discharging" or status == "Not charging" then
 			current_charging_index = 0
 			return {
 				{
-					configs.icons.discharging[icon_index] .. " " .. capacity .. "%%",
-					{ fg = battery_color },
+					value = configs.icons.discharging[icon_index] .. " " .. capacity .. "%%",
+					colors = { fg = battery_color },
+					hl_update = true,
 				},
 			}
 		elseif status == "Full" then
 			current_charging_index = 0
 			return {
 				{
-					"󰂄 " .. capacity .. "%%",
-					{ fg = battery_color },
+					value = "󰂄 " .. capacity .. "%%",
+					colors = { fg = battery_color },
+					hl_update = true,
 				},
 			}
 		else

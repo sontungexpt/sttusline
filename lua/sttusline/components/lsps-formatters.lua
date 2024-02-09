@@ -1,9 +1,11 @@
-local colors = require("sttusline.utils.color")
+local fn = vim.fn
+local api = vim.api
+local colors = require("sttusline.util.color")
 
 return {
 	name = "lsps-formatters",
-	event = { "LspAttach", "LspDetach", "BufWritePost", "BufEnter", "VimResized" }, -- The component will be update when the event is triggered
-	colors = { fg = colors.magenta }, -- { fg = colors.black, bg = colors.white }
+	event = { "LspAttach", "LspDetach", "BufWritePost", "BufEnter", "VimResized" },
+	colors = { fg = colors.magenta },
 	update = function()
 		local buf_clients = vim.lsp.buf_get_clients()
 		local server_names = {}
@@ -15,7 +17,7 @@ return {
 
 		for _, client in pairs(buf_clients) do
 			local client_name = client.name
-			if not ignore_lsp_servers[client_name] then table.insert(server_names, client_name) end
+			if not ignore_lsp_servers[client_name] then server_names[#server_names + 1] = client_name end
 		end
 
 		if package.loaded["null-ls"] then
@@ -23,7 +25,7 @@ return {
 			has_null_ls, null_ls = pcall(require, "null-ls")
 
 			if has_null_ls then
-				local buf_ft = vim.api.nvim_buf_get_option(0, "filetype")
+				local buf_ft = api.nvim_buf_get_option(0, "filetype")
 				local null_ls_methods = {
 					null_ls.methods.DIAGNOSTICS,
 					null_ls.methods.DIAGNOSTICS_ON_OPEN,
@@ -51,9 +53,9 @@ return {
 						for _, method in ipairs(methods) do
 							if source.methods[method] then
 								if name_only then
-									table.insert(source_results, source.name)
+									source_results[#source_results + 1] = source.name
 								else
-									table.insert(source_results, source)
+									source_results[#source_results + 1] = source
 								end
 								break
 							end
@@ -75,11 +77,12 @@ return {
 					server_names,
 					vim.tbl_map(function(formatter) return formatter.name end, conform.list_formatters(0))
 				)
-				if has_null_ls then server_names = vim.fn.uniq(server_names) end
+				if has_null_ls then server_names = fn.uniq(server_names) end
 			end
 		end
 
 		return #server_names > 0 and table.concat(server_names, ", ") or "NO LSP, FORMATTER  "
 	end,
+
 	condition = function() return vim.o.columns > 70 end,
 }
