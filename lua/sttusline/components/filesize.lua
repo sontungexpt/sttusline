@@ -8,7 +8,7 @@ return {
 		fg = colors.green,
 	},
 	configs = {
-		icon = " ",
+		icon = "",
 	},
 	update = function(configs)
 		local current_file = vim.api.nvim_buf_get_name(0)
@@ -23,6 +23,6 @@ return {
 		end
 
 		local format = i == 1 and "%d%s" or "%.1f%s"
-		return configs.icon .. string.format(format, file_size, suffixes[i])
+		return configs.icon .. " " .. string.format(format, file_size, suffixes[i])
 	end,
 }

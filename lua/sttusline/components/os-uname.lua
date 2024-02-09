@@ -4,6 +4,9 @@ local colors = require("sttusline.util.color")
 return {
 	name = "os-uname",
 	user_event = { "VeryLazy" },
+	colors = {
+		fg = colors.orange,
+	},
 	configs = {
 		icons = {
 			mac = "",
@@ -20,6 +23,7 @@ return {
 				{
 					value = configs.icons.mac,
 					colors = { fg = colors.white },
+					hl_update = true,
 				},
 			}
 		elseif uname == "Linux" then
@@ -28,6 +32,7 @@ return {
 					{
 						value = "",
 						colors = { fg = colors.blue },
+						hl_update = true,
 					},
 				}
 			end
@@ -35,6 +40,7 @@ return {
 				{
 					value = configs.icons.linux,
 					colors = { fg = colors.yellow },
+					hl_update = true,
 				},
 			}
 		elseif uname == "Windows" then
@@ -42,6 +48,7 @@ return {
 				{
 					value = configs.icons.windows,
 					colors = { fg = colors.blue },
+					hl_update = true,
 				},
 			}
 		else

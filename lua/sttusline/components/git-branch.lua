@@ -10,7 +10,7 @@ return {
 		icon = "",
 	},
 	colors = { fg = colors.pink },
-	update = function(configs, state)
+	update = function(configs)
 		local branch = ""
 		local git_dir = fn.finddir(".git", ".;")
 		if git_dir ~= "" then

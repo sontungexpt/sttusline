@@ -22,4 +22,25 @@ M.arr_contains = function(tbl, value)
 	return false
 end
 
+M.read_only = function(tbl, err_msg)
+	local cache = {}
+
+	function M.read_only(table, error_msg)
+		if not cache[table] then
+			cache[table] = setmetatable({}, {
+				__index = table,
+				__newindex = function(metatable, key, value)
+					error(
+						type(error_msg) == "function" and error_msg(metatable, key, value)
+							or error_msg
+							or "Attempt to modify read-only table"
+					)
+				end,
+			})
+		end
+
+		return cache[table]
+	end
+	return M.read_only(tbl, err_msg)
+end
 return M

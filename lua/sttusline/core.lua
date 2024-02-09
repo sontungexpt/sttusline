@@ -305,6 +305,12 @@ end
 
 M.update_comp_value = function(index)
 	local comp = components[index]
+
+	if not comp then -- cache is outdated
+		compile(config.get_config())
+		return
+	end
+
 	handle_comp_highlight(comp, index)
 
 	local should_display = call_comp_func(comp.condition, comp)
@@ -344,6 +350,7 @@ M.run = function(event_name, is_user_event)
 		local indexes = event_name and event_dict[event_name] or cache.timer
 
 		---@diagnostic disable-next-line: param-type-mismatch
+		-- vim.notify(vim.inspect(event_dict))
 		for _, index in ipairs(indexes) do
 			M.update_comp_value(index)
 		end
