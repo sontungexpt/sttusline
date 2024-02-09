@@ -548,4 +548,5 @@ return {
 			return configs.chars[math.ceil(line(".") / line("$") * #configs.chars)] or ""
 		end,
 	},
+	require("sttusline.components.copilot"),
 }

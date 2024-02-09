@@ -16,7 +16,6 @@ return {
 		local nvim_exec_autocmds = api.nvim_exec_autocmds
 		local schedule = vim.schedule
 		local buf_get_option = api.nvim_buf_get_option
-		local timer = uv.new_timer()
 		local status = ""
 
 		api.nvim_create_autocmd("InsertEnter", {
@@ -27,23 +26,10 @@ return {
 				if cp_api_ok then
 					cp_api.register_status_notification_handler(function(data)
 						schedule(function()
-							-- don't need to get status when in TelescopePrompt
+							-- don't need to get status when in prompt
 							if buf_get_option(0, "buftype") == "prompt" then return end
-							status = string.lower(data.status or "")
 
-							if status == "inprogress" then
-								timer:start(
-									0,
-									math.floor(1000 / configs.fps),
-									vim.schedule_wrap(
-										function()
-											nvim_exec_autocmds("User", { pattern = "SttuslineCopilotLoad", modeline = false })
-										end
-									)
-								)
-								return
-							end
-							timer:stop()
+							status = string.lower(data.status or "")
 							nvim_exec_autocmds("User", { pattern = "SttuslineCopilotLoad", modeline = false })
 						end)
 					end)
