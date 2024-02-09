@@ -36,8 +36,8 @@ local cached, cache = cache_module.read()
 ------------------------------
 local function call(func, ...) return type(func) == "function" and func(...) end
 
-local function call_comp_func(func, comp)
-	if type(func) == "function" then return func(comp.configs, comp.__state, comp, comp.__pos) end
+local function call_comp_func(func, comp, ...)
+	if type(func) == "function" then return func(comp.configs, comp.__state, comp, comp.__pos, ...) end
 end
 
 local function tbl_contains(tbl, value)
@@ -313,8 +313,8 @@ M.update_comp_value = function(index)
 		return
 	end
 
-	call_comp_func(comp.pre_update, comp)
-	local update_value = call_comp_func(comp.update, comp)
+	local pre_update_value = call_comp_func(comp.pre_update, comp)
+	local update_value = call_comp_func(comp.update, comp, pre_update_value)
 
 	if type(update_value) == "string" then
 		update_all_pos_comp(comp, handle_str_returned(update_value, comp))
@@ -330,9 +330,10 @@ M.update_comp_value = function(index)
 				type(comp) == "string" and comp or comp.name or ""
 			)
 		)
+		return
 	end
 
-	call_comp_func(comp.post_update, comp)
+	call_comp_func(comp.post_update, comp, pre_update_value, update_value)
 end
 
 M.run = function(event_name, is_user_event)
