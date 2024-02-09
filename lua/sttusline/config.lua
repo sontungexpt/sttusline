@@ -42,7 +42,10 @@ M.merge_config = function(default_opts, user_opts, force)
 end
 
 M.get_config = function()
-	return require("sttusline.util").read_only(configs, "Attempt to modify read-only table")
+	return setmetatable({}, {
+		__index = configs,
+		__newindex = function() error("Attempt to modify read-only table") end,
+	})
 end
 
 return M
