@@ -2,16 +2,11 @@ local colors = require("sttusline.v1.utils.color")
 return {
 	name = "form", -- nick to link the componet with the group
 
-	event = {
-		BufEnter = { "*.lua", "*.js" },
-	},
-
+	event = {},
 	user_event = {},
 
 	configs = {},
-
-	colors = {}, -- { fg = colors.black, bg = colors.white }
-
+	colors = {},
 	-- separator = { left = "", right = "" },
 	separator = {
 		left = "",
@@ -27,12 +22,10 @@ return {
 	-- number or table
 	padding = 1, -- { left = 1, right = 1 }
 
-	color_expanded = true, -- if true, the colors will be include padding
-
 	init = function() end,
 
+	pre_update = function() end,
 	-- update = function() return "" end,
-
 	update = function()
 		return {
 			{
@@ -44,8 +37,9 @@ return {
 			},
 		}
 	end,
+	post_update = function() end,
 
 	condition = function() return true end,
 
-	on_highlight = function() end,
+	-- on_highlight = function() end,
 }

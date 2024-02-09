@@ -281,7 +281,7 @@ return {
 				colors = { fg = "DiagnosticInfo" },
 			},
 			HINT = {
-				value = "󰌵",
+				value = "",
 				colors = { fg = "DiagnosticHint" },
 			},
 			order = { "ERROR", "WARN", "INFO", "HINT" },

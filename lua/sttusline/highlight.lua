@@ -2,6 +2,7 @@ local api = vim.api
 local hl = api.nvim_set_hl
 local get_hl_by_name = api.nvim_get_hl_by_name
 local is_color = api.nvim_get_color_by_name
+local config = require("sttusline.config")
 
 local type = type
 
@@ -29,19 +30,40 @@ M.hl = function(group_name, hl_styles, force)
 			}) then cache[group_name] = hl_styles end
 			return
 		elseif type(hl_styles) == "table" and next(hl_styles) then
-			if type(hl_styles.fg) == "string" and hl_styles.fg ~= "NONE" and is_color(hl_styles.fg) == -1 then
-				hl_styles.fg = M.get_hl(hl_styles.fg).foreground
+			cache[group_name] = hl_styles
+
+			local styles = config.merge_config({}, hl_styles)
+			styles.foreground = styles.fg
+			styles.background = styles.bg
+			styles.fg = nil
+			styles.bg = nil
+
+			if
+				type(styles.foreground) == "string"
+				and styles.foreground ~= "NONE"
+				and is_color(styles.foreground) == -1
+			then
+				styles.foreground = M.get_hl(styles.foreground).foreground
 			end
 
-			if type(hl_styles.bg) == "string" and hl_styles.bg ~= "NONE" and is_color(hl_styles.bg) == -1 then
-				-- set the background color to the color of the hl group
-				hl_styles.bg = M.get_hl(hl_styles.bg).background
-			elseif hl_styles.bg == nil then
-				hl_styles.bg = M.get_hl("Statusline").background
+			if
+				type(styles.background) == "string"
+				and styles.background ~= "NONE"
+				and is_color(styles.background) == -1
+			then
+				styles.background = M.get_hl(hl_styles.bg).background
 			end
 
-			if pcall(hl, 0, group_name, hl_styles) then cache[group_name] = hl_styles end
+			if styles.background == nil then styles.background = M.get_hl("StatusLine").background end
+
+			if not pcall(hl, 0, group_name, styles) then cache[group_name] = nil end
 		end
+	end
+end
+
+M.colorscheme = function()
+	for hl_name, hl_styles in pairs(cache) do
+		M.hl(hl_name, hl_styles, true)
 	end
 end
 
