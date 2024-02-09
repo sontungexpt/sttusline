@@ -6,13 +6,16 @@ return {
 	user_event = {},
 
 	configs = {},
-	colors = {},
-	-- separator = { left = "", right = "" },
+	colors = {
+		fg = colors.black,
+		bg = colors.white,
+	},
+
 	separator = {
 		left = "",
 		right = "",
-		colors_left = { fg = colors.black, bg = colors.white },
-		colors_right = { fg = colors.black, bg = colors.white },
+		left_colors = { fg = colors.black, bg = colors.white },
+		right_colors = { fg = colors.black, bg = colors.white },
 	},
 
 	timing = false, -- The component will be update every time interval
@@ -40,6 +43,4 @@ return {
 	post_update = function() end,
 
 	condition = function() return true end,
-
-	-- on_highlight = function() end,
 }

@@ -9,6 +9,34 @@ local configs = {
 			terminal = true,
 		},
 	},
+	separator = {
+		-- {
+		-- 	right = "",
+		-- 	right_colors = {
+		-- 		fg = "#dfdf23",
+		-- 		bg = "#219dea",
+		-- 	},
+		-- },
+		-- {
+		-- 	left = "",
+		-- 	left_colors = {
+		-- 		fg = "#ffffff",
+		-- 	},
+		-- },
+	},
+	colors = {
+		{
+			fg = "#ffffff",
+			bg = "#219dea",
+		},
+		{
+			fg = "#ffffff",
+			bg = "#546dea",
+		},
+	},
+	padding = {
+		-- [2] = 0,
+	},
 	components = require("sttusline.default"),
 }
 

@@ -144,8 +144,8 @@ local function handle_comp_highlight(comp, index)
 			}
 
 			highlight.hl(comp.__hl_name_sep, sep_styles)
-			highlight.hl(comp.__hl_name_sep_left, separator.colors_left or comp.__hl_name_sep)
-			highlight.hl(comp.__hl_name_sep_right, separator.colors_right or comp.__hl_name_sep)
+			highlight.hl(comp.__hl_name_sep_left, separator.left_colors or comp.__hl_name_sep)
+			highlight.hl(comp.__hl_name_sep_right, separator.right_colors or comp.__hl_name_sep)
 		end
 	end
 end
@@ -375,6 +375,7 @@ end
 M.load_comps = function(configs, cb)
 	local pos_in_line = 0
 	local comp_index = 0
+	local group_index = 1
 	local unique_comps = {}
 
 	for _, comp in ipairs(configs.components) do
@@ -389,6 +390,7 @@ M.load_comps = function(configs, cb)
 		elseif type(comp) == "string" then -- special component
 			if comp == "%=" then
 				pos_in_line = pos_in_line + 1
+				group_index = group_index + 1
 				statusline[pos_in_line] = "%="
 			else
 				local has_comp, default_comp = pcall(require, COMP_DIR .. curr_comp)
@@ -406,6 +408,10 @@ M.load_comps = function(configs, cb)
 			if not unique_comps[curr_comp] then
 				unique_comps[curr_comp] = true
 				curr_comp.__pos = { pos_in_line }
+				curr_comp.separator = configs.separator[group_index] or curr_comp.separator
+				curr_comp.colors = configs.colors[group_index] or curr_comp.colors
+				curr_comp.padding = configs.padding[group_index] or curr_comp.padding
+
 				comp_index = comp_index + 1
 				components[comp_index] = curr_comp
 				cb(curr_comp, comp_index, pos_in_line)
