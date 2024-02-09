@@ -1,7 +1,6 @@
 return {
 	name = "datetime",
 	timing = true,
-
 	configs = {
 		style = "default",
 	},

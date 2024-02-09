@@ -1,25 +1,6 @@
 local fn = vim.fn
 local M = {}
 
-local cache_form = {
-	name_index_maps = {},
-
-	events = {
-		-- the key is the name of the default event
-		nvim = {
-			keys_len = 0,
-			keys = {},
-		},
-		-- the key is the name of user defined event
-		user = {
-			keys_len = 0,
-			keys = {},
-		},
-	},
-
-	timer = {},
-}
-
 local CACHED_DIR = fn.stdpath("cache") .. "/sttusline"
 local CACHED_FILE = CACHED_DIR .. "/cache.lua"
 
@@ -50,7 +31,27 @@ end
 
 M.read = function()
 	if has_cached then return true, dofile(CACHED_FILE) end
-	return false, cache_form
+
+	-- return false and the format of the cache
+	return false,
+		{
+			name_index_maps = {},
+
+			events = {
+				-- the key is the name of the default event
+				nvim = {
+					keys_len = 0,
+					keys = {},
+				},
+				-- the key is the name of user defined event
+				user = {
+					keys_len = 0,
+					keys = {},
+				},
+			},
+
+			timer = {},
+		}
 end
 
 return M

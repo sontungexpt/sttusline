@@ -176,10 +176,11 @@ end
 local compile = function(configs)
 	local cleared = cache_module.clear()
 	if cleared then
-		components = {}
-		cached = false
 		api.nvim_del_augroup_by_id(M.get_global_augroup())
 		group_ids[PLUG_NAME] = nil
+
+		components = {}
+		cached, cache = cache_module.read()
 		M.setup(configs)
 		M.update_all_components(configs)
 		M.render()

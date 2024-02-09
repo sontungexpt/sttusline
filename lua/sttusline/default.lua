@@ -113,7 +113,7 @@ return {
 			extensions = {
 				-- filetypes = { icon, color, filename(optional) },
 				filetypes = {
-					["NvimTree"] = { "󰙅", colors.red, "NvimTree" },
+					["NvimTree"] = { "", colors.red, "NvimTree" },
 					["TelescopePrompt"] = { "", colors.red, "Telescope" },
 					["mason"] = { "󰏔", colors.red, "Mason" },
 					["lazy"] = { "󰏔", colors.red, "Lazy" },
@@ -548,5 +548,4 @@ return {
 			return configs.chars[math.ceil(line(".") / line("$") * #configs.chars)] or ""
 		end,
 	},
-	require("sttusline.components.copilot"),
 }
