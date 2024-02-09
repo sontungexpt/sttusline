@@ -16,6 +16,7 @@ local augroup = api.nvim_create_augroup
 
 local highlight = require("sttusline.util.highlight")
 local config = require("sttusline.config")
+local cache_module = require("sttusline.cache")
 
 local M = {}
 
@@ -29,25 +30,7 @@ local group_ids = {
 local timer_ids = {}
 local statusline = {}
 local components = {}
-
-local cache = {
-	name_index_maps = {},
-
-	events = {
-		-- the key is the name of the default event
-		nvim = {
-			keys_len = 0,
-			keys = {},
-		},
-		-- the key is the name of user defined event
-		user = {
-			keys_len = 0,
-			keys = {},
-		},
-	},
-
-	timer = {},
-}
+local cached, cache = cache_module.read()
 
 -- private
 ------------------------------
@@ -190,6 +173,19 @@ local function init_cached_timers(configs)
 	end
 end
 
+local compile = function(configs)
+	local cleared = cache_module.clear()
+	if cleared then
+		components = {}
+		cached = false
+		api.nvim_del_augroup_by_id(M.get_global_augroup())
+		group_ids[PLUG_NAME] = nil
+		M.setup(configs)
+		M.update_all_components(configs)
+		M.render()
+	end
+end
+
 local function update_all_pos_comp(comp, update_value)
 	for _, pos in ipairs(comp.__pos) do
 		statusline[pos] = update_value
@@ -265,7 +261,7 @@ local function handle_table_returned(update_value, comp)
 		elseif type(child) == "table" and (type(child.value) == "string" or type(child[1]) == "string") then
 			local child_value = child.value or child[1]
 			if child_value then
-				local colors = config.merge_config_noforce(child.colors, comp.colors)
+				local colors = config.merge_config(child.colors, comp.colors)
 
 				local hl_name_child = comp_hl_name .. "_" .. index
 				values[#values + 1] =
@@ -349,65 +345,79 @@ M.run = function(event_name, is_user_event)
 	end, 0)
 end
 
+local init_component = function(comp, index, pos_in_statusline)
+	if comp.name then cache.name_index_maps[comp.name] = index end
+
+	comp.__state = call(comp.init, comp.configs, comp, pos_in_statusline)
+
+	if comp.lazy == false then M.update_comp_value(index) end
+
+	if not cached then
+		handle_comp_events(comp, index)
+		handle_comp_timing(comp, index)
+	end
+end
+
 M.load_comps = function(configs, cb)
-	local pos_in_line = 1
-	local comp_index = 1
+	local pos_in_line = 0
+	local comp_index = 0
 	local unique_comps = {}
-	local curr_comp = nil
 
 	for _, comp in ipairs(configs.components) do
+		local curr_comp = nil
+
 		if type(comp) == "table" then
 			curr_comp = comp
 			if type(comp[2]) == "table" then -- has custom config
 				local has_comp, default_comp = pcall(require, COMP_DIR .. tostring(comp[1]))
-				curr_comp = has_comp and config.merge_config_force(default_comp, comp[2]) or nil
+				curr_comp = has_comp and config.merge_config(default_comp, comp[2], true) or nil
 			end
 		elseif type(comp) == "string" then -- special component
 			if comp == "%=" then
-				statusline[pos_in_line] = "%="
 				pos_in_line = pos_in_line + 1
+				statusline[pos_in_line] = "%="
 			else
-				local has_comp, default_comp = pcall(require, COMP_DIR .. tostring(curr_comp))
+				local has_comp, default_comp = pcall(require, COMP_DIR .. curr_comp)
 				curr_comp = has_comp and default_comp or nil
 			end
 		elseif type(comp) == "number" then -- special component
-			statusline[pos_in_line] = rep(" ", floor(comp))
 			pos_in_line = pos_in_line + 1
+			statusline[pos_in_line] = rep(" ", floor(comp))
 		end
 
-		if curr_comp then
+		if curr_comp ~= nil then
+			pos_in_line = pos_in_line + 1
 			statusline[pos_in_line] = ""
+
 			if not unique_comps[curr_comp] then
 				unique_comps[curr_comp] = true
 				curr_comp.__pos = { pos_in_line }
 				comp_index = comp_index + 1
 				components[comp_index] = curr_comp
-				cb(comp_index, curr_comp, pos_in_line)
+				cb(curr_comp, comp_index, pos_in_line)
 			else
 				curr_comp.__pos[#curr_comp.__pos + 1] = pos_in_line
 			end
-			pos_in_line = pos_in_line + 1
 		end
 	end
 end
 
 M.setup = function(configs)
-	local name_index_maps = cache.name_index_maps
-	M.load_comps(configs, function(index, comp, pos_in_statusline)
-		if comp.name then name_index_maps[comp.name] = index end
-
-		comp.__state = call(comp.init, comp.configs, comp, pos_in_statusline)
-
-		if comp.lazy == false then M.update_comp_value(index) end
-
-		handle_comp_events(comp, index)
-		handle_comp_timing(comp, index)
-	end)
+	M.load_comps(configs, init_component)
 
 	init_cached_autocmds(configs)
 	init_cached_timers(configs)
 
 	auto_hidden(configs)
+
+	autocmd("VimLeavePre", {
+		group = M.get_global_augroup(),
+		callback = function() cache_module.cache(cache) end,
+	})
+
+	api.nvim_create_user_command("SttuslineCompile", function() compile(configs) end, {
+		nargs = 0,
+	})
 end
 
 return M
