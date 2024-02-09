@@ -14,7 +14,7 @@ local schedule = vim.schedule
 local autocmd = api.nvim_create_autocmd
 local augroup = api.nvim_create_augroup
 
-local highlight = require("sttusline.util.highlight")
+local highlight = require("sttusline.highlight")
 local config = require("sttusline.config")
 local cache_module = require("sttusline.cache")
 
@@ -261,12 +261,11 @@ local function handle_table_returned(update_value, comp)
 		elseif type(child) == "table" and (type(child.value) == "string" or type(child[1]) == "string") then
 			local child_value = child.value or child[1]
 			if child_value then
-				local colors = config.merge_config(child.colors, comp.colors)
-
 				local hl_name_child = comp_hl_name .. "_" .. index
 				values[#values + 1] =
 					highlight.add_hl_name(add_padding(child_value, child, nil, 0), hl_name_child)
-
+				local colors = child.colors or comp_hl_name
+				if type(colors) == "table" then colors.bg = colors.bg or comp_hl_name end
 				if child.hl_update then highlight.hl(hl_name_child, colors, true) end
 			end
 		end
@@ -419,6 +418,11 @@ M.setup = function(configs)
 	autocmd("VimLeavePre", {
 		group = M.get_global_augroup(),
 		callback = function() cache_module.cache(cache) end,
+	})
+
+	autocmd("Colorscheme", {
+		group = M.get_global_augroup(),
+		callback = function() highlight.colorscheme() end,
 	})
 
 	api.nvim_create_user_command("SttuslineCompile", function() compile(configs) end, {
