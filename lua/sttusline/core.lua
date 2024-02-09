@@ -314,12 +314,16 @@ M.update_comp_value = function(index)
 		return
 	end
 
+	call_comp_func(comp.pre_update, comp)
 	local update_value = call_comp_func(comp.update, comp)
 
 	if type(update_value) == "string" then
 		update_all_pos_comp(comp, handle_str_returned(update_value, comp))
 	elseif type(update_value) == "table" then
 		update_all_pos_comp(comp, handle_table_returned(update_value, comp))
+	elseif type(update_value) == "function" then
+		update_value = call_comp_func(update_value, comp)
+		if type(update_value) == "string" then update_all_pos_comp(comp, update_value) end
 	else
 		require("sttusline.util.notify").error(
 			string.format(
@@ -328,6 +332,8 @@ M.update_comp_value = function(index)
 			)
 		)
 	end
+
+	call_comp_func(comp.post_update, comp)
 end
 
 M.run = function(event_name, is_user_event)
