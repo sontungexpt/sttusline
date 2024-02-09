@@ -16,37 +16,22 @@ local configs = {
 -- local keep_default_values = function() end
 
 M.setup = function(user_opts)
-	M.merge_config_force(configs, user_opts)
+	M.merge_config(configs, user_opts)
 	-- keep_default_values()
 
 	return configs
 end
 
-M.merge_config_force = function(default_opts, user_opts)
+M.merge_config = function(default_opts, user_opts, force)
 	local default_options_type = type(default_opts)
 
 	if default_options_type == type(user_opts) then
 		if default_options_type == "table" and default_opts[1] == nil then
 			for k, v in pairs(user_opts) do
-				default_opts[k] = M.merge_config_force(default_opts[k], v)
+				default_opts[k] = M.merge_config(default_opts[k], v)
 			end
-		else
+		elseif force then
 			default_opts = user_opts
-		end
-	elseif default_opts == nil then
-		default_opts = user_opts
-	end
-	return default_opts
-end
-
-M.merge_config_noforce = function(default_opts, user_opts)
-	local default_options_type = type(default_opts)
-
-	if default_options_type == type(user_opts) then
-		if default_options_type == "table" and default_opts[1] == nil then
-			for k, v in pairs(user_opts) do
-				default_opts[k] = M.merge_config_noforce(default_opts[k], v)
-			end
 		elseif default_opts == nil then
 			default_opts = user_opts
 		end
