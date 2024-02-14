@@ -350,7 +350,6 @@ M.run = function(event_name, is_user_event)
 		local indexes = event_name and event_dict[event_name] or cache.timer
 
 		---@diagnostic disable-next-line: param-type-mismatch
-		-- vim.notify(vim.inspect(event_dict))
 		for _, index in ipairs(indexes) do
 			M.update_comp_value(index)
 		end
@@ -360,7 +359,7 @@ M.run = function(event_name, is_user_event)
 end
 
 local init_component = function(comp, index, pos_in_statusline)
-	if comp.name then cache.name_index_maps[comp.name] = index end
+	-- if comp.name then cache.name_index_maps[comp.name] = index end
 
 	comp.__state = call(comp.init, comp.configs, comp, pos_in_statusline)
 
