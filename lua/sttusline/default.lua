@@ -17,10 +17,11 @@ local colors = {
 }
 
 return {
+	user_event = "VeryLazy",
+	event = "VimResized",
 	{
 		name = "mode",
-		event = { "ModeChanged", "VimResized" },
-		user_event = "VeryLazy",
+		event = { "ModeChanged" },
 		configs = {
 			modes = {
 				["n"] = { "NORMAL", "STTUSLINE_NORMAL_MODE" },
@@ -81,241 +82,240 @@ return {
 			},
 			auto_hide_on_vim_resized = true,
 		},
+		styles = function(configs)
+			local mode_code = api.nvim_get_mode().mode
+			return configs.mode_colors[configs.modes[mode_code][2]]
+		end,
 		update = function(configs)
 			local mode_code = api.nvim_get_mode().mode
 			local mode = configs.modes[mode_code]
 
-			return mode
-					and {
-						{
-							value = mode[1],
-							colors = configs.mode_colors[mode[2]],
-							hl_update = true,
-						},
-					}
-				or mode_code
+			return mode and mode[1] or mode_code
 		end,
 		condition = function(configs)
 			if configs.auto_hide_on_vim_resized then
 				vim.opt.showmode = not (vim.o.columns > 70)
+				---@diagnostic disable-next-line: undefined-field
 				return not vim.opt.showmode:get()
 			end
 		end,
 	},
 	{
-		name = "filename",
-		event = { "BufEnter", "WinEnter", "TextChangedI", "BufWritePost" },
-		user_event = "VeryLazy",
-		colors = {
-			fg = colors.orange,
-		},
-		configs = {
-			extensions = {
-				-- filetypes = { icon, color, filename(optional) },
-				filetypes = {
-					["NvimTree"] = { "", colors.red, "NvimTree" },
-					["TelescopePrompt"] = { "", colors.red, "Telescope" },
-					["mason"] = { "󰏔", colors.red, "Mason" },
-					["lazy"] = { "󰏔", colors.red, "Lazy" },
-					["checkhealth"] = { "", colors.red, "CheckHealth" },
-					["plantuml"] = { "", colors.green },
-					["dashboard"] = { "", colors.red },
-				},
+		event = "BufEnter",
+		{
+			name = "filename",
+			event = { "WinEnter", "TextChangedI", "BufWritePost" },
+			styles = {
+				fg = colors.orange,
+			},
+			configs = {
+				extensions = {
+					-- filetypes = { icon, color, filename(optional) },
+					filetypes = {
+						["NvimTree"] = { "", colors.red, "NvimTree" },
+						["TelescopePrompt"] = { "", colors.red, "Telescope" },
+						["mason"] = { "󰏔", colors.red, "Mason" },
+						["lazy"] = { "󰏔", colors.red, "Lazy" },
+						["checkhealth"] = { "", colors.red, "CheckHealth" },
+						["plantuml"] = { "", colors.green },
+						["dashboard"] = { "", colors.red },
+					},
 
-				-- buftypes = { icon, color, filename(optional) },
-				buftypes = {
-					["terminal"] = { "", colors.red, "Terminal" },
+					-- buftypes = { icon, color, filename(optional) },
+					buftypes = {
+						["terminal"] = { "", colors.red, "Terminal" },
+					},
 				},
 			},
+			static = {
+				get = function(configs)
+					local filename = fn.expand("%:t")
+
+					local has_devicons, devicons = pcall(require, "nvim-web-devicons")
+					local icon, color_icon = nil, nil
+					if has_devicons then
+						icon, color_icon = devicons.get_icon_color(filename, fn.expand("%:e"))
+					end
+
+					if not icon then
+						local extensions = configs.extensions
+						local buftype = api.nvim_buf_get_option(0, "buftype")
+
+						local extension = extensions.buftypes[buftype]
+						if extension then
+							icon, color_icon, filename =
+								extension[1], extension[2], extension[3] or filename ~= "" and filename or buftype
+						else
+							local filetype = api.nvim_buf_get_option(0, "filetype")
+							extension = extensions.filetypes[filetype]
+							if extension then
+								icon, color_icon, filename =
+									extension[1], extension[2], extension[3] or filename ~= "" and filename or filetype
+							end
+						end
+					end
+
+					if filename == "" then filename = "No File" end
+					return icon, color_icon, filename
+				end,
+			},
+			{
+				padding = { left = 1, right = 0 },
+				styles = function(configs, context, shared, self)
+					local icon, color_icon, filename = self.static.get(configs)
+					return { fg = color_icon }
+				end,
+				update = function(configs, context, shared, self)
+					local icon, color_icon, filename = self.static.get(configs)
+					return icon
+				end,
+			},
+			{
+				update = function(configs, context, shared, self)
+					local icon, color_icon, filename = self.static.get(configs)
+					return filename
+				end,
+			},
+			{
+				styles = function()
+					if not api.nvim_buf_get_option(0, "modifiable") or api.nvim_buf_get_option(0, "readonly") then
+						return { fg = colors.red }
+					elseif api.nvim_buf_get_option(0, "modified") then
+						return { fg = "Statusline" }
+					end
+				end,
+				padding = { left = 0, right = 1 },
+				update = function()
+					if not api.nvim_buf_get_option(0, "modifiable") or api.nvim_buf_get_option(0, "readonly") then
+						return ""
+					elseif api.nvim_buf_get_option(0, "modified") then
+						return ""
+					end
+					return ""
+				end,
+			},
 		},
-		update = function(configs)
-			local filename = fn.expand("%:t")
-
-			local has_devicons, devicons = pcall(require, "nvim-web-devicons")
-			local icon, color_icon = nil, nil
-			if has_devicons then
-				icon, color_icon = devicons.get_icon_color(filename, fn.expand("%:e"))
-			end
-
-			if not icon then
-				local extensions = configs.extensions
-				local buftype = api.nvim_buf_get_option(0, "buftype")
-
-				local extension = extensions.buftypes[buftype]
-				if extension then
-					icon, color_icon, filename =
-						extension[1], extension[2], extension[3] or filename ~= "" and filename or buftype
-				else
-					local filetype = api.nvim_buf_get_option(0, "filetype")
-					extension = extensions.filetypes[filetype]
-					if extension then
-						icon, color_icon, filename =
-							extension[1], extension[2], extension[3] or filename ~= "" and filename or filetype
+		{
+			name = "git-branch",
+			user_event = "GitSignsUpdate",
+			configs = {
+				icon = "",
+			},
+			styles = { fg = colors.pink },
+			update = function(configs, context)
+				local branch = ""
+				local git_dir = fn.finddir(".git", ".;")
+				if git_dir ~= "" then
+					local head_file = io.open(git_dir .. "/HEAD", "r")
+					if head_file then
+						local content = head_file:read("*all")
+						head_file:close()
+						-- branch name  or commit hash
+						branch = content:match("ref: refs/heads/(.-)%s*$") or content:sub(1, 7) or ""
 					end
 				end
-			end
-
-			if filename == "" then filename = "No File" end
-
-			-- check if file is read-only
-			if not api.nvim_buf_get_option(0, "modifiable") or api.nvim_buf_get_option(0, "readonly") then
-				return {
-					{
-						value = icon,
-						colors = { fg = color_icon },
-						hl_update = true,
-					},
-					" " .. filename,
-					{
-						value = " ",
-						colors = { fg = colors.red },
-						hl_update = true,
-					},
-				}
-				-- check if unsaved
-			elseif api.nvim_buf_get_option(0, "modified") then
-				return {
-					{
-
-						value = icon,
-						colors = { fg = color_icon },
-						hl_update = true,
-					},
-					" " .. filename,
-					{
-						value = " ",
-						colors = { fg = "Statusline" },
-						hl_update = true,
-					},
-				}
-			end
-			return {
-				{
-
-					value = icon,
-					colors = { fg = color_icon },
-					hl_update = true,
-				},
-				" " .. filename,
-			}
-		end,
-	},
-	{
-		name = "git-branch",
-		event = "BufEnter",
-		user_event = { "VeryLazy", "GitSignsUpdate" },
-		configs = {
-			icon = "",
+				return branch ~= "" and configs.icon .. " " .. branch or ""
+			end,
+			condition = function() return api.nvim_buf_get_option(0, "buflisted") end,
 		},
-		colors = { fg = colors.pink },
-		update = function(configs, context)
-			local branch = ""
-			local git_dir = fn.finddir(".git", ".;")
-			if git_dir ~= "" then
-				local head_file = io.open(git_dir .. "/HEAD", "r")
-				if head_file then
-					local content = head_file:read("*all")
-					head_file:close()
-					-- branch name  or commit hash
-					branch = content:match("ref: refs/heads/(.-)%s*$") or content:sub(1, 7) or ""
-				end
-			end
-			return branch ~= "" and configs.icon .. " " .. branch or ""
-		end,
-		condition = function() return api.nvim_buf_get_option(0, "buflisted") end,
-	},
-	{
-		name = "git-diff",
-		event = { "BufWritePost", "VimResized", "BufEnter" },
-		user_event = "GitSignsUpdate",
-		configs = {
-			added = {
-				value = "",
-				colors = { fg = "DiffAdd" },
+		{
+			name = "git-diff",
+			event = "BufWritePost",
+			user_event = "GitSignsUpdate",
+			configs = {
+				added = "",
+				changed = "",
+				removed = "",
 			},
-			changed = {
-				value = "",
-				colors = { fg = "DiffChange" },
+			{
+				styles = { fg = "DiffAdd" },
+				update = function(configs)
+					local git_status = vim.b.gitsigns_status_dict
+					return git_status.added and git_status.added > 0 and configs.added .. " " .. git_status.added
+						or ""
+				end,
 			},
-			removed = {
-				value = "",
-				colors = { fg = "DiffDelete" },
+			{
+				styles = { fg = "DiffChange" },
+				update = function(configs)
+					local git_status = vim.b.gitsigns_status_dict
+					return git_status.changed
+							and git_status.changed > 0
+							and configs.changed .. " " .. git_status.changed
+						or ""
+				end,
 			},
-			order = { "added", "changed", "removed" },
+			{
+				styles = { fg = "DiffDelete" },
+				update = function(configs)
+					local git_status = vim.b.gitsigns_status_dict
+					return git_status.removed
+							and git_status.removed > 0
+							and configs.removed .. " " .. git_status.removed
+						or ""
+				end,
+			},
+			condition = function() return vim.b.gitsigns_status_dict ~= nil and vim.o.columns > 70 end,
 		},
-		update = function(configs)
-			local git_status = vim.b.gitsigns_status_dict
-
-			local result = {}
-			local should_add_padding = false
-			for _, key in ipairs(configs.order) do
-				if git_status[key] and git_status[key] > 0 then
-					result[#result + 1] = {
-						value = configs[key].value .. " " .. git_status[key],
-						colors = configs[key].colors,
-						hl_update = true,
-						padding = should_add_padding and { left = 1 } or nil,
-					}
-					should_add_padding = true
-				end
-			end
-
-			return result
-		end,
-		condition = function() return vim.b.gitsigns_status_dict ~= nil and vim.o.columns > 70 end,
 	},
+
 	"%=",
 	{
 		name = "diagnostics",
 		event = "DiagnosticChanged",
 		configs = {
-			ERROR = {
-				value = "",
-				colors = { fg = "DiagnosticError" },
-			},
-			WARN = {
-				value = "",
-				colors = { fg = "DiagnosticWarn" },
-			},
-			INFO = {
-				value = "",
-				colors = { fg = "DiagnosticInfo" },
-			},
-			HINT = {
-				value = "",
-				colors = { fg = "DiagnosticHint" },
-			},
-			order = { "ERROR", "WARN", "INFO", "HINT" },
+			ERROR = "",
+			WARN = "",
+			INFO = "",
+			HINT = "",
 		},
-		update = function(configs)
-			local result = {}
-
-			local should_add_spacing = false
-			for _, key in ipairs(configs.order) do
-				local count = #vim.diagnostic.get(0, { severity = vim.diagnostic.severity[key] })
-
-				if count > 0 then
-					result[#result + 1] = {
-						value = configs[key].value .. " " .. count,
-						colors = configs[key].colors,
-						hl_update = true,
-						padding = should_add_spacing and { left = 1 } or nil,
-					}
-					should_add_spacing = true
-				end
-			end
-
-			return result
-		end,
 		condition = function()
 			return api.nvim_buf_get_option(0, "filetype") ~= "lazy"
 				and not api.nvim_buf_get_name(0):match("%.env$")
 		end,
+
+		{
+			styles = {
+				fg = "DiagnosticError",
+			},
+			update = function(configs)
+				local count = #vim.diagnostic.get(0, { severity = vim.diagnostic.severity.ERROR })
+				return count > 0 and configs.ERROR .. " " .. count or ""
+			end,
+		},
+		{
+			styles = {
+				fg = "DiagnosticWarn",
+			},
+			update = function(configs)
+				local count = #vim.diagnostic.get(0, { severity = vim.diagnostic.severity.WARN })
+				return count > 0 and configs.WARN .. " " .. count or ""
+			end,
+		},
+		{
+			styles = {
+				fg = "DiagnosticInfo",
+			},
+			update = function(configs)
+				local count = #vim.diagnostic.get(0, { severity = vim.diagnostic.severity.INFO })
+				return count > 0 and configs.INFO .. " " .. count or ""
+			end,
+		},
+		{
+			styles = {
+				fg = "DiagnosticHint",
+			},
+			update = function(configs)
+				local count = #vim.diagnostic.get(0, { severity = vim.diagnostic.severity.HINT })
+				return count > 0 and configs.HINT .. " " .. count or ""
+			end,
+		},
 	},
+
 	{
 		name = "lsps-formatters",
-		event = { "LspAttach", "LspDetach", "BufWritePost", "BufEnter", "VimResized" },
-		colors = { fg = colors.magenta },
+		event = { "LspAttach", "LspDetach", "BufWritePost", "BufEnter" },
+		styles = { fg = colors.magenta },
 		update = function()
 			local buf_clients = vim.lsp.buf_get_clients()
 			local server_names = {}
@@ -494,58 +494,56 @@ return {
 				end,
 			}
 		end,
-		update = function(_, context)
-			if package.loaded["copilot"] then context.check_status() end
-			return context.get_icon()
+		update = function(_, init_state)
+			if package.loaded["copilot"] then init_state.check_status() end
+			return init_state.get_icon()
 		end,
 	},
 	{
-		name = "indent",
 		event = { "BufEnter", "WinEnter" },
-		user_event = "VeryLazy",
-		colors = { fg = colors.cyan },
-		update = function() return "Tab: " .. api.nvim_buf_get_option(0, "shiftwidth") .. "" end,
-	},
-	{
-		name = "encoding",
-		event = { "BufEnter", "WinEnter" },
-		user_event = "VeryLazy",
-		configs = {
-			["utf-8"] = "󰉿",
-			["utf-16"] = "󰊀",
-			["utf-32"] = "󰊁",
-			["utf-8mb4"] = "󰊂",
-			["utf-16le"] = "󰊃",
-			["utf-16be"] = "󰊄",
+		{
+			name = "indent",
+			styles = { fg = colors.cyan },
+			update = function() return "Tab: " .. api.nvim_buf_get_option(0, "shiftwidth") .. "" end,
 		},
-		colors = { fg = colors.yellow },
-		update = function(configs)
-			local enc = vim.bo.fenc ~= "" and vim.bo.fenc or vim.o.enc
-			return configs[enc] or enc
-		end,
-	},
-	{
-		name = "pos-cursor",
-		event = { "CursorMoved", "CursorMovedI" },
-		user_event = "VeryLazy",
-		colors = { fg = colors.fg },
-		update = function()
-			local pos = api.nvim_win_get_cursor(0)
-			return pos[1] .. ":" .. pos[2]
-		end,
-	},
-	{
-		name = "pos-cursor-progress",
-		event = { "CursorMoved", "CursorMovedI" },
-		user_event = "VeryLazy",
-		configs = {
-			chars = { "_", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█" },
+		{
+			name = "encoding",
+			configs = {
+				["utf-8"] = "󰉿",
+				["utf-16"] = "󰊀",
+				["utf-32"] = "󰊁",
+				["utf-8mb4"] = "󰊂",
+				["utf-16le"] = "󰊃",
+				["utf-16be"] = "󰊄",
+			},
+			styles = { fg = colors.yellow },
+			update = function(configs)
+				local enc = vim.bo.fenc ~= "" and vim.bo.fenc or vim.o.enc
+				return configs[enc] or enc
+			end,
 		},
-		padding = 0,
-		colors = { fg = colors.orange },
-		update = function(configs)
-			local line = fn.line
-			return configs.chars[math.ceil(line(".") / line("$") * #configs.chars)] or ""
-		end,
+	},
+	{
+		event = { "CursorMoved", "CursorMovedI" },
+		{
+			name = "pos-cursor",
+			styles = { fg = colors.fg },
+			update = function()
+				local pos = api.nvim_win_get_cursor(0)
+				return pos[1] .. ":" .. pos[2]
+			end,
+		},
+		{
+			name = "pos-cursor-progress",
+			configs = {
+				chars = { "_", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█" },
+			},
+			padding = 0,
+			styles = { fg = colors.orange },
+			update = function(configs)
+				local line = fn.line
+				return configs.chars[math.ceil(line(".") / line("$") * #configs.chars)] or ""
+			end,
+		},
 	},
 }

@@ -12,13 +12,8 @@ local configs = {
 	components = require("sttusline.default"),
 }
 
---- The config properties are read-only
--- local keep_default_values = function() end
-
 M.setup = function(user_opts)
-	M.merge_config(configs, user_opts)
-	-- keep_default_values()
-
+	M.merge_config(configs, user_opts, true)
 	return configs
 end
 

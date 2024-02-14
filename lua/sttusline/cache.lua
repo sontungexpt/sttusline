@@ -4,12 +4,13 @@ local M = {}
 local CACHED_DIR = fn.stdpath("cache") .. "/sttusline"
 local CACHED_FILE = CACHED_DIR .. "/cache.lua"
 
-local has_cached = fn.filereadable(CACHED_FILE) == 1
+local cached = fn.filereadable(CACHED_FILE) == 1
 
 M.cache = function(cache, force)
-	if has_cached and not force then return end
+	if cached and not force then return end
 
-	if fn.isdirectory(CACHED_DIR) ~= 1 then fn.mkdir(CACHED_DIR, "p") end
+	fn.mkdir(CACHED_DIR, "p")
+
 	local file = io.open(CACHED_FILE, "w")
 
 	if file then
@@ -18,25 +19,23 @@ M.cache = function(cache, force)
 	end
 end
 
-M.has_cached = function() return has_cached end
+M.cached = function() return cached end
 
 M.clear = function()
-	if has_cached then
+	if cached then
 		fn.delete(CACHED_FILE)
-		has_cached = false
+		cached = false
 		return true
 	end
 	return false
 end
 
 M.read = function()
-	if has_cached then return true, dofile(CACHED_FILE) end
+	if cached then return true, dofile(CACHED_FILE) end
 
 	-- return false and the format of the cache
 	return false,
 		{
-			name_index_maps = {},
-
 			events = {
 				-- the key is the name of the default event
 				nvim = {
@@ -50,7 +49,8 @@ M.read = function()
 				},
 			},
 
-			timer = {},
+			timers = {},
+			min_widths = {},
 		}
 end
 
