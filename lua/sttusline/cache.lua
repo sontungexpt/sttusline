@@ -18,7 +18,7 @@ M.cache = function(cache, force)
 	end
 end
 
-M.has_cached = function() return has_cached end
+M.cached = function() return has_cached end
 
 M.clear = function()
 	if has_cached then
@@ -35,8 +35,6 @@ M.read = function()
 	-- return false and the format of the cache
 	return false,
 		{
-			name_index_maps = {},
-
 			events = {
 				-- the key is the name of the default event
 				nvim = {
