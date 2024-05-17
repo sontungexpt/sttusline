@@ -5,7 +5,7 @@ return {
 	event = { "LspAttach", "LspDetach", "BufWritePost", "BufEnter", "VimResized" }, -- The component will be update when the event is triggered
 	colors = { fg = colors.magenta }, -- { fg = colors.black, bg = colors.white }
 	update = function()
-		local buf_clients = vim.lsp.buf_get_clients()
+		local buf_clients = vim.lsp.get_clients()
 		local server_names = {}
 		local has_null_ls = false
 		local ignore_lsp_servers = {
