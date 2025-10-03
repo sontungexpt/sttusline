@@ -1,4 +1,5 @@
 ## Sttusline
+## :star2:**IMPORTANT:** As I am currently archived this plugin please move to [witch-line](https://github.com/sontungexpt/witch-line/tree/main) for better maintainent and performant 
 
 The best statusline plugin for neovim. It's very lightweight and super fast.
 
